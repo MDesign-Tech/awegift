@@ -13,21 +13,21 @@ const SocialLink = () => {
         <FaFacebookF />
       </Link>
       <Link
-        href="https://www.facebook.com/"
+        href="https://www.x.com/"
         target="blank"
         className="bg-theme-white border border-theme-color shadow-md text-black p-3 text-lg hover:bg-theme-color hover:text-theme-white cursor-pointer duration-200 rounded-md"
       >
         <FaXTwitter />
       </Link>
       <Link
-        href="https://www.facebook.com/"
+        href="https://www.linkedin.com/"
         target="blank"
         className="bg-theme-white border border-theme-color shadow-md text-black p-3 text-lg hover:bg-theme-color hover:text-theme-white cursor-pointer duration-200 rounded-md"
       >
         <FaLinkedinIn />
       </Link>
       <Link
-        href="https://www.facebook.com/"
+        href="https://www.instagram.com/"
         target="blank"
         className="bg-theme-white border border-theme-color shadow-md text-black p-3 text-lg hover:bg-theme-color hover:text-theme-white cursor-pointer duration-200 rounded-md"
       >
