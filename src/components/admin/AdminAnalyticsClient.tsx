@@ -14,16 +14,27 @@ import {
 } from "react-icons/fi";
 
 interface AnalyticsData {
-  totalRevenue: number;
-  totalOrders: number;
-  totalUsers: number;
-  averageOrderValue: number;
-  revenueGrowth: number;
-  ordersGrowth: number;
-  usersGrowth: number;
-  monthlyRevenue: Array<{ month: string; revenue: number }>;
-  topProducts: Array<{ name: string; sales: number; revenue: number }>;
-  ordersByStatus: Array<{ status: string; count: number; percentage: number }>;
+  success: boolean;
+  data: {
+    overview: {
+      totalRevenue: number;
+      totalOrders: number;
+      monthlyRevenue: number;
+      monthlyOrders: number;
+      revenueGrowth: number;
+      orderGrowth: number;
+    };
+    monthlyRevenue: Array<{ month: string; revenue: number; orders: number }>;
+    statusDistribution: Array<{ status: string; count: number; percentage: number }>;
+    recentActivity: Array<{
+      id: string;
+      type: string;
+      description: string;
+      amount: number;
+      timestamp: any;
+      status: string;
+    }>;
+  };
 }
 
 export default function AdminAnalyticsClient() {
@@ -38,6 +49,7 @@ export default function AdminAnalyticsClient() {
     try {
       setLoading(true);
       const response = await fetch("/api/admin/analytics");
+      console.log("Analytics response ", response);
       if (response.ok) {
         const data = await response.json();
         setAnalytics(data);
@@ -74,31 +86,31 @@ export default function AdminAnalyticsClient() {
   const stats = [
     {
       title: "Total Revenue",
-      value: `$${analytics.totalRevenue.toFixed(2)}`,
-      change: analytics.revenueGrowth,
+      value: `$${analytics.data.overview.totalRevenue.toFixed(2)}`,
+      change: analytics.data.overview.revenueGrowth,
       icon: FiDollarSign,
       color: "text-green-600",
       bgColor: "bg-green-100",
     },
     {
       title: "Total Orders",
-      value: analytics.totalOrders.toString(),
-      change: analytics.ordersGrowth,
+      value: analytics.data.overview.totalOrders.toString(),
+      change: analytics.data.overview.orderGrowth,
       icon: FiShoppingCart,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
     },
     {
-      title: "Total Users",
-      value: analytics.totalUsers.toString(),
-      change: analytics.usersGrowth,
+      title: "Monthly Revenue",
+      value: `$${analytics.data.overview.monthlyRevenue.toFixed(2)}`,
+      change: 0,
       icon: FiUsers,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
     },
     {
-      title: "Average Order",
-      value: `$${analytics.averageOrderValue.toFixed(2)}`,
+      title: "Monthly Orders",
+      value: analytics.data.overview.monthlyOrders.toString(),
       change: 0,
       icon: FiPackage,
       color: "text-orange-600",
@@ -163,7 +175,7 @@ export default function AdminAnalyticsClient() {
             <FiCalendar className="h-5 w-5 text-gray-400" />
           </div>
           <div className="space-y-3">
-            {analytics.monthlyRevenue.map((item, index) => (
+            {analytics.data.monthlyRevenue.map((item, index) => (
               <div key={index} className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">{item.month}</span>
                 <div className="flex items-center space-x-2">
@@ -174,7 +186,7 @@ export default function AdminAnalyticsClient() {
                         width: `${
                           (item.revenue /
                             Math.max(
-                              ...analytics.monthlyRevenue.map((r) => r.revenue)
+                              ...analytics.data.monthlyRevenue.map((r) => r.revenue)
                             )) *
                           100
                         }%`,
@@ -199,7 +211,7 @@ export default function AdminAnalyticsClient() {
             <FiBarChart className="h-5 w-5 text-gray-400" />
           </div>
           <div className="space-y-3">
-            {analytics.ordersByStatus.map((item, index) => {
+            {analytics.data.statusDistribution.map((item, index) => {
               const colors = [
                 "bg-yellow-500",
                 "bg-blue-500",
@@ -234,58 +246,50 @@ export default function AdminAnalyticsClient() {
         </div>
       </div>
 
-      {/* Top Products Table */}
+      {/* Recent Activity */}
       <div className="bg-white rounded-lg shadow border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Top Products</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Product
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Sales
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Revenue
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {analytics.topProducts.map((product, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-gray-600">
-                          #{index + 1}
-                        </span>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {product.name}
-                        </div>
-                      </div>
+        <div className="divide-y divide-gray-200">
+          {analytics.data.recentActivity.map((activity, index) => (
+            <div key={index} className="px-6 py-4 hover:bg-gray-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <FiShoppingCart className="h-4 w-4 text-blue-600" />
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {product.sales} units
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    ${product.revenue.toFixed(2)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {activity.description}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(activity.timestamp).toLocaleDateString()}kk
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900">
+                    ${activity.amount.toFixed(2)}
+                  </p>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                    activity.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    activity.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {activity.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-        {analytics.topProducts.length === 0 && (
+        {analytics.data.recentActivity.length === 0 && (
           <div className="px-6 py-12 text-center">
             <FiPackage className="mx-auto h-12 w-12 text-gray-400" />
-            <p className="text-gray-500 mt-4">No product data available</p>
+            <p className="text-gray-500 mt-4">No recent activity</p>
           </div>
         )}
       </div>

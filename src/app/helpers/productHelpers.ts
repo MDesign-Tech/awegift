@@ -1,4 +1,4 @@
-import { ProductType } from "../../../../type";
+import { ProductType } from "../../../type";
 
 // Helper function to get best sellers (products with high rating and good reviews)
 export const getBestSellers = (products: ProductType[]): ProductType[] => {
@@ -127,7 +127,7 @@ export const searchProducts = (
       product.description.toLowerCase().includes(term) ||
       product.category.toLowerCase().includes(term) ||
       product.brand.toLowerCase().includes(term) ||
-      product.tags.some((tag) => tag.toLowerCase().includes(term))
+      product.tags.some((tag: string) => tag.toLowerCase().includes(term))
   );
 };
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../../../../auth";
-import { adminDb } from "@/lib/firebase/admin";
+import { db } from "@/lib/firebase/config";
+import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,10 +11,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is admin
-    const usersRef = adminDb.collection("users");
-    const userQuery = usersRef.where("email", "==", session.user.email);
-    const userSnapshot = await userQuery.get();
+    // Check if user is admin using client SDK
+    const usersRef = collection(db, "users");
+    const userQuery = query(usersRef, where("email", "==", session.user.email));
+    const userSnapshot = await getDocs(userQuery);
 
     if (userSnapshot.empty) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -27,17 +28,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch recent orders for analytics
-    const ordersRef = adminDb.collection("orders");
-    const ordersQuery = ordersRef.orderBy("createdAt", "desc").limit(100);
-    const ordersSnapshot = await ordersQuery.get();
+    // Fetch recent orders for analytics using client SDK
+    const ordersRef = collection(db, "orders");
+    const ordersQuery = query(ordersRef, orderBy("createdAt", "desc"), limit(100));
+    const ordersSnapshot = await getDocs(ordersQuery);
 
     const orders = ordersSnapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,
         ...data,
-        createdAt: data.createdAt?.toDate() || new Date(),
+        createdAt: data.createdAt || new Date(),
       };
     });
 
