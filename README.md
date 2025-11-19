@@ -1,6 +1,6 @@
-# 🛍️ Shofy - Modern eCommerce Platform
+# 🛍️ AweGift - Modern eCommerce Platform
 
-![Shofy eCommerce Platform](./public/thumbnail.png)
+![AweGift eCommerce Platform](./public/thumbnail.png)
 
 A modern, full-stack eCommerce application built with **Next.js 15**, **TypeScript**, **Firebase**, and **NextAuth.js**. Featuring a comprehensive admin dashboard, role-based authentication, and a responsive design.
 
@@ -13,6 +13,7 @@ A modern, full-stack eCommerce application built with **Next.js 15**, **TypeScri
 ## 🚀 Quick Start
 
 ## 🌟 View Youtube Video for setup
+
 - **Frontend**: [Youtube setup Link](https://youtu.be/pqt-7cWJfiI) _(if available)_
 
 Get your eCommerce store running in minutes:

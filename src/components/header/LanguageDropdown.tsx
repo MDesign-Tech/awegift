@@ -5,10 +5,11 @@ import { FiCheck } from "react-icons/fi";
 
 const languages = [
   { code: "en", name: "English", flag: "🇺🇸", available: true },
-  { code: "es", name: "Español", flag: "🇪🇸", available: false },
-  { code: "fr", name: "Français", flag: "🇫🇷", available: false },
-  { code: "de", name: "Deutsch", flag: "🇩🇪", available: false },
-  { code: "ja", name: "日本語", flag: "🇯🇵", available: false },
+  //{ code: "es", name: "Kinyarwanda", flag: "rw", available: false },
+  //{ code: "es", name: "Español", flag: "🇪🇸", available: false },
+  //{ code: "fr", name: "Français", flag: "🇫🇷", available: false },
+  //{ code: "de", name: "Deutsch", flag: "🇩🇪", available: false },
+  //{ code: "ja", name: "日本語", flag: "🇯🇵", available: false },
 ];
 
 const LanguageDropdown = () => {
