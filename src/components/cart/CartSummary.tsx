@@ -31,7 +31,7 @@ const CartSummary = ({ cart }: Props) => {
 
   // Get free shipping threshold from environment
   const freeShippingThreshold =
-    Number(process.env.NEXT_PUBLIC_FREE_SHIPPING_THRESHOLD) || 1000;
+    Number(process.env.NEXT_PUBLIC_FREE_SHIPPING_THRESHOLD) || 10000000;
   const standardShippingCost = 15; // Standard shipping cost
 
   useEffect(() => {

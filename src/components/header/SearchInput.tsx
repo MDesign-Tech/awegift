@@ -60,7 +60,7 @@ const SearchInput = () => {
       <input
         type="text"
         placeholder="Search products here..."
-        className="w-full h-full outline-hidden border-2 border-theme-color px-4"
+        className="w-full h-full outline-hidden border-2 border-[#ed4c07] px-4"
         value={search}
         onChange={handleSearchChange}
         onFocus={() => setIsInputFocused(true)}
@@ -79,18 +79,18 @@ const SearchInput = () => {
             isLoading ? (
               <div className="py-8 px-5 text-center">
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-theme-color border-t-transparent"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#ed4c07] border-t-transparent"></div>
                   <div className="flex space-x-1">
                     <div
-                      className="w-2 h-2 bg-theme-color rounded-full animate-bounce"
+                      className="w-2 h-2 bg-[#ed4c07] rounded-full animate-bounce"
                       style={{ animationDelay: "0ms" }}
                     ></div>
                     <div
-                      className="w-2 h-2 bg-theme-color rounded-full animate-bounce"
+                      className="w-2 h-2 bg-[#ed4c07] rounded-full animate-bounce"
                       style={{ animationDelay: "150ms" }}
                     ></div>
                     <div
-                      className="w-2 h-2 bg-theme-color rounded-full animate-bounce"
+                      className="w-2 h-2 bg-[#ed4c07] rounded-full animate-bounce"
                       style={{ animationDelay: "300ms" }}
                     ></div>
                   </div>
@@ -163,7 +163,7 @@ const SearchInput = () => {
                     onClick={handleProductClick}
                     className="flex items-center gap-x-2 text-base font-medium hover:bg-light-text/30 px-3 py-1.5 border-b border-gray-100 last:border-b-0"
                   >
-                    <div className="w-4 h-4 bg-gradient-to-r from-theme-color to-blue-600 rounded-full flex items-center justify-center">
+                    <div className="w-4 h-4 bg-gradient-to-r from-[#ed4c07] to-[#ed4c07] rounded-full flex items-center justify-center">
                       <div className="w-2 h-2 bg-white rounded-full"></div>
                     </div>
                     <div className="flex-1">
@@ -177,7 +177,7 @@ const SearchInput = () => {
                       )}
                     </div>
                     {item?.price && (
-                      <span className="text-sm font-semibold text-theme-color">
+                      <span className="text-sm font-semibold text-[#ed4c07]">
                         ${item.price}
                       </span>
                     )}
@@ -189,7 +189,7 @@ const SearchInput = () => {
         </div>
       )}
 
-      <span className="w-10 h-10 bg-theme-color/80 inline-flex items-center justify-center text-white absolute top-0 right-0 border border-theme-color hover:bg-theme-color duration-200 cursor-pointer">
+      <span className="w-10 h-10 bg-[#ed4c07]/100 inline-flex items-center justify-center text-white absolute top-0 right-0 border border-[#ed4c07] hover:bg-[#ed4c07] duration-200 cursor-pointer">
         <RiSearchLine />
       </span>
     </div>
