@@ -22,6 +22,7 @@ const SingleProductPage = async ({ params }: Props) => {
   const { id } = await params;
   const endpoint = `https://dummyjson.com/products/${id}`;
   const product: ProductType = await getData(endpoint);
+  console.log("Product Data:", product);
 
   // Fetch related products for the same category
   const allProductsEndpoint = "https://dummyjson.com/products?limit=0";
