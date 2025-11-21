@@ -12,7 +12,7 @@ const ProductFeatures = () => {
     {
       icon: <FiTruck className="w-8 h-8 text-blue-600" />,
       title: "Free Shipping",
-      description: "Free shipping on orders over $1000",
+      description: "Free delivery on orders over $1000",
       bgColor: "bg-blue-50",
       borderColor: "border-blue-200",
     },

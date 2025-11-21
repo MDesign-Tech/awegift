@@ -31,10 +31,10 @@ const ShippingModal = ({
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
-                Free Express Shipping
+                Free Delivery
               </h3>
               <p className="text-sm text-gray-600">
-                Fast & reliable delivery to your doorstep
+                Fast & reliable delivery to your home
               </p>
             </div>
           </div>
@@ -57,7 +57,7 @@ const ShippingModal = ({
                   Free on orders ${freeShippingThreshold}+
                 </h4>
                 <p className="text-sm text-gray-600">
-                  Enjoy free express shipping on all orders above $
+                  Enjoy free delivery on all orders above RWF
                   {freeShippingThreshold}
                 </p>
               </div>

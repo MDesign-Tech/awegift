@@ -146,8 +146,26 @@ export default function ProductForm({ product, onSubmit, onCancel, loading = fal
     },
   });
 
-
+  const [categories, setCategories] = useState<Array<{id: string, name: string, slug: string}>>([]);
+  const [customCategory, setCustomCategory] = useState("");
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("/api/admin/categories");
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
 
   useEffect(() => {
     if (product) {
@@ -286,15 +304,44 @@ export default function ProductForm({ product, onSubmit, onCancel, loading = fal
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Category *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.basicInformation.category}
-                    onChange={(e) => handleInputChange("basicInformation.category", e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "other") {
+                        setShowCustomCategory(true);
+                        setCustomCategory("");
+                      } else {
+                        setShowCustomCategory(false);
+                        handleInputChange("basicInformation.category", value);
+                      }
+                    }}
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-theme-color ${
                       errors["basicInformation.category"] ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder="Product category"
-                  />
+                  >
+                    <option value="">Select a category</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.name}>
+                        {category.name}
+                      </option>
+                    ))}
+                    <option value="other">Other</option>
+                  </select>
+                  {showCustomCategory && (
+                    <input
+                      type="text"
+                      value={customCategory}
+                      onChange={(e) => {
+                        setCustomCategory(e.target.value);
+                        handleInputChange("basicInformation.category", e.target.value);
+                      }}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-theme-color mt-2 ${
+                        errors["basicInformation.category"] ? "border-red-500" : "border-gray-300"
+                      }`}
+                      placeholder="Enter custom category"
+                    />
+                  )}
                   {errors["basicInformation.category"] && (
                     <p className="text-red-500 text-sm mt-1">{errors["basicInformation.category"]}</p>
                   )}

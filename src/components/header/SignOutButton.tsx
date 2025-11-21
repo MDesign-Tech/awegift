@@ -52,14 +52,14 @@ const SignOutButton = ({ session }: Props) => {
   return (
     <div>
       {session?.user && <button onClick={handleSignOut}>Sign out</button>}
-      {!session?.user && (
+{/*       {!session?.user && (
         <Link
           href={"/auth/signin"}
           className="hover:text-theme-color duration-300 cursor-pointer"
         >
           Please login to view your cart
         </Link>
-      )}
+      )} */}
     </div>
   );
 };

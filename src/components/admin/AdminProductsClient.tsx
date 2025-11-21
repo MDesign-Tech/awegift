@@ -50,6 +50,7 @@ export default function AdminProductsClient() {
   // Modal states
   const [viewProductModal, setViewProductModal] = useState<ProductWithId | null>(null);
   const [deleteProductModal, setDeleteProductModal] = useState<ProductWithId | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<ProductWithId | null>(null);
   const [deleteAllModal, setDeleteAllModal] = useState(false);
   const [deleteSelectedModal, setDeleteSelectedModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -429,11 +430,38 @@ export default function AdminProductsClient() {
                 <td className="px-3 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-12 w-12">
-                      <img
-                        className="h-12 w-12 rounded-lg object-cover"
-                        src={product.media.thumbnail}
-                        alt={product.basicInformation.title}
-                      />
+                      {product.media.thumbnail ? (
+                        <img
+                          className="h-12 w-12 rounded-lg object-cover"
+                          src={product.media.thumbnail}
+                          alt={product.basicInformation.title}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            if (e.currentTarget.nextElementSibling) {
+                              (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className={`h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center ${
+                          product.media.thumbnail ? 'hidden' : 'flex'
+                        }`}
+                      >
+                        <svg
+                          className="h-6 w-6 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
                     </div>
                     <div className="ml-4 min-w-0">
                       <div className="text-sm font-medium text-gray-900 truncate">
@@ -595,19 +623,53 @@ export default function AdminProductsClient() {
                 </button>
               </div>
             </div>
-            <div className="px-6 py-4 space-y-4">
-              <div className="flex gap-3">
+            <div className=" flex px-6 py-4 space-y-4">
+            <div className="flex flex-wrap gap-3">
               <div className="text-center">
-                <img
-                  src={viewProductModal.media.thumbnail}
-                  alt={viewProductModal.basicInformation.title}
-                  className="w-92 h-64 object-cover rounded-lg mx-auto"
-                />
+                <div className="flex-shrink-0 h-64 w-92 mx-auto">
+                  {viewProductModal.media.thumbnail ? (
+                    <img
+                      className="h-64 w-92 rounded-lg object-cover"
+                      src={viewProductModal.media.thumbnail}
+                      alt={viewProductModal.basicInformation.title}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            if (e.currentTarget.nextElementSibling) {
+                              (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                            }
+                          }}
+                    />
+                  ) : null}
+                  <div
+                    className={`h-64 w-92 rounded-lg bg-gray-100 flex items-center justify-center ${
+                      viewProductModal.media.thumbnail ? 'hidden' : 'flex'
+                    }`}
+                  >
+                    <svg
+                      className="h-16 w-16 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                </div>
                 <h4 className="text-xl font-semibold text-gray-900 mt-4">{viewProductModal.basicInformation.title}</h4>
                 <p className="text-gray-600">{viewProductModal.metadata.brand}</p>
               </div>
               <div>
                 <h4 className="font-medium text-gray-900">Product Information</h4>
+                <div>
+                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-900">{viewProductModal.basicInformation.description}</p>
+                </div>
+              </div>
                 <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
                   <div>
                     <dt className="text-sm font-medium text-gray-500">
@@ -697,12 +759,7 @@ export default function AdminProductsClient() {
                 </div>
               )}
               
-              <div>
-                <h4 className="font-medium text-gray-900">Description</h4>
-                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-900">{viewProductModal.basicInformation.description}</p>
-                </div>
-              </div>
+              
             </div>
             <div className="px-6 py-4 border-t border-gray-200">
               <div className="flex justify-end">
@@ -720,28 +777,69 @@ export default function AdminProductsClient() {
 
       {/* Delete Product Modal */}
       {deleteProductModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Delete Product</h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Are you sure you want to delete "{deleteProductModal.basicInformation.title}"? This action cannot be undone.
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="px-6 py-4">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                <FiTrash2 className="mr-2 h-5 w-5 text-red-600" />
+                Delete Product
+              </h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Are you sure you want to delete product{" "}
+                <strong>
+                  #{deleteProductModal.id.slice(-8)}
+                </strong>
+                ?
               </p>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => setDeleteProductModal(null)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDeleteProduct}
-                  disabled={isDeleting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:opacity-50"
-                >
-                  {isDeleting ? "Deleting..." : "Delete"}
-                </button>
+              <div className="mt-3 bg-gray-50 rounded-lg p-3">
+                <div className="text-sm text-gray-700">
+                  <div>
+                    <strong>Title:</strong> {deleteProductModal.basicInformation.title}
+                  </div>
+                  <div>
+                    <strong>Brand:</strong> {deleteProductModal.metadata.brand}
+                  </div>
+                  <div>
+                    <strong>Price:</strong>{" "}
+                    <PriceFormat amount={deleteProductModal.pricing.price} />
+                  </div>
+                  <div>
+                    <strong>Stock:</strong> {deleteProductModal.inventory.stock}
+                  </div>
+                </div>
               </div>
+              <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-sm text-red-800">
+                  <strong>Warning:</strong> This action cannot be undone. The
+                  product will be permanently removed from the database.
+                </p>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteProductModal(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteProduct}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <FiTrash2 className="mr-2 h-4 w-4" />
+                    Delete Product
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -749,28 +847,32 @@ export default function AdminProductsClient() {
 
       {/* Delete All Products Modal */}
       {deleteAllModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Delete All Products</h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Are you sure you want to delete all products? This action cannot be undone.
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="px-6 py-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                Delete All Products
+              </h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Are you sure you want to delete ALL products? This action will
+                remove all products from the products collection. This action cannot be undone.
               </p>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => setDeleteAllModal(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteAllProducts}
-                  disabled={isDeleting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:opacity-50"
-                >
-                  {isDeleting ? "Deleting..." : "Delete All"}
-                </button>
-              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteAllModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAllProducts}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Deleting..." : "Delete All"}
+              </button>
             </div>
           </div>
         </div>
@@ -778,28 +880,51 @@ export default function AdminProductsClient() {
 
       {/* Delete Selected Products Modal */}
       {deleteSelectedModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Delete Selected Products</h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Are you sure you want to delete {selectedProducts.length} selected products? This action cannot be undone.
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="px-6 py-4">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                <FiTrash2 className="mr-2 h-5 w-5 text-red-600" />
+                Delete Selected Products
+              </h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Are you sure you want to delete{" "}
+                <strong>{selectedProducts.length}</strong> selected products? This
+                action will permanently remove these products from the database
+                and cannot be undone.
               </p>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => setDeleteSelectedModal(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDeleteSelected}
-                  disabled={isDeleting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:opacity-50"
-                >
-                  {isDeleting ? "Deleting..." : "Delete Selected"}
-                </button>
+              <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  <strong>Warning:</strong> This will delete the products from
+                  the products collection in the database.
+                </p>
               </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteSelectedModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteSelected}
+                className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors disabled:opacity-50 flex items-center"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <FiTrash2 className="mr-2 h-4 w-4" />
+                    Delete {selectedProducts.length} Products
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

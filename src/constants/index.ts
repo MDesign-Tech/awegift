@@ -4,7 +4,7 @@ export const navigation = [
   { title: "Home", href: "/" },
   { title: "Products", href: "/products" },
   { title: "Categories", href: "/categories" },
-  { title: "Offers", href: "/offers" },
+  // { title: "Offers", href: "/offers" },
 ];
 export const InfoNavigation = [
   { title: "About", href: "/about" },

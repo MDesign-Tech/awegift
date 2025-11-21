@@ -7,14 +7,15 @@ import CurrencyNotification from "../notifications/CurrencyNotification";
 
 type CurrencyCode =
   | "USD"
-  | "EUR"
-  | "GBP"
-  | "JPY"
-  | "CAD"
-  | "AUD"
-  | "INR"
-  | "BDT"
-  | "PKR";
+  // | "EUR"
+  // | "GBP"
+  // | "JPY"
+  // | "CAD"
+  // | "AUD"
+  // | "INR"
+  // | "BDT"
+  // | "PKR"
+  | "RWF";
 
 const currencies: {
   code: CurrencyCode;
@@ -22,20 +23,21 @@ const currencies: {
   symbol: string;
   region?: string;
 }[] = [
+  { code: "RWF", name: "Rwandan Franc", symbol: "FRw", region: "Africa" },
   { code: "USD", name: "US Dollar", symbol: "$", region: "Global" },
-  { code: "EUR", name: "Euro", symbol: "€", region: "Europe" },
-  { code: "GBP", name: "British Pound", symbol: "£", region: "Europe" },
-  { code: "JPY", name: "Japanese Yen", symbol: "¥", region: "Asia" },
-  {
-    code: "CAD",
-    name: "Canadian Dollar",
-    symbol: "C$",
-    region: "North America",
-  },
-  { code: "AUD", name: "Australian Dollar", symbol: "A$", region: "Oceania" },
-  { code: "BDT", name: "Bangladeshi Taka", symbol: "৳", region: "South Asia" },
-  { code: "INR", name: "Indian Rupee", symbol: "₹", region: "South Asia" },
-  { code: "PKR", name: "Pakistani Rupee", symbol: "₨", region: "South Asia" },
+  // { code: "EUR", name: "Euro", symbol: "€", region: "Europe" },
+  // { code: "GBP", name: "British Pound", symbol: "£", region: "Europe" },
+  // { code: "JPY", name: "Japanese Yen", symbol: "¥", region: "Asia" },
+  // {
+  //   code: "CAD",
+  //   name: "Canadian Dollar",
+  //   symbol: "C$",
+  //   region: "North America",
+  // },
+  // { code: "AUD", name: "Australian Dollar", symbol: "A$", region: "Oceania" },
+  // { code: "BDT", name: "Bangladeshi Taka", symbol: "৳", region: "South Asia" },
+  // { code: "INR", name: "Indian Rupee", symbol: "₹", region: "South Asia" },
+  // { code: "PKR", name: "Pakistani Rupee", symbol: "₨", region: "South Asia" },
 ];
 
 const CurrencyDropdown = () => {

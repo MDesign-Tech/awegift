@@ -39,6 +39,7 @@ export default async function CategoriesPage() {
     getData(`https://dummyjson.com/products?limit=0`), // Fetch all products
   ]);
 
+  console.log("Categories Data:", categoriesData);
   // Get categories with product counts
   const categoriesWithCounts = getCategoriesWithCounts(
     allProductsData?.products || []

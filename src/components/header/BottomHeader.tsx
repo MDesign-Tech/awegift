@@ -19,7 +19,7 @@ const BottomHeader = async () => {
           <SignOutButton session={session} />
         </div>
         <p className="text-xs text-gray-400 font-medium hidden md:inline-flex">
-          Hotline: <span className="text-black">+88 01012345678</span>
+          Tel: <span className="text-[#ed4c07]">+250 781 990 310</span>
         </p>
       </Container>
     </div>

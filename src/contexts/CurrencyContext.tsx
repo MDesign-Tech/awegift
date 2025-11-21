@@ -12,7 +12,8 @@ type CurrencyCode =
   | "CNY"
   | "INR"
   | "BDT"
-  | "PKR";
+  | "PKR"
+  | "RWF"; // 👈 ADD THIS
 
 interface CurrencyContextType {
   selectedCurrency: CurrencyCode;
@@ -39,6 +40,7 @@ const currencyData: Record<CurrencyCode, { symbol: string; name: string }> = {
   INR: { symbol: "₹", name: "Indian Rupee" },
   BDT: { symbol: "৳", name: "Bangladeshi Taka" },
   PKR: { symbol: "₨", name: "Pakistani Rupee" },
+  RWF: { symbol: "FRw", name: "Rwandan Franc" },
 };
 
 // Mock exchange rates - in a real app, you'd fetch these from an API
@@ -54,6 +56,7 @@ const mockExchangeRates: Record<CurrencyCode, number> = {
   INR: 83.25,
   BDT: 109.5,
   PKR: 278.5,
+  RWF: 1300,
 };
 
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({
