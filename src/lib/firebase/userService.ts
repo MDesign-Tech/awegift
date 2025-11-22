@@ -32,7 +32,6 @@ export interface FirestoreUser {
   };
   cart: any[];
   wishlist: any[];
-  orders: any[];
 }
 
 export async function fetchUserFromFirestore(

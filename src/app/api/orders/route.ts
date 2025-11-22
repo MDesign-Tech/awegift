@@ -26,6 +26,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { auth } from "../../../../auth";
+import { FirestoreUser, fetchUserFromFirestore } from "@/lib/firebase/userService";
 
 // GET - Fetch orders based on user role
 export async function GET(request: NextRequest) {
@@ -36,14 +37,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get user role
-    const userDoc = await getDoc(doc(db, "users", session.user.email));
-    if (!userDoc.exists()) {
+    // Fetch user from Firestore using the new function
+    const user = await fetchUserFromFirestore(session.user.email);
+    if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const userData = userDoc.data();
-    const userRole = userData.role || "user";
+    const userRole = user.role as any;
 
     // Check if user has permission to view orders
     if (!hasPermission(userRole, "orders", "read")) {
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
     // Build query based on role
     let ordersQuery;
 
-    if (userRole === "admin" || userRole === "account") {
+    if (userRole === "admin" || userRole === "accountant") {
       // Admin and accountant can see all orders
       ordersQuery = query(
         collection(db, "orders"),
@@ -117,14 +117,13 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Get user role
-    const userDoc = await getDoc(doc(db, "users", session.user.email));
-    if (!userDoc.exists()) {
+    // Fetch user from Firestore using the new function
+    const user = await fetchUserFromFirestore(session.user.email);
+    if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const userData = userDoc.data();
-    const userRole = userData.role || "user";
+    const userRole = user.role as any;
 
     // Check if user has permission to update orders
     if (!hasPermission(userRole, "orders", "update")) {
@@ -277,11 +276,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Fetch user from Firestore using the new function
+    const user = await fetchUserFromFirestore(session.user.email);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     const orderData = await request.json();
 
     // Create order with initial status
     const newOrder = {
       ...orderData,
+      userId: user.id,
       status: ORDER_STATUSES.PENDING,
       paymentStatus:
         orderData.paymentMethod === PAYMENT_METHODS.CASH
@@ -295,7 +301,7 @@ export async function POST(request: NextRequest) {
           status: ORDER_STATUSES.PENDING,
           timestamp: new Date().toISOString(),
           updatedBy: session.user.email,
-          userRole: "user",
+          userRole: user.role,
           notes: "Order placed",
         },
       ],
@@ -307,7 +313,7 @@ export async function POST(request: NextRequest) {
               : PAYMENT_STATUSES.PAID,
           timestamp: new Date().toISOString(),
           updatedBy: session.user.email,
-          userRole: "user",
+          userRole: user.role,
           method: orderData.paymentMethod || PAYMENT_METHODS.ONLINE,
           notes: `Order created with ${
             orderData.paymentMethod || "online"

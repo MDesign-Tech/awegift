@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { AdminTableSkeleton } from "./AdminSkeletons";
-import { USER_ROLES } from "@/lib/rbac/permissions";
+import { USER_ROLES, hasPermission } from "@/lib/rbac/permissions";
 import { toast } from "react-hot-toast";
 import {
   FiEdit2,
@@ -29,6 +30,7 @@ interface User {
 }
 
 export default function AdminUsersClient() {
+  const { data: session } = useSession();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -36,6 +38,7 @@ export default function AdminUsersClient() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [userRole, setUserRole] = useState<string>("");
 
   // Multiple selection states
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -48,8 +51,33 @@ export default function AdminUsersClient() {
   const usersPerPage = 10;
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (session?.user?.email) {
+      fetchUserRole();
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (userRole) {
+      fetchUsers();
+    }
+  }, [userRole]);
+
+  const fetchUserRole = async () => {
+    try {
+      const response = await fetch(
+        `/api/user/profile?email=${encodeURIComponent(
+          session?.user?.email || ""
+        )}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        const role = data.role || "user";
+        setUserRole(role);
+      }
+    } catch (error) {
+      console.error("Error fetching user role:", error);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -150,13 +178,15 @@ export default function AdminUsersClient() {
 
   const handleSelectAll = () => {
     if (selectAll) {
-      // Deselect all users on current page
+      // Deselect all users on current page (excluding current user)
       setSelectedUsers((prev) =>
-        prev.filter((id) => !currentUsers.find((user) => user.id === id))
+        prev.filter((id) => !currentUsers.find((user) => user.id === id) || id === session?.user?.id)
       );
     } else {
-      // Select all users on current page
-      const currentPageUserIds = currentUsers.map((user) => user.id);
+      // Select all users on current page (excluding current user)
+      const currentPageUserIds = currentUsers
+        .filter((user) => user.id !== session?.user?.id)
+        .map((user) => user.id);
       setSelectedUsers((prev) => [
         ...new Set([...prev, ...currentPageUserIds]),
       ]);
@@ -254,15 +284,16 @@ export default function AdminUsersClient() {
 
   // Update selectAll state when users or selectedUsers change
   useEffect(() => {
-    if (currentUsers.length === 0) {
+    const selectableUsers = currentUsers.filter((user) => user.id !== session?.user?.id);
+    if (selectableUsers.length === 0) {
       setSelectAll(false);
     } else {
-      const currentPageUserIds = currentUsers.map((user) => user.id);
+      const selectableUserIds = selectableUsers.map((user) => user.id);
       setSelectAll(
-        currentPageUserIds.every((id) => selectedUsers.includes(id))
+        selectableUserIds.every((id) => selectedUsers.includes(id))
       );
     }
-  }, [selectedUsers, currentUsers]);
+  }, [selectedUsers, currentUsers, session?.user?.id]);
 
   if (loading) {
     return <AdminTableSkeleton rows={10} />;
@@ -284,7 +315,7 @@ export default function AdminUsersClient() {
             )}
           </div>
           <div className="flex items-center space-x-2">
-            {selectedUsers.length > 0 && (
+            {selectedUsers.length > 0 && userRole && hasPermission(userRole as any, "users", "delete") && (
               <button
                 onClick={handleDeleteSelected}
                 className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
@@ -314,7 +345,8 @@ export default function AdminUsersClient() {
                   type="checkbox"
                   checked={selectAll}
                   onChange={handleSelectAll}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  disabled={currentUsers.filter((user) => user.id !== session?.user?.id).length === 0}
+                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </th>
               <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -345,7 +377,8 @@ export default function AdminUsersClient() {
                     type="checkbox"
                     checked={selectedUsers.includes(user.id)}
                     onChange={() => handleSelectUser(user.id)}
-                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    disabled={user.id === session?.user?.id}
+                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </td>
                 <td className="px-4 sm:px-6 py-4">
@@ -414,22 +447,32 @@ export default function AdminUsersClient() {
                 </td>
                 <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
-                    <button
-                      onClick={() => handleEditUser(user)}
-                      className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                      title="Edit User"
-                    >
-                      <FiEdit2 size={14} className="mr-1" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => confirmDeleteUser(user)}
-                      className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                      title="Delete User"
-                    >
-                      <FiTrash2 size={14} className="mr-1" />
-                      Delete
-                    </button>
+                    {userRole && hasPermission(userRole as any, "users", "update") && user.id !== session?.user?.id && (
+                      <button
+                        onClick={() => handleEditUser(user)}
+                        className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                        title="Edit User"
+                      >
+                        <FiEdit2 size={14} className="mr-1" />
+                        Edit
+                      </button>
+                    )}
+                    {userRole && hasPermission(userRole as any, "users", "delete") && user.id !== session?.user?.id && (
+                      <button
+                        onClick={() => confirmDeleteUser(user)}
+                        className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                        title="Delete User"
+                      >
+                        <FiTrash2 size={14} className="mr-1" />
+                        Delete
+                      </button>
+                    )}
+                    {user.id === session?.user?.id && (
+                      <span className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-500 bg-gray-100 rounded-md">
+                        <FiUser className="mr-1" />
+                        You
+                      </span>
+                    )}
                   </div>
                 </td>
               </tr>

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import Container from "@/components/Container";
 import { FiLoader, FiShield } from "react-icons/fi";
 import Link from "next/link";
+import { USER_ROLES } from "@/lib/rbac/permissions";
 
 interface AdminProtectedRouteProps {
   children: React.ReactNode;
@@ -22,6 +23,14 @@ const AdminProtectedRoute = ({
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
+  // Check if user has any admin role
+  const isAdminUser = session?.user?.role && [
+    USER_ROLES.ADMIN,
+    USER_ROLES.ACCOUNT,
+    USER_ROLES.PACKER,
+    USER_ROLES.DELIVERYMAN
+  ].includes(session.user.role as any);
+
   useEffect(() => {
     if (status === "loading") {
       return; // Still loading
@@ -37,13 +46,13 @@ const AdminProtectedRoute = ({
     }
 
     // Check if user is authenticated but not admin
-    if (session?.user && session.user.role !== "admin") {
+    if (session?.user && !isAdminUser) {
       setIsRedirecting(true);
       const timer = setTimeout(() => {
         router.push(fallbackPath);
       }, 1500);
       return () => clearTimeout(timer);
-    } else if (session?.user?.role === "admin") {
+    } else if (isAdminUser) {
       setIsRedirecting(false);
     }
   }, [session, status, router, fallbackPath]);
@@ -90,7 +99,7 @@ const AdminProtectedRoute = ({
   }
 
   // Show access denied message for non-admin users
-  if (session?.user && session.user.role !== "admin" && !isRedirecting) {
+  if (session?.user && !isAdminUser && !isRedirecting) {
     return (
       <Container className="py-8">
         <div className="text-center">
@@ -111,7 +120,7 @@ const AdminProtectedRoute = ({
               <strong>Current Role:</strong> {session.user.role || "No role"}
             </div>
             <div>
-              <strong>Required Role:</strong> admin
+              <strong>Required Roles:</strong> {Object.values(USER_ROLES).join(", ")}
             </div>
           </div>
 

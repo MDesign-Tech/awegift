@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { getDefaultDashboardRoute } from "@/lib/rbac/roles";
+import { getDefaultDashboardRoute, canAccessDashboard } from "@/lib/rbac/roles";
 import MainLoader from "@/components/MainLoader";
 
 export default function RoleDashboardRedirect() {
@@ -19,8 +19,18 @@ export default function RoleDashboardRedirect() {
     }
 
     const userRole = session.user.role || "user";
-    const dashboardRoute = getDefaultDashboardRoute(userRole);
-    router.push(dashboardRoute);
+
+    // Check if user has access to any dashboard
+    const dashboardTypes = ["admin", "delivery", "packer", "accountant", "user"] as const;
+    const accessibleDashboard = dashboardTypes.find(type => canAccessDashboard(userRole, type));
+
+    if (accessibleDashboard) {
+      const dashboardRoute = getDefaultDashboardRoute(userRole);
+      router.push(dashboardRoute);
+    } else {
+      // If no dashboard access, redirect to account or home
+      router.push("/account");
+    }
   }, [session, status, router]);
 
   if (status === "loading") {

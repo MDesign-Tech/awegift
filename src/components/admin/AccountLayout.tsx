@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { USER_ROLES } from "@/lib/rbac/permissions";
+import AccessDenied from "@/components/admin/AccessDenied";
 
 interface TabItem {
   id: string;
@@ -23,10 +25,48 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
   const pathname = usePathname();
   const [orderCount, setOrderCount] = useState(0);
 
-  // Check if user is admin
-  const isAdmin =
-    session?.user?.email === "admin@shofy.com" ||
-    (session?.user as any)?.role === "admin";
+  // Check if user has any admin role using session role
+  const userRole = session?.user?.role;
+  const isAdmin = userRole && [
+    USER_ROLES.ADMIN,
+    USER_ROLES.ACCOUNT,
+    USER_ROLES.PACKER,
+    USER_ROLES.DELIVERYMAN
+  ].includes(userRole as any);
+
+  // Check if current path requires admin access
+  const isAdminPath = pathname.startsWith("/account/admin");
+
+  // Get role-specific information
+  const getRoleInfo = (role: string) => {
+    switch (role) {
+      case USER_ROLES.ADMIN:
+        return {
+          title: "Admin Dashboard",
+          description: "Manage users, orders, analytics, and system settings"
+        };
+      case USER_ROLES.ACCOUNT:
+        return {
+          title: "Accounting Dashboard",
+          description: "Handle financial management, payments, and accounting reports"
+        };
+      case USER_ROLES.PACKER:
+        return {
+          title: "Packing Dashboard",
+          description: "Manage order fulfillment, packing, and inventory tracking"
+        };
+      case USER_ROLES.DELIVERYMAN:
+        return {
+          title: "Delivery Dashboard",
+          description: "Handle shipping, delivery tracking, and logistics management"
+        };
+      default:
+        return {
+          title: "My Account",
+          description: "Manage your profile, addresses, orders, and account settings"
+        };
+    }
+  };
 
   const regularTabs: TabItem[] = [
     {
@@ -119,8 +159,6 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
     },
   ];
 
-  const tabs = isAdmin ? adminTabs : regularTabs;
-
   // Fetch order count
   useEffect(() => {
     if (session?.user?.email) {
@@ -144,17 +182,33 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
     }
   };
 
+  // Handle access control after all hooks
+  const roleInfo = getRoleInfo(userRole || "");
+  const tabs = isAdmin ? adminTabs : regularTabs;
+
+  // Handle access denied for admin paths
+  if (isAdminPath && !isAdmin && userRole) {
+    return (
+      <Container className="py-10">
+        <AccessDenied
+          title="Access Denied"
+          message="You don't have permission to access the admin panel. Your role may have been changed."
+          backHref="/account"
+          backLabel="Go to My Account"
+        />
+      </Container>
+    );
+  }
+
   return (
     <Container className="py-10">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            {isAdmin ? "Admin Dashboard" : "My Account"}
+            {roleInfo.title}
           </h1>
           <p className="text-gray-600 mt-2">
-            {isAdmin
-              ? "Manage users, orders, analytics, and system settings"
-              : "Manage your profile, addresses, orders, and account settings"}
+            {roleInfo.description}
           </p>
         </div>
 

@@ -28,17 +28,80 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch recent orders for analytics using client SDK
+    // Fetch all orders from orders collection (primary source)
     const ordersRef = collection(db, "orders");
-    const ordersQuery = query(ordersRef, orderBy("createdAt", "desc"), limit(100));
-    const ordersSnapshot = await getDocs(ordersQuery);
+    const ordersSnapshot = await getDocs(ordersRef);
 
-    const orders = ordersSnapshot.docs.map((doc) => {
-      const data = doc.data();
+    const rawOrders = ordersSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })).slice(0, 100); // Limit to 100 for analytics
+
+    // Normalize orders data
+    const orders = rawOrders.map((data: any) => {
+      // Parse createdAt string to Date object
+      let createdAt: Date;
+      if (data.createdAt && typeof data.createdAt === 'string') {
+        // Handle format like "17 November 2025 at 22:58:01 UTC-10"
+        try {
+          // Parse the date string manually
+          const parts = data.createdAt.split(' ');
+          if (parts.length >= 6) {
+            const day = parseInt(parts[0]);
+            const month = parts[1];
+            const year = parseInt(parts[2]);
+            const time = parts[4];
+            const timezone = parts[5];
+
+            // Convert month name to number
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            const monthIndex = monthNames.indexOf(month);
+
+            if (monthIndex !== -1) {
+              createdAt = new Date(year, monthIndex, day);
+              // Add time if available
+              if (time) {
+                const timeParts = time.split(':');
+                if (timeParts.length >= 2) {
+                  createdAt.setHours(parseInt(timeParts[0]), parseInt(timeParts[1]));
+                  if (timeParts.length >= 3) {
+                    createdAt.setSeconds(parseInt(timeParts[2]));
+                  }
+                }
+              }
+            } else {
+              createdAt = new Date(); // fallback
+            }
+          } else {
+            createdAt = new Date(data.createdAt);
+          }
+
+          // Check if date is valid
+          if (isNaN(createdAt.getTime())) {
+            createdAt = new Date(); // fallback to current date
+          }
+        } catch (error) {
+          createdAt = new Date(); // fallback to current date
+        }
+      } else if (data.createdAt instanceof Date) {
+        createdAt = data.createdAt;
+      } else {
+        createdAt = new Date();
+      }
+
       return {
-        id: doc.id,
-        ...data,
-        createdAt: data.createdAt || new Date(),
+        id: data.id,
+        orderId: data.orderId || data.id,
+        createdAt,
+        total: parseFloat(data.total || "0"),
+        status: data.status || "pending",
+        items: data.items || [],
+        email: data.email || data.userEmail || "",
+        paymentMethod: data.paymentMethod || "",
+        paymentStatus: data.paymentStatus || "",
+        shippingAddress: data.shippingAddress || {},
+        statusHistory: data.statusHistory || [],
       };
     });
 
@@ -59,7 +122,7 @@ export async function GET(request: NextRequest) {
       });
 
       const revenue = monthOrders.reduce(
-        (sum: number, order: any) => sum + (order.amount || 0),
+        (sum: number, order: any) => sum + (order.total),
         0
       );
 
@@ -87,15 +150,15 @@ export async function GET(request: NextRequest) {
     const recentActivity = orders.slice(0, 10).map((order: any) => ({
       id: order.id,
       type: "order",
-      description: `Order #${order.id.slice(0, 8)} - ${order.status}`,
-      amount: order.amount || 0,
+      description: `Order #${order.orderId.slice(0, 8)} - ${order.status}`,
+      amount: order.total || 0,
       timestamp: order.createdAt,
       status: order.status || "pending",
     }));
 
     // Calculate totals
     const totalRevenue = orders.reduce(
-      (sum: number, order: any) => sum + (order.amount || 0),
+      (sum: number, order: any) => sum + (order.total || 0),
       0
     );
     const totalOrders = orders.length;
@@ -109,7 +172,7 @@ export async function GET(request: NextRequest) {
       );
     });
     const thisMonthRevenue = thisMonthOrders.reduce(
-      (sum: number, order: any) => sum + (order.amount || 0),
+      (sum: number, order: any) => sum + (order.total || 0),
       0
     );
 
@@ -123,7 +186,7 @@ export async function GET(request: NextRequest) {
       );
     });
     const lastMonthRevenue = lastMonthOrders.reduce(
-      (sum: number, order: any) => sum + (order.amount || 0),
+      (sum: number, order: any) => sum + (order.total || 0),
       0
     );
 

@@ -11,6 +11,7 @@ import {
   FaShieldAlt,
 } from "react-icons/fa";
 import { signOut } from "next-auth/react";
+import { USER_ROLES } from "@/lib/rbac/permissions";
 
 interface UserProfileDropdownProps {
   user: {
@@ -76,6 +77,14 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
     setIsOpen(!isOpen);
   };
 
+  // Check if user has any admin role
+  const isAdminUser = user?.role && [
+    USER_ROLES.ADMIN,
+    USER_ROLES.ACCOUNT,
+    USER_ROLES.PACKER,
+    USER_ROLES.DELIVERYMAN
+  ].includes(user.role as any);
+
   const menuItems = [
     {
       href: "/account",
@@ -100,16 +109,15 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   ];
 
   // Add admin dashboard link for admin users
-  const adminMenuItems =
-    user?.role === "admin"
-      ? [
-          {
-            href: "/account/admin",
-            icon: FaShieldAlt,
-            label: "Admin Dashboard",
-          },
-        ]
-      : [];
+  const adminMenuItems = isAdminUser
+    ? [
+        {
+          href: "/account/admin",
+          icon: FaShieldAlt,
+          label: "Admin Dashboard",
+        },
+      ]
+    : [];
 
   const allMenuItems = [...menuItems, ...adminMenuItems];
 

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { AdminCardSkeleton, AdminStatsSkeleton } from "./AdminSkeletons";
+import { hasPermission, getRoleBadgeColor, getRoleDisplayName } from "@/lib/rbac/roles";
 import {
   FiTrendingUp,
   FiTrendingDown,
@@ -38,21 +40,61 @@ interface AnalyticsData {
 }
 
 export default function AdminAnalyticsClient() {
+  const { data: session } = useSession();
+  const userRole = session?.user?.role;
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
+  // Check if user has permission to view analytics
+  const canViewAnalytics = hasPermission(userRole as any, "canViewAnalytics");
+
+  // Fetch user profile data
   useEffect(() => {
-    fetchAnalytics();
-  }, []);
+    if (session?.user?.email) {
+      fetchUserProfile();
+    }
+  }, [session?.user?.email]);
 
-  const fetchAnalytics = async () => {
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch(
+        `/api/user/profile?email=${encodeURIComponent(session?.user?.email || "")}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setUserProfile(data);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
+
+    const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/analytics");
+      const response = await fetch("/api/admin/stats");
       console.log("Analytics response ", response);
       if (response.ok) {
         const data = await response.json();
-        setAnalytics(data);
+        // Transform stats data to match expected analytics format
+        const transformedData = {
+          success: true,
+          data: {
+            overview: {
+              totalRevenue: data.totalRevenue || 0,
+              totalOrders: data.totalOrders || 0,
+              monthlyRevenue: data.totalRevenue || 0, // Placeholder
+              monthlyOrders: data.totalOrders || 0, // Placeholder
+              revenueGrowth: 0, // Placeholder
+              orderGrowth: 0, // Placeholder
+            },
+            monthlyRevenue: [], // Placeholder
+            statusDistribution: [], // Placeholder
+            recentActivity: [], // Placeholder
+          }
+        };
+        setAnalytics(transformedData);
       }
     } catch (error) {
       console.error("Error fetching analytics:", error);
@@ -60,6 +102,23 @@ export default function AdminAnalyticsClient() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, []);
+
+  // Handle access denied after all hooks
+  if (!canViewAnalytics) {
+    return (
+      <div className="text-center py-12">
+        <FiBarChart className="mx-auto h-12 w-12 text-gray-400" />
+        <h3 className="mt-2 text-sm font-medium text-gray-900">Access Denied</h3>
+        <p className="mt-1 text-sm text-gray-500">
+          You don't have permission to view analytics data.
+        </p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -83,6 +142,12 @@ export default function AdminAnalyticsClient() {
     );
   }
 
+  // Get role-specific colors
+  const roleColors = getRoleBadgeColor(userRole as any);
+  const colorClasses = roleColors.split(' ');
+  const bgColorClass = colorClasses.find(c => c.startsWith('bg-')) || 'bg-gray-100';
+  const textColorClass = colorClasses.find(c => c.startsWith('text-')) || 'text-gray-800';
+
   const stats = [
     {
       title: "Total Revenue",
@@ -93,12 +158,12 @@ export default function AdminAnalyticsClient() {
       bgColor: "bg-green-100",
     },
     {
-      title: "Total Orders",
-      value: analytics.data.overview.totalOrders.toString(),
+      title: userProfile ? `${getRoleDisplayName(userProfile.role)} Orders` : "My Orders",
+      value: userProfile?.orders?.length?.toString() || "0",
       change: analytics.data.overview.orderGrowth,
       icon: FiShoppingCart,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      color: textColorClass,
+      bgColor: bgColorClass,
     },
     {
       title: "Monthly Revenue",
@@ -120,6 +185,37 @@ export default function AdminAnalyticsClient() {
 
   return (
     <div className="space-y-6">
+      {/* Admin Profile Header */}
+      {userProfile && (
+        <div className={`bg-gradient-to-r ${bgColorClass.replace('bg-', 'from-').replace('-100', '-50')} to-white p-6 rounded-lg shadow border border-gray-200`}>
+          <div className="flex items-center space-x-4">
+            <div className="flex-shrink-0">
+              <div className={`h-16 w-16 rounded-full ${bgColorClass} flex items-center justify-center shadow-lg`}>
+                <span className={`text-2xl font-bold ${textColorClass}`}>
+                  {userProfile.name ? userProfile.name.charAt(0).toUpperCase() : userProfile.email?.charAt(0).toUpperCase() || 'A'}
+                </span>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {getRoleDisplayName(userProfile.role)} Analytics
+              </h2>
+              <p className="text-gray-600">
+                Welcome back, {userProfile.name || userProfile.email}!
+              </p>
+              <div className="flex items-center mt-2">
+                <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${roleColors}`}>
+                  {getRoleDisplayName(userProfile.role)}
+                </span>
+                <span className="ml-3 text-sm text-gray-500">
+                  Member since {userProfile.createdAt ? new Date(userProfile.createdAt).toLocaleDateString() : 'N/A'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
@@ -266,7 +362,7 @@ export default function AdminAnalyticsClient() {
                       {activity.description}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {new Date(activity.timestamp).toLocaleDateString()}kk
+                      {new Date(activity.timestamp).toLocaleDateString()}
                     </p>
                   </div>
                 </div>

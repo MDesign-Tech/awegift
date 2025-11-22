@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasPermission } from "@/lib/rbac/roles";
+import { getToken } from "next-auth/jwt";
 import { db } from "@/lib/firebase/config";
 import {
   collection,
@@ -14,24 +15,54 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Add proper authentication check
-    // For now, assume admin access
+    // Check authentication and permissions
+    const token = await getToken({ req: request });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    // Fetch all users with their orders
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canViewOrders")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
+    // Fetch all orders from orders collection
+    const ordersRef = collection(db, "orders");
+    const ordersSnapshot = await getDocs(ordersRef);
+
+    const orders: any[] = ordersSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    // Fetch all users to populate user data
     const usersRef = collection(db, "users");
     const usersSnapshot = await getDocs(usersRef);
 
-    const users = usersSnapshot.docs.map((doc) => {
+    const usersMap = new Map();
+    usersSnapshot.docs.forEach((doc) => {
       const userData = doc.data();
-      return {
+      usersMap.set(doc.id, {
         id: doc.id,
         name: userData.name || userData.displayName || "Unknown User",
         email: userData.email || "",
         role: userData.role || "user",
         createdAt: userData.createdAt || new Date().toISOString(),
-        orders: userData.orders || [],
-      };
+        orders: [],
+      });
     });
+
+    // Group orders by userId
+    const standaloneOrders: any[] = [];
+    orders.forEach((order) => {
+      if (order.userId && usersMap.has(order.userId)) {
+        usersMap.get(order.userId).orders.push(order);
+      } else {
+        standaloneOrders.push(order);
+      }
+    });
+
+    const users = Array.from(usersMap.values());
 
     // Sort users by creation date
     users.sort(
@@ -39,42 +70,17 @@ export async function GET(request: NextRequest) {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-    // Also fetch orders from the orders collection if it exists
-    try {
-      const ordersRef = collection(db, "orders");
-      const ordersSnapshot = await getDocs(ordersRef);
-
-      const standaloneOrders = ordersSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      return NextResponse.json(
-        {
-          users,
-          standaloneOrders,
-          totalUsers: users.length,
-          totalOrders:
-            users.reduce((sum, user) => sum + (user.orders?.length || 0), 0) +
-            standaloneOrders.length,
-        },
-        { status: 200 }
-      );
-    } catch (ordersError) {
-      // Orders collection might not exist yet, just return users
-      return NextResponse.json(
-        {
-          users,
-          standaloneOrders: [],
-          totalUsers: users.length,
-          totalOrders: users.reduce(
-            (sum, user) => sum + (user.orders?.length || 0),
-            0
-          ),
-        },
-        { status: 200 }
-      );
-    }
+    return NextResponse.json(
+      {
+        users,
+        standaloneOrders,
+        totalUsers: users.length,
+        totalOrders:
+          users.reduce((sum, user) => sum + user.orders.length, 0) +
+          standaloneOrders.length,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error fetching orders:", error);
     return NextResponse.json(
@@ -86,7 +92,16 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    // TODO: Add proper authentication and permission checks
+    // Check authentication and permissions
+    const token = await getToken({ req: request });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canUpdateOrders")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const body = await request.json();
     const { orderId, userId, updates, status, paymentStatus } = body;
@@ -177,7 +192,16 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    // TODO: Add proper authentication and permission checks
+    // Check authentication and permissions
+    const token = await getToken({ req: request });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canDeleteOrders")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const { orderId, userId } = await request.json();
 

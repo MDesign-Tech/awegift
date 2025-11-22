@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
+import { FirestoreUser, fetchUserFromFirestore } from "@/lib/firebase/userService";
 
 export async function POST(request: NextRequest) {
   try {
@@ -64,7 +65,6 @@ export async function POST(request: NextRequest) {
       },
       cart: [],
       wishlist: [],
-      orders: [],
     });
 
     return NextResponse.json(

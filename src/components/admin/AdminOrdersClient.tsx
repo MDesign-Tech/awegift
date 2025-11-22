@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { AdminTableSkeleton } from "./AdminSkeletons";
 import { toast } from "react-hot-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { hasPermission, canUpdateOrderStatus, USER_ROLES } from "@/lib/rbac/permissions";
 import {
   FiPackage,
   FiX,
@@ -162,7 +163,7 @@ export default function AdminOrdersClient() {
 
       // Use admin-specific endpoint if user is admin
       const endpoint =
-        userRole === "admin" ? "/api/admin/orders" : "/api/orders";
+        userRole === USER_ROLES.ADMIN ? "/api/admin/orders" : "/api/orders";
       const response = await fetch(endpoint);
 
       if (!response.ok) {
@@ -172,7 +173,7 @@ export default function AdminOrdersClient() {
       }
 
       const data = await response.json();
-
+console.log(data);
       // Handle different response formats
       if (data.orders) {
         setOrders(data.orders);
@@ -221,7 +222,7 @@ export default function AdminOrdersClient() {
 
       // Use admin-specific endpoint for updates if user is admin
       const endpoint =
-        userRole === "admin" ? "/api/admin/orders" : "/api/orders";
+        userRole === USER_ROLES.ADMIN ? "/api/admin/orders" : "/api/orders";
       const response = await fetch(endpoint, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -508,7 +509,7 @@ export default function AdminOrdersClient() {
           <h2 className="text-xl font-semibold text-gray-900">
             Orders Management ({filteredOrders.length})
           </h2>
-          {isAdmin && (
+          {userRole && hasPermission(userRole as any, "orders", "delete") && (
             <div className="flex items-center space-x-2">
               <button
                 onClick={handleDeleteSelected}
@@ -802,7 +803,7 @@ export default function AdminOrdersClient() {
                       >
                         💳
                       </button>
-                      {isAdmin && (
+                      {userRole && hasPermission(userRole as any, "orders", "delete") && (
                         <button
                           onClick={() => handleDeleteOrder(order)}
                           className="p-1 text-red-600 hover:text-red-900 transition-colors"

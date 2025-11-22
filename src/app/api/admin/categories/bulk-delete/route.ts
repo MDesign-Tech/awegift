@@ -4,7 +4,14 @@ import { collection, getDocs, writeBatch, doc } from "firebase/firestore";
 
 export async function DELETE(request: Request) {
   try {
-    const { categoryIds }: { categoryIds?: string[] } = await request.json();
+    let categoryIds: string[] | undefined;
+
+    // Check if request has a body
+    const contentLength = request.headers.get('content-length');
+    if (contentLength && parseInt(contentLength) > 0) {
+      const body = await request.json();
+      categoryIds = body.categoryIds;
+    }
 
     if (categoryIds && categoryIds.length > 0) {
       // Delete selected categories

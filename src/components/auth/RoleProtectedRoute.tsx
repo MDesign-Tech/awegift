@@ -4,19 +4,23 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, ReactNode } from "react";
 import { USER_ROLES, getDashboardRoute } from "@/lib/rbac/permissions";
+import AccessDenied from "@/components/admin/AccessDenied";
 
 interface RoleProtectedRouteProps {
   children: ReactNode;
   allowedRoles: string[];
   redirectTo?: string;
+  showAccessDenied?: boolean;
 }
 
 export default function RoleProtectedRoute({
   children,
   allowedRoles,
   redirectTo,
+  showAccessDenied = true,
 }: RoleProtectedRouteProps) {
   const { data: session, status } = useSession();
+  const userRole = session?.user?.role;
   const router = useRouter();
 
   useEffect(() => {
@@ -27,16 +31,15 @@ export default function RoleProtectedRoute({
       return;
     }
 
-    // @ts-ignore
-    const userRole = session.user.role || USER_ROLES.USER;
-
-    if (!allowedRoles.includes(userRole)) {
-      // Redirect to user's appropriate dashboard or specified redirect
-      const redirectRoute = redirectTo || getDashboardRoute(userRole as any);
-      router.push(redirectRoute);
+    if (userRole && !allowedRoles.includes(userRole)) {
+      // If showAccessDenied is false, redirect to appropriate dashboard
+      if (!showAccessDenied) {
+        const redirectRoute = redirectTo || getDashboardRoute(userRole as any);
+        router.push(redirectRoute);
+      }
       return;
     }
-  }, [session, status, allowedRoles, redirectTo, router]);
+  }, [session, status, userRole, allowedRoles, redirectTo, router, showAccessDenied]);
 
   if (status === "loading") {
     return (
@@ -50,10 +53,17 @@ export default function RoleProtectedRoute({
     return null;
   }
 
-  // @ts-ignore
-  const userRole = session.user.role || USER_ROLES.USER;
-
-  if (!allowedRoles.includes(userRole)) {
+  if (userRole && !allowedRoles.includes(userRole)) {
+    if (showAccessDenied) {
+      return (
+        <AccessDenied
+          title="Access Denied"
+          message="You don't have permission to access this page. Your role may have been changed."
+          backHref={getDashboardRoute(userRole)}
+          backLabel={`Go to ${userRole} Dashboard`}
+        />
+      );
+    }
     return null;
   }
 

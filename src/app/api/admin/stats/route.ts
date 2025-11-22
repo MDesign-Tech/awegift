@@ -5,9 +5,10 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 export async function GET() {
   try {
     // Fetch real data from Firebase
-    const [usersSnapshot, ordersSnapshot] = await Promise.all([
+    const [usersSnapshot, ordersSnapshot, productsSnapshot] = await Promise.all([
       getDocs(collection(db, "users")),
       getDocs(collection(db, "orders")),
+      getDocs(collection(db, "products")),
     ]);
 
     const users = usersSnapshot.docs.map((doc) => ({
@@ -18,6 +19,11 @@ export async function GET() {
       id: doc.id,
       ...doc.data(),
     })) as any[];
+
+    const products = productsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
     // Calculate real stats
     const totalRevenue = orders.reduce(
@@ -35,7 +41,7 @@ export async function GET() {
       totalUsers: users.length,
       totalOrders: orders.length,
       totalRevenue: totalRevenue,
-      totalProducts: 89, // This would come from products collection if you have it
+      totalProducts: products.length,
       pendingOrders: pendingOrders,
       completedOrders: completedOrders,
     };

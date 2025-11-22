@@ -43,7 +43,7 @@ export const getVisibleOrderStatuses = (userRole: string) => {
         ORDER_STATUSES.OUT_FOR_DELIVERY,
         ORDER_STATUSES.DELIVERED,
       ];
-    case "account":
+    case "accountant":
       return Object.values(ORDER_STATUSES); // Accountant can see all for financial tracking
     default:
       return []; // Regular users don't access admin order management
@@ -79,7 +79,7 @@ export const canUpdateOrderStatus = (
           newStatus === ORDER_STATUSES.DELIVERED)
       );
 
-    case "account":
+    case "accountant":
       // Accountant can only cancel orders for financial reasons
       return newStatus === ORDER_STATUSES.CANCELLED;
 
@@ -108,7 +108,7 @@ export const canUpdatePaymentStatus = (
         newPaymentStatus === PAYMENT_STATUSES.PAID
       );
 
-    case "account":
+    case "accountant":
       // Accountant can manage all payment statuses
       return true;
 

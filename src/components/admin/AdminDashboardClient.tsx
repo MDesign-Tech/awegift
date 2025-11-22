@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
   FiUsers,
@@ -11,6 +12,7 @@ import {
   FiClock,
 } from "react-icons/fi";
 import { AdminStatsSkeleton, AdminCardSkeleton } from "./AdminSkeletons";
+import { hasPermission, USER_ROLES } from "@/lib/rbac/permissions";
 
 interface Stats {
   totalUsers: number;
@@ -22,13 +24,40 @@ interface Stats {
 }
 
 export default function AdminDashboardClient() {
+  const { data: session } = useSession();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [addingSampleData, setAddingSampleData] = useState(false);
+  const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
-    fetchStats();
-  }, []);
+    if (session?.user?.email) {
+      fetchUserRole();
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (userRole) {
+      fetchStats();
+    }
+  }, [userRole]);
+
+  const fetchUserRole = async () => {
+    try {
+      const response = await fetch(
+        `/api/user/profile?email=${encodeURIComponent(
+          session?.user?.email || ""
+        )}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        const role = data.role || "user";
+        setUserRole(role);
+      }
+    } catch (error) {
+      console.error("Error fetching user role:", error);
+    }
+  };
 
   const fetchStats = async () => {
     try {
@@ -133,7 +162,7 @@ export default function AdminDashboardClient() {
             <FiPackage className="h-6 w-6 text-purple-600" />
           </div>
           <div className="text-2xl font-bold text-gray-900">
-            {stats?.totalProducts || 89}
+            {stats?.totalProducts}
           </div>
           <p className="text-xs text-gray-500 mt-1">Available products</p>
         </div>
@@ -172,45 +201,97 @@ export default function AdminDashboardClient() {
             Quick Actions
           </h3>
           <div className="space-y-3">
+            {userRole && hasPermission(userRole as any, "users", "read") && (
+              <Link
+                href="/account/admin/users"
+                className="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
+              >
+                <FiUsers className="h-5 w-5 text-indigo-600 mr-3" />
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900 group-hover:text-indigo-600">
+                    Manage Users
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    View, edit, and delete user accounts
+                  </div>
+                </div>
+              </Link>
+            )}
+            {userRole && hasPermission(userRole as any, "orders", "read") && (
+              <Link
+                href="/account/admin/orders"
+                className="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
+              >
+                <FiShoppingBag className="h-5 w-5 text-green-600 mr-3" />
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900 group-hover:text-green-600">
+                    Manage Orders
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Track, update, and delete orders
+                  </div>
+                </div>
+              </Link>
+            )}
+            {userRole && hasPermission(userRole as any, "analytics", "read") && (
+              <Link
+                href="/account/admin/analytics"
+                className="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
+              >
+                <FiTrendingUp className="h-5 w-5 text-blue-600 mr-3" />
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900 group-hover:text-blue-600">
+                    View Analytics
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Sales reports and performance data
+                  </div>
+                </div>
+              </Link>
+            )}
+            {userRole && hasPermission(userRole as any, "products", "read") && (
+              <Link
+                href="/account/admin/products"
+                className="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
+              >
+                <FiPackage className="h-5 w-5 text-purple-600 mr-3" />
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900 group-hover:text-purple-600">
+                    Manage Products
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Add, edit, and manage products
+                  </div>
+                </div>
+              </Link>
+            )}
+            {userRole && hasPermission(userRole as any, "products", "read") && (
+              <Link
+                href="/account/admin/categories"
+                className="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
+              >
+                <FiPackage className="h-5 w-5 text-orange-600 mr-3" />
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900 group-hover:text-orange-600">
+                    Manage Categories
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Organize and manage product categories
+                  </div>
+                </div>
+              </Link>
+            )}
             <Link
-              href="/account/admin/users"
-              className="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
+              href="/account/admin/profile"
+              className="flex items-center p-3 bg-red-50 hover:bg-red-100 rounded-lg transition-colors group"
             >
-              <FiUsers className="h-5 w-5 text-indigo-600 mr-3" />
+              <FiUsers className="h-5 w-5 text-red-600 mr-3" />
               <div className="flex-1">
-                <div className="font-medium text-gray-900 group-hover:text-indigo-600">
-                  Manage Users
+                <div className="font-medium text-gray-900 group-hover:text-red-600">
+                  My Admin Profile
                 </div>
                 <div className="text-sm text-gray-500">
-                  View, edit, and delete user accounts
-                </div>
-              </div>
-            </Link>
-            <Link
-              href="/account/admin/orders"
-              className="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
-            >
-              <FiShoppingBag className="h-5 w-5 text-green-600 mr-3" />
-              <div className="flex-1">
-                <div className="font-medium text-gray-900 group-hover:text-green-600">
-                  Manage Orders
-                </div>
-                <div className="text-sm text-gray-500">
-                  Track, update, and delete orders
-                </div>
-              </div>
-            </Link>
-            <Link
-              href="/account/admin/analytics"
-              className="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
-            >
-              <FiTrendingUp className="h-5 w-5 text-blue-600 mr-3" />
-              <div className="flex-1">
-                <div className="font-medium text-gray-900 group-hover:text-blue-600">
-                  View Analytics
-                </div>
-                <div className="text-sm text-gray-500">
-                  Sales reports and performance data
+                  View and manage your administrator profile
                 </div>
               </div>
             </Link>

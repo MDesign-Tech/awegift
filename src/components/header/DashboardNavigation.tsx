@@ -6,13 +6,12 @@ import { USER_ROLES, getDashboardRoute } from "@/lib/rbac/permissions";
 
 export default function DashboardNavigation() {
   const { data: session } = useSession();
+  const userRole = session?.user?.role;
 
-  if (!session?.user) {
+  if (!session?.user || !userRole) {
     return null;
   }
 
-  // @ts-ignore
-  const userRole = session.user.role || USER_ROLES.USER;
   const dashboardRoute = getDashboardRoute(userRole as any);
 
   const getDashboardLabel = (role: string) => {
@@ -57,32 +56,14 @@ export default function DashboardNavigation() {
         <span className="hidden sm:inline">{getDashboardLabel(userRole)}</span>
       </Link>
 
-      {/* Additional quick access for admin */}
-      {userRole === USER_ROLES.ADMIN && (
-        <div className="hidden md:flex items-center space-x-2">
-          <Link
-            href="/account-dashboard"
-            className="flex items-center space-x-1 text-sm text-gray-600 hover:text-indigo-600 transition-colors"
-          >
-            <span>💰</span>
-            <span>Accounting</span>
-          </Link>
-          <Link
-            href="/packer-dashboard"
-            className="flex items-center space-x-1 text-sm text-gray-600 hover:text-indigo-600 transition-colors"
-          >
-            <span>📦</span>
-            <span>Packing</span>
-          </Link>
-          <Link
-            href="/delivery-dashboard"
-            className="flex items-center space-x-1 text-sm text-gray-600 hover:text-indigo-600 transition-colors"
-          >
-            <span>🚚</span>
-            <span>Delivery</span>
-          </Link>
-        </div>
-      )}
+      {/* Profile Link for all users */}
+      <Link
+        href="/account"
+        className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+      >
+        <span className="text-lg">👤</span>
+        <span className="hidden sm:inline">My Profile</span>
+      </Link>
     </div>
   );
 }

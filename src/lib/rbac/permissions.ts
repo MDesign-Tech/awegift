@@ -2,7 +2,7 @@
 
 export const USER_ROLES = {
   ADMIN: "admin",
-  ACCOUNT: "account",
+  ACCOUNT: "accountant",
   PACKER: "packer",
   DELIVERYMAN: "deliveryman",
   USER: "user",
@@ -15,11 +15,11 @@ export function getDefaultPageForRole(role: UserRole): string {
     case USER_ROLES.ADMIN:
       return "/admin";
     case USER_ROLES.ACCOUNT:
-      return "/account-dashboard";
+      return "/accountant";
     case USER_ROLES.PACKER:
-      return "/packer-dashboard";
+      return "/packer";
     case USER_ROLES.DELIVERYMAN:
-      return "/delivery-dashboard";
+      return "/delivery";
     case USER_ROLES.USER:
     default:
       return "/account";
@@ -128,7 +128,7 @@ export const ROLE_PERMISSIONS = {
       create: true,
       update: true,
     },
-    dashboard: "account",
+    dashboard: "accountant",
   },
   [USER_ROLES.PACKER]: {
     orders: {

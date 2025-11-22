@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { AdminTableSkeleton } from "./AdminSkeletons";
 import { toast } from "react-hot-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { hasPermission } from "@/lib/rbac/roles";
 import {
   FiPlus,
   FiSearch,
@@ -35,7 +36,32 @@ interface ProductWithId extends ProductType {
 export default function AdminProductsClient() {
   const { data: session } = useSession();
   const { user, isAdmin } = useCurrentUser();
+  const [userRole, setUserRole] = useState<string>("");
   const [products, setProducts] = useState<ProductWithId[]>([]);
+
+  // Fetch user role
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetchUserRole();
+    }
+  }, [session?.user?.email]);
+
+  const fetchUserRole = async () => {
+    try {
+      const response = await fetch(
+        `/api/user/profile?email=${encodeURIComponent(
+          session?.user?.email || ""
+        )}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        const role = data.role || "user";
+        setUserRole(role);
+      }
+    } catch (error) {
+      console.error("Error fetching user role:", error);
+    }
+  };
   const [filteredProducts, setFilteredProducts] = useState<ProductWithId[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -323,32 +349,38 @@ export default function AdminProductsClient() {
             Products Management ({filteredProducts.length})
           </h2>
           <div className="grid grid-cols-2 items-center sm:flex sm:grid-cols-none gap-2">
-            <button
-              onClick={handleDeleteSelected}
-              className="flex items-center px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
-              disabled={selectedProducts.length === 0}
-            >
-              Delete Selected ({selectedProducts.length})
-            </button>
-            <button
-              onClick={() => setDeleteAllModal(true)}
-              className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
-              disabled={products.length === 0}
-            >
-              Delete All
-            </button>
+            {hasPermission(userRole as any, "canDeleteProducts") && (
+              <>
+                <button
+                  onClick={handleDeleteSelected}
+                  className="flex items-center px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
+                  disabled={selectedProducts.length === 0}
+                >
+                  Delete Selected ({selectedProducts.length})
+                </button>
+                <button
+                  onClick={() => setDeleteAllModal(true)}
+                  className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                  disabled={products.length === 0}
+                >
+                  Delete All
+                </button>
+              </>
+            )}
             <button
               onClick={fetchProducts}
               className="flex items-center px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
             >
               Refresh
             </button>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center px-3 py-2 bg-theme-color text-white rounded-lg hover:bg-theme-color/80 transition-colors text-sm"
-            >
-              Add New Product
-            </button>
+            {hasPermission(userRole as any, "canCreateProducts") && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center px-3 py-2 bg-theme-color text-white rounded-lg hover:bg-theme-color/80 transition-colors text-sm"
+              >
+                Add New Product
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -507,20 +539,24 @@ export default function AdminProductsClient() {
                     >
                       <FiEye className="h-4 w-4" />
                     </button>
-                    <button
-                      onClick={() => setEditingProduct(product)}
-                      className="p-1 text-indigo-600 hover:text-indigo-900 transition-colors"
-                      title="Edit"
-                    >
-                      <FiEdit2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteProduct(product)}
-                      className="p-1 text-red-600 hover:text-red-900 transition-colors"
-                      title="Delete"
-                    >
-                      <FiTrash2 className="h-4 w-4" />
-                    </button>
+                    {hasPermission(userRole as any, "canUpdateProducts") && (
+                      <button
+                        onClick={() => setEditingProduct(product)}
+                        className="p-1 text-indigo-600 hover:text-indigo-900 transition-colors"
+                        title="Edit"
+                      >
+                        <FiEdit2 className="h-4 w-4" />
+                      </button>
+                    )}
+                    {hasPermission(userRole as any, "canDeleteProducts") && (
+                      <button
+                        onClick={() => handleDeleteProduct(product)}
+                        className="p-1 text-red-600 hover:text-red-900 transition-colors"
+                        title="Delete"
+                      >
+                        <FiTrash2 className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

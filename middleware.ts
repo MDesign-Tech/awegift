@@ -18,6 +18,9 @@ import { NextResponse } from "next/server";
 import { auth } from "./auth";
 import { checkRouteAccess } from "@/lib/rbac/middleware";
 import { UserRole, getDefaultDashboardRoute } from "@/lib/rbac/roles";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase/config";
+import { normalizeRole } from "@/lib/rbac/roles";
 
 const protectedRoutes = [
   "/account",
@@ -42,19 +45,12 @@ export async function middleware(request: any) {
       return NextResponse.redirect(new URL("/auth/signin", request.url));
     }
 
-    // Check role-based access
-    const userRole = session.user.role as UserRole;
+    // Check role-based access using database role
+    const hasAccess = await checkRouteAccess(session.user.id, pathname);
 
-    // Special explicit check for admin routes
-    if (pathname.startsWith("/account/admin")) {
-      if (userRole !== "admin") {
-        return NextResponse.redirect(new URL("/account", request.url));
-      }
-    }
-
-    if (!checkRouteAccess(pathname, userRole)) {
+    if (!hasAccess) {
       // Special case: redirect non-admin users trying to access /account/admin to /account
-      if (pathname.startsWith("/account/admin") && userRole !== "admin") {
+      if (pathname.startsWith("/account/admin")) {
         return NextResponse.redirect(new URL("/account", request.url));
       }
 
@@ -65,6 +61,7 @@ export async function middleware(request: any) {
   // Prevent access to auth pages for logged-in users
   if (authRoutes.some((route) => pathname.startsWith(route))) {
     if (session?.user) {
+      // For auth routes, we can use session role since it's just for redirect
       const userRole = session.user.role as UserRole;
       const dashboardRoute = getDefaultDashboardRoute(userRole);
       return NextResponse.redirect(new URL(dashboardRoute, request.url));

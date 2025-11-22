@@ -87,15 +87,22 @@ const OrderTrackingPage = () => {
       // Find the specific order from the user's orders
       if (data.orders && Array.isArray(data.orders)) {
         const foundOrder = data.orders.find(
-          (order: Order) => order.id === orderId
+          (order: Order) => order.id === orderId || order.orderId === orderId
         );
         if (foundOrder) {
           setOrder(foundOrder);
         } else {
-          throw new Error("Order not found");
+          // Check if user has any orders at all
+          if (data.orders.length === 0) {
+            throw new Error("You haven't placed any orders yet. Start shopping to create your first order!");
+          } else {
+            throw new Error(`Order ${orderId} not found. It may not exist or you may not have permission to view it.`);
+          }
         }
       } else {
-        throw new Error("No orders found");
+        // Handle case where orders array doesn't exist in response
+        console.warn("Orders data not found in user profile response:", data);
+        throw new Error("Unable to load order details. Please check your internet connection and try again.");
       }
     } catch (err) {
       console.error("Error fetching order:", err);

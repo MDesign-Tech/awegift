@@ -14,6 +14,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { UserRole } from "@/lib/rbac/roles";
+import { FirestoreUser } from "@/lib/firebase/userService";
 
 export const authConfig: NextAuthConfig = {
   providers: [

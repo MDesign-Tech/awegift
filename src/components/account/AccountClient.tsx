@@ -7,6 +7,7 @@ import ProfileEditForm from "@/components/account/ProfileEditForm";
 import Sidebar from "@/components/account/Sidebar";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useUserSync } from "@/hooks/useUserSync";
+import { USER_ROLES } from "@/lib/rbac/permissions";
 
 interface UserProfile {
   firstName: string;
@@ -81,11 +82,11 @@ export default function AccountClient() {
         body: JSON.stringify({
           email: session?.user?.email,
           profile: {
-            firstName: updatedProfile.firstName,
-            lastName: updatedProfile.lastName,
+            firstName: updatedProfile.name?.split(' ')[0] || '',
+            lastName: updatedProfile.name?.split(' ').slice(1).join(' ') || '',
             phone: updatedProfile.phone,
           },
-          name: `${updatedProfile.firstName} ${updatedProfile.lastName}`,
+          name: updatedProfile.name,
           image: updatedProfile.image,
           currentPassword: updatedProfile.currentPassword,
           newPassword: updatedProfile.newPassword,
@@ -223,7 +224,7 @@ export default function AccountClient() {
                 <span className="font-medium">Role:</span>{" "}
                 <span
                   className={`px-2 py-1 rounded text-xs ${
-                    userRole === "admin"
+                    [USER_ROLES.ADMIN, USER_ROLES.ACCOUNT, USER_ROLES.PACKER, USER_ROLES.DELIVERYMAN].includes(userRole as any)
                       ? "bg-red-100 text-red-800"
                       : "bg-green-100 text-green-800"
                   }`}
@@ -287,11 +288,11 @@ export default function AccountClient() {
           </h3>
           <div
             className={`grid grid-cols-1 md:grid-cols-2 ${
-              userRole === "admin" ? "lg:grid-cols-3" : "lg:grid-cols-4"
+              [USER_ROLES.ADMIN, USER_ROLES.ACCOUNT, USER_ROLES.PACKER, USER_ROLES.DELIVERYMAN].includes(userRole as any) ? "lg:grid-cols-3" : "lg:grid-cols-4"
             } gap-4`}
           >
             {/* Admin Dashboard Button - Only show for admin users */}
-            {userRole === "admin" && (
+            {[USER_ROLES.ADMIN, USER_ROLES.ACCOUNT, USER_ROLES.PACKER, USER_ROLES.DELIVERYMAN].includes(userRole as any) && (
               <Link
                 href="/account/admin"
                 className="flex items-center p-4 border-2 border-red-200 bg-red-50 rounded-lg hover:border-red-400 hover:bg-red-100 transition-colors group"
