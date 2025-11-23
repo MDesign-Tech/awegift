@@ -18,10 +18,7 @@ const Footer = () => {
           <Link href={"/"}>
             <Image src={logo} alt="logo" width={112} height={40} />
           </Link>
-          <p>
-            We are a team of designers and developers that create high quality
-            WordPress
-          </p>
+          <p>Unique • Creative • Memorable</p>
           <SocialLink />
         </div>
         <div>
@@ -59,14 +56,14 @@ const Footer = () => {
           <div className="mt-3">
             <div>
               <p className="text-sm">Got Questions? Call us</p>
-              <Title>+670 413 90 762</Title>
+              <Title>+250 781 990 310</Title>
             </div>
             <div className="mt-3">
               <p className="text-base flex items-center gap-x-3 text-gray-600">
-                <BsEnvelopeAt /> shofy@suppert.com
+                <BsEnvelopeAt /> mdesignpro10@gmail.com
               </p>
               <p className="text-base flex items-center gap-x-3 text-gray-600">
-                <GrLocation /> Dhaka, Bangladesh
+                <GrLocation /> Jigali, Rwanda
               </p>
             </div>
           </div>
