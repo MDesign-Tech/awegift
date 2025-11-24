@@ -6,11 +6,9 @@ export const config = {
     "/success/:path*",
     "/checkout/:path*",
     "/admin/:path*",
-    "/delivery-dashboard/:path*",
-    "/packer-dashboard/:path*",
-    "/account-dashboard/:path*",
-    "/user-dashboard/:path*",
-    "/dashboard/:path*",
+    "/delivery/:path*",
+    "/packer/:path*",
+    "/accountant/:path*",
   ],
 };
 
@@ -20,18 +18,15 @@ import { checkRouteAccess } from "@/lib/rbac/middleware";
 import { UserRole, getDefaultDashboardRoute } from "@/lib/rbac/roles";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
-import { normalizeRole } from "@/lib/rbac/roles";
 
 const protectedRoutes = [
   "/account",
   "/checkout",
   "/success",
   "/admin",
-  "/delivery-dashboard",
-  "/packer-dashboard",
-  "/account-dashboard",
-  "/user-dashboard",
-  "/dashboard",
+  "/delivery",
+  "/packer",
+  "/accountant",
 ];
 const authRoutes = ["/auth/signin", "/auth/register"];
 
@@ -49,11 +44,6 @@ export async function middleware(request: any) {
     const hasAccess = await checkRouteAccess(session.user.id, pathname);
 
     if (!hasAccess) {
-      // Special case: redirect non-admin users trying to access /account/admin to /account
-      if (pathname.startsWith("/account/admin")) {
-        return NextResponse.redirect(new URL("/account", request.url));
-      }
-
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
   }

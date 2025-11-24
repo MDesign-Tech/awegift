@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
 import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
-import { CategoryType } from "@/components/admin/CategoryForm";
+import { CategoryType } from "../../../../../../type";
 
 export async function GET(
   request: Request,

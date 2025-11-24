@@ -2,12 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
 import {
   collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
   doc,
-  arrayUnion,
+  setDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 
 export async function POST(request: NextRequest) {
@@ -22,17 +19,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find the user by email
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", customerEmail));
-    const snapshot = await getDocs(q);
-
-    if (snapshot.empty) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const userDoc = snapshot.docs[0];
-
     // Generate a unique order ID
     const orderId = `ORD-${Date.now()}-${Math.random()
       .toString(36)
@@ -44,13 +30,13 @@ export async function POST(request: NextRequest) {
       id: orderId,
       orderId: orderId,
       ...orderData,
-      createdAt: new Date().toISOString(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     };
 
-    // Add the order to the user's orders array
-    await updateDoc(doc(db, "users", userDoc.id), {
-      orders: arrayUnion(order),
-    });
+    // Save the order to the orders collection using orderId as document ID
+    const orderRef = doc(db, "orders", orderId);
+    await setDoc(orderRef, order);
 
     return NextResponse.json({
       message: "Order placed successfully",

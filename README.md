@@ -513,7 +513,11 @@ Set admin email in your authentication logic:
 - **🔗 Upgrade Link**: Direct link to purchase premium features
 - **⚙️ Settings**: Standard account management
 
-**Admin URL**: `http://localhost:3000/account/admin`
+**Admin URLs**:
+- Admin: `http://localhost:3000/admin`
+- Accountant: `http://localhost:3000/accountant`
+- Packer: `http://localhost:3000/packer`
+- Delivery: `http://localhost:3000/delivery`
 
 ## 🌟 **Key Features Highlights**
 

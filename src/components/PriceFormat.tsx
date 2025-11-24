@@ -4,15 +4,7 @@ import { useCurrency } from "../contexts/CurrencyContext";
 
 type CurrencyCode =
   | "USD"
-  | "EUR"
-  | "GBP"
-  | "JPY"
-  | "CAD"
-  | "AUD"
-  | "CHF"
-  | "CNY"
-  | "INR"
-  | "BDT";
+  | "RWF"
 
 interface Props {
   amount?: number;

@@ -11,7 +11,7 @@ import {
   FaShieldAlt,
 } from "react-icons/fa";
 import { signOut } from "next-auth/react";
-import { USER_ROLES } from "@/lib/rbac/permissions";
+import { getDefaultDashboardRoute, getRoleDisplayName } from "@/lib/rbac/roles";
 
 interface UserProfileDropdownProps {
   user: {
@@ -79,10 +79,10 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
 
   // Check if user has any admin role
   const isAdminUser = user?.role && [
-    USER_ROLES.ADMIN,
-    USER_ROLES.ACCOUNT,
-    USER_ROLES.PACKER,
-    USER_ROLES.DELIVERYMAN
+    "admin",
+    "accountant",
+    "packer",
+    "deliveryman"
   ].includes(user.role as any);
 
   const menuItems = [
@@ -112,9 +112,9 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   const adminMenuItems = isAdminUser
     ? [
         {
-          href: "/account/admin",
+          href: getDefaultDashboardRoute(user.role || "user"),
           icon: FaShieldAlt,
-          label: "Admin Dashboard",
+          label: `${getRoleDisplayName(user.role || "user")} Dashboard`,
         },
       ]
     : [];
@@ -171,10 +171,10 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
               {allMenuItems.map((item) => (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={`${item.href}`}
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors duration-200 ${
-                    item.label === "Admin Dashboard"
+                    item.label.includes("Dashboard")
                       ? "text-red-600 hover:bg-red-50 hover:text-red-700 border-t border-gray-100 mt-1 pt-3"
                       : "text-gray-700 hover:bg-gray-50 hover:text-sky-color"
                   }`}

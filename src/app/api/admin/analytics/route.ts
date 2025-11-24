@@ -1,31 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "../../../../../auth";
 import { db } from "@/lib/firebase/config";
 import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { hasPermission } from "@/lib/rbac/roles";
+import { getToken } from "next-auth/jwt";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.email) {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is admin using client SDK
-    const usersRef = collection(db, "users");
-    const userQuery = query(usersRef, where("email", "==", session.user.email));
-    const userSnapshot = await getDocs(userQuery);
-
-    if (userSnapshot.empty) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const userData = userSnapshot.docs[0].data();
-    if (userData.role !== "admin") {
-      return NextResponse.json(
-        { error: "Forbidden - Admin access required" },
-        { status: 403 }
-      );
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canViewAnalytics")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
     // Fetch all orders from orders collection (primary source)

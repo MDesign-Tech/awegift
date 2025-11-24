@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { UserRole, getDefaultDashboardRoute, normalizeRole } from "@/lib/rbac/roles";
+import { UserRole, getDefaultDashboardRoute } from "@/lib/rbac/roles";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 
 // Define protected routes and their required roles
 // Using array to ensure proper order (more specific routes first)
 const PROTECTED_ROUTES: Array<{ route: string; roles: UserRole[] }> = [
-  { route: "/account/admin/profile", roles: ["admin"] },
-  { route: "/account/admin", roles: ["admin"] },
   { route: "/admin", roles: ["admin"] },
   { route: "/delivery", roles: ["admin", "deliveryman"] },
   { route: "/packer", roles: ["admin", "packer"] },
@@ -36,7 +34,7 @@ export async function withRoleAuth(
 
     if (userDoc.exists()) {
       const userData = userDoc.data();
-      userRole = normalizeRole(userData.role || "user");
+      userRole = (userData.role as UserRole) || "user";
     }
 
     if (!requiredRoles.includes(userRole)) {
@@ -66,19 +64,21 @@ export async function checkRouteAccess(
 
     if (userDoc.exists()) {
       const userData = userDoc.data();
-      userRole = normalizeRole(userData.role || "user");
+      userRole = (userData.role as UserRole) || "user";
     }
 
     // Check if the path starts with any protected route
-    // More specific routes are checked first due to array order
     for (const { route, roles } of PROTECTED_ROUTES) {
       if (pathname.startsWith(route)) {
         return roles.includes(userRole);
       }
     }
+
     return true; // Allow access to unprotected routes
   } catch (error) {
     console.error("Error checking route access:", error);
     return false; // Deny access on error
   }
 }
+
+

@@ -15,6 +15,7 @@ interface UseProductSearchReturn {
   isLoading: boolean;
   hasSearched: boolean;
   clearSearch: () => void;
+  refetchProducts: () => Promise<void>;
 }
 
 export const useProductSearch = ({
@@ -31,20 +32,22 @@ export const useProductSearch = ({
   const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL || "https://dummyjson.com";
 
+  // Function to fetch products
+  const fetchProducts = async () => {
+    const endpoint = `${API_BASE_URL}/products`;
+    try {
+      const data = await getData(endpoint);
+      setProducts(data?.products || []);
+      // Set first 10 products as suggested/trending products
+      setSuggestedProducts((data?.products || []).slice(0, 10));
+    } catch (error) {
+      console.error("Error fetching products", error);
+    }
+  };
+
   // Fetch all products on hook initialization (fallback)
   useEffect(() => {
-    const getProducts = async () => {
-      const endpoint = `${API_BASE_URL}/products`;
-      try {
-        const data = await getData(endpoint);
-        setProducts(data?.products || []);
-        // Set first 10 products as suggested/trending products
-        setSuggestedProducts((data?.products || []).slice(0, 10));
-      } catch (error) {
-        console.error("Error fetching products", error);
-      }
-    };
-    getProducts();
+    fetchProducts();
   }, [API_BASE_URL]);
 
   // Search function using API endpoint
@@ -126,5 +129,6 @@ export const useProductSearch = ({
     isLoading,
     hasSearched,
     clearSearch,
+    refetchProducts: fetchProducts,
   };
 };

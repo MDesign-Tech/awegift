@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasPermission } from "@/lib/rbac/roles";
+import { getToken } from "next-auth/jwt";
 import { db } from "@/lib/firebase/config";
 import {
   doc,
@@ -15,7 +16,16 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    // TODO: Add proper authentication and permission checks
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canUpdateOrders")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const orderId = params.id;
     const body = await request.json();
@@ -89,7 +99,16 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    // TODO: Add proper authentication and permission checks
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canDeleteOrders")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const orderId = params.id;
 
@@ -163,7 +182,16 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // TODO: Add proper authentication and permission checks
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canViewOrders")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const orderId = params.id;
 

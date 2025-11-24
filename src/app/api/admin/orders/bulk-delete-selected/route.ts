@@ -8,10 +8,21 @@ import {
   collection,
   getDocs,
 } from "firebase/firestore";
+import { hasPermission } from "@/lib/rbac/roles";
+import { getToken } from "next-auth/jwt";
 
 export async function DELETE(request: NextRequest) {
   try {
-    // TODO: Add proper authentication and permission checks
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canDeleteOrders")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
     const { orderIds } = await request.json();
 

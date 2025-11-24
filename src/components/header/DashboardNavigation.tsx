@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { USER_ROLES, getDashboardRoute } from "@/lib/rbac/permissions";
+import { getDefaultDashboardRoute, getRoleDisplayName } from "@/lib/rbac/roles";
 
 export default function DashboardNavigation() {
   const { data: session } = useSession();
@@ -12,19 +12,16 @@ export default function DashboardNavigation() {
     return null;
   }
 
-  const dashboardRoute = getDashboardRoute(userRole as any);
+  const dashboardRoute = getDefaultDashboardRoute(userRole as any);
 
   const getDashboardLabel = (role: string) => {
     switch (role) {
-      case USER_ROLES.ADMIN:
-        return "Admin Dashboard";
-      case USER_ROLES.ACCOUNT:
-        return "Accounting Dashboard";
-      case USER_ROLES.PACKER:
-        return "Packer Dashboard";
-      case USER_ROLES.DELIVERYMAN:
-        return "Delivery Dashboard";
-      case USER_ROLES.USER:
+      case "admin":
+      case "accountant":
+      case "packer":
+      case "deliveryman":
+        return `${getRoleDisplayName(role)} Dashboard`;
+      case "user":
       default:
         return "My Account";
     }
@@ -32,15 +29,15 @@ export default function DashboardNavigation() {
 
   const getDashboardIcon = (role: string) => {
     switch (role) {
-      case USER_ROLES.ADMIN:
+      case "admin":
         return "⚙️";
-      case USER_ROLES.ACCOUNT:
+      case "accountant":
         return "💰";
-      case USER_ROLES.PACKER:
+      case "packer":
         return "📦";
-      case USER_ROLES.DELIVERYMAN:
+      case "deliveryman":
         return "🚚";
-      case USER_ROLES.USER:
+      case "user":
       default:
         return "👤";
     }

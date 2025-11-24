@@ -221,6 +221,8 @@ export const ORDER_STATUSES = {
   RETURNED: "returned",
 } as const;
 
+// Payment methods are now defined in orderStatus.ts
+
 export type OrderStatus = (typeof ORDER_STATUSES)[keyof typeof ORDER_STATUSES];
 
 // Status transitions allowed by each role
@@ -242,23 +244,11 @@ export const ROLE_STATUS_TRANSITIONS: Record<UserRole, OrderStatus[]> = {
 };
 
 // Utility functions
-// Normalize role from database to match our type system
-export function normalizeRole(dbRole: string): UserRole {
-  // Handle legacy "account" role
-  if (dbRole === "account") {
-    return "accountant";
-  }
-  // Ensure the role is valid
-  const validRoles: UserRole[] = ["user", "admin", "deliveryman", "packer", "accountant"];
-  return validRoles.includes(dbRole as UserRole) ? (dbRole as UserRole) : "user";
-}
-
 export function hasPermission(
   userRole: UserRole | string,
   permission: keyof RolePermissions
 ): boolean {
-  const normalizedRole = normalizeRole(userRole);
-  return ROLE_PERMISSIONS[normalizedRole]?.[permission] ?? false;
+  return ROLE_PERMISSIONS[userRole as UserRole]?.[permission] ?? false;
 }
 
 export function canAccessDashboard(
@@ -285,13 +275,11 @@ export function canChangeOrderStatus(
     return false;
   }
 
-  const normalizedRole = normalizeRole(userRole);
-  const allowedStatuses = ROLE_STATUS_TRANSITIONS[normalizedRole];
+  const allowedStatuses = ROLE_STATUS_TRANSITIONS[userRole as UserRole];
   return allowedStatuses.includes(toStatus);
 }
 
 export function getRoleDisplayName(role: UserRole | string): string {
-  const normalizedRole = normalizeRole(role);
   const displayNames = {
     admin: "Administrator",
     deliveryman: "Delivery Person",
@@ -300,11 +288,10 @@ export function getRoleDisplayName(role: UserRole | string): string {
     accountant: "Accountant",
   };
 
-  return displayNames[normalizedRole] || role;
+  return displayNames[role as UserRole] || role;
 }
 
 export function getRoleBadgeColor(role: UserRole | string): string {
-  const normalizedRole = normalizeRole(role);
   const colors = {
     admin: "bg-red-100 text-red-800",
     deliveryman: "bg-blue-100 text-blue-800",
@@ -313,21 +300,20 @@ export function getRoleBadgeColor(role: UserRole | string): string {
     accountant: "bg-purple-100 text-purple-800",
   };
 
-  return colors[normalizedRole] || "bg-gray-100 text-gray-800";
+  return colors[role as UserRole] || "bg-gray-100 text-gray-800";
 }
 
 // Utility to redirect users to appropriate dashboard based on role
 export function getDefaultDashboardRoute(role: UserRole | string): string {
-  const normalizedRole = normalizeRole(role);
-  switch (normalizedRole) {
+  switch (role as UserRole) {
     case "admin":
-      return "/admin";
+      return "/dashboard/admin";
     case "deliveryman":
-      return "/delivery";
+      return "/dashboard/delivery";
     case "packer":
-      return "/packer";
+      return "/dashboard/packer";
     case "accountant":
-      return "/accountant";
+      return "/dashboard/accountant";
     case "user":
     default:
       return "/account";

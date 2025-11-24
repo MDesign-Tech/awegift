@@ -4,7 +4,6 @@ import {
   ORDER_STATUSES,
   PAYMENT_STATUSES,
   PAYMENT_METHODS,
-  getVisibleOrderStatuses,
   canUpdateOrderStatus,
   canUpdatePaymentStatus,
   isValidStatusTransition,
@@ -12,7 +11,7 @@ import {
   PaymentStatus,
   PaymentMethod,
 } from "@/lib/orderStatus";
-import { hasPermission } from "@/lib/rbac/permissions";
+import { hasPermission } from "@/lib/rbac/roles";
 import { db } from "@/lib/firebase/config";
 import {
   collection,
@@ -20,13 +19,14 @@ import {
   getDocs,
   getDoc,
   updateDoc,
+  setDoc,
   query,
   where,
   orderBy,
   serverTimestamp,
 } from "firebase/firestore";
 import { auth } from "../../../../auth";
-import { FirestoreUser, fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { fetchUserFromFirestore } from "@/lib/firebase/userService";
 
 // GET - Fetch orders based on user role
 export async function GET(request: NextRequest) {
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch user from Firestore using the new function
-    const user = await fetchUserFromFirestore(session.user.email);
+    const user = await fetchUserFromFirestore(session.user.id);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -46,47 +46,38 @@ export async function GET(request: NextRequest) {
     const userRole = user.role as any;
 
     // Check if user has permission to view orders
-    if (!hasPermission(userRole, "orders", "read")) {
+    if (!hasPermission(userRole, "canViewOrders")) {
       return NextResponse.json(
         { error: "Insufficient permissions" },
         { status: 403 }
       );
     }
 
-    const visibleStatuses = getVisibleOrderStatuses(userRole);
-    if (visibleStatuses.length === 0) {
-      return NextResponse.json({ orders: [] });
-    }
-
-    // Build query based on role
-    let ordersQuery;
-
-    if (userRole === "admin" || userRole === "accountant") {
-      // Admin and accountant can see all orders
-      ordersQuery = query(
-        collection(db, "orders"),
-        orderBy("createdAt", "desc")
-      );
-    } else {
-      // Role-based filtering
-      ordersQuery = query(
-        collection(db, "orders"),
-        where("status", "in", visibleStatuses),
-        orderBy("createdAt", "desc")
-      );
-    }
-
+    // Always return user's own orders for account/orderlist
+    const ordersQuery = collection(db, "orders");
     const ordersSnapshot = await getDocs(ordersQuery);
-    const orders = ordersSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt:
-        doc.data().createdAt?.toDate?.()?.toISOString() ||
-        new Date().toISOString(),
-      updatedAt:
-        doc.data().updatedAt?.toDate?.()?.toISOString() ||
-        new Date().toISOString(),
-    }));
+    const orders = ordersSnapshot.docs
+      .map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          orderId: data.orderId,
+          amount: data.total || "0",
+          currency: "USD",
+          status: data.status,
+          paymentStatus: data.paymentStatus,
+          createdAt:
+            data.createdAt?.toDate?.()?.toISOString() ||
+            new Date().toISOString(),
+          updatedAt:
+            data.updatedAt?.toDate?.()?.toISOString() ||
+            new Date().toISOString(),
+          items: data.items || [],
+          customerEmail: data.userEmail || data.email,
+          customerName: data.customerName || (data.userEmail?.split('@')[0]) || "Customer",
+        };
+      })
+      .filter((order) => order.customerEmail === session.user.email);
 
     return NextResponse.json({ orders });
   } catch (error) {
@@ -118,7 +109,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Fetch user from Firestore using the new function
-    const user = await fetchUserFromFirestore(session.user.email);
+    const user = await fetchUserFromFirestore(session.user.id);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -126,7 +117,7 @@ export async function PUT(request: NextRequest) {
     const userRole = user.role as any;
 
     // Check if user has permission to update orders
-    if (!hasPermission(userRole, "orders", "update")) {
+    if (!hasPermission(userRole, "canUpdateOrders")) {
       return NextResponse.json(
         { error: "Insufficient permissions" },
         { status: 403 }
@@ -236,22 +227,6 @@ export async function PUT(request: NextRequest) {
     // Update the order
     await updateDoc(orderRef, updateData);
 
-    // Also update user's order subcollection if it exists
-    try {
-      if (currentOrder.userEmail) {
-        const userOrderRef = doc(
-          db,
-          "users",
-          currentOrder.userEmail,
-          "orders",
-          orderId
-        );
-        await updateDoc(userOrderRef, updateData);
-      }
-    } catch (error) {
-      console.log("User order subcollection not found, skipping update");
-    }
-
     return NextResponse.json({
       success: true,
       message: "Order updated successfully",
@@ -277,16 +252,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch user from Firestore using the new function
-    const user = await fetchUserFromFirestore(session.user.email);
+    const user = await fetchUserFromFirestore(session.user.id);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const orderData = await request.json();
 
+    // Generate orderId if not provided
+    const orderId = orderData.orderId || `ORD-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)
+      .toUpperCase()}`;
+
     // Create order with initial status
     const newOrder = {
       ...orderData,
+      id: orderId,
+      orderId: orderId,
       userId: user.id,
       status: ORDER_STATUSES.PENDING,
       paymentStatus:
@@ -323,22 +306,12 @@ export async function POST(request: NextRequest) {
     };
 
     // Add to orders collection
-    const orderRef = doc(collection(db, "orders"));
-    await updateDoc(orderRef, newOrder);
-
-    // Add to user's orders subcollection
-    const userOrderRef = doc(
-      db,
-      "users",
-      session.user.email,
-      "orders",
-      orderRef.id
-    );
-    await updateDoc(userOrderRef, newOrder);
+    const orderRef = doc(db, "orders", orderId);
+    await setDoc(orderRef, newOrder);
 
     return NextResponse.json({
       success: true,
-      orderId: orderRef.id,
+      orderId: orderId,
       message: "Order created successfully",
     });
   } catch (error) {

@@ -1,4 +1,4 @@
-import AccountLayout from "../../../components/admin/AccountLayout";
+import AccountLayout from "../../../components/account/AccountLayout";
 
 export default function AccountPageLayout({
   children,

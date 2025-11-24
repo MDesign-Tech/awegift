@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasPermission } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
 import { db } from "@/lib/firebase/config";
 import {
   collection,
@@ -9,78 +8,73 @@ import {
   updateDoc,
   deleteDoc,
   getDoc,
-  query,
-  orderBy,
 } from "firebase/firestore";
+import { getVisibleOrderStatuses } from "@/lib/orderStatus";
+import { auth } from "../../auth";
+import { fetchUserFromFirestore } from "@/lib/firebase/userService";
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication and permissions
-    const token = await getToken({ req: request });
-    if (!token || !token.role) {
+    const session = await auth();
+
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    // Fetch user from Firestore using the new function
+    const user = await fetchUserFromFirestore(session.user.id);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const userRole = user.role as any;
+
+    // Check if user has permission to view orders
     if (!hasPermission(userRole, "canViewOrders")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    // Fetch all orders from orders collection
-    const ordersRef = collection(db, "orders");
-    const ordersSnapshot = await getDocs(ordersRef);
-
-    const orders: any[] = ordersSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    // Fetch all users to populate user data
-    const usersRef = collection(db, "users");
-    const usersSnapshot = await getDocs(usersRef);
-
-    const usersMap = new Map();
-    usersSnapshot.docs.forEach((doc) => {
-      const userData = doc.data();
-      usersMap.set(doc.id, {
+    // Fetch all orders and filter based on role
+    const ordersQuery = collection(db, "orders");
+    const ordersSnapshot = await getDocs(ordersQuery);
+    let orders = ordersSnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
         id: doc.id,
-        name: userData.name || userData.displayName || "Unknown User",
-        email: userData.email || "",
-        role: userData.role || "user",
-        createdAt: userData.createdAt || new Date().toISOString(),
-        orders: [],
-      });
+        orderId: data.orderId,
+        amount: data.total || "0",
+        currency: "USD",
+        status: data.status,
+        paymentStatus: data.paymentStatus,
+        createdAt:
+          data.createdAt?.toDate?.()?.toISOString() ||
+          new Date().toISOString(),
+        updatedAt:
+          data.updatedAt?.toDate?.()?.toISOString() ||
+          new Date().toISOString(),
+        items: data.items || [],
+        customerEmail: data.userEmail || data.email,
+        customerName: data.customerName || (data.userEmail?.split('@')[0]) || "Customer",
+        userId: data.userId,
+        totalAmount: data.totalAmount || 0,
+        paymentMethod: data.paymentMethod,
+        shippingAddress: data.shippingAddress,
+        trackingNumber: data.trackingNumber,
+      };
     });
 
-    // Group orders by userId
-    const standaloneOrders: any[] = [];
-    orders.forEach((order) => {
-      if (order.userId && usersMap.has(order.userId)) {
-        usersMap.get(order.userId).orders.push(order);
-      } else {
-        standaloneOrders.push(order);
-      }
-    });
+    // Filter based on role
+    if (userRole === "user") {
+      // Regular users can only see their own orders
+      orders = orders.filter((order) => order.customerEmail === session.user.email);
+    } else if (userRole !== "admin" && userRole !== "accountant") {
+      // Role-based filtering for staff (packer, deliveryman)
+      const visibleStatuses = getVisibleOrderStatuses(userRole);
+      orders = orders.filter((order) => visibleStatuses.includes(order.status));
+    }
+    // Admin and accountant see all orders (no filter)
 
-    const users = Array.from(usersMap.values());
-
-    // Sort users by creation date
-    users.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-
-    return NextResponse.json(
-      {
-        users,
-        standaloneOrders,
-        totalUsers: users.length,
-        totalOrders:
-          users.reduce((sum, user) => sum + user.orders.length, 0) +
-          standaloneOrders.length,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ orders });
   } catch (error) {
     console.error("Error fetching orders:", error);
     return NextResponse.json(
@@ -92,13 +86,19 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    // Check authentication and permissions
-    const token = await getToken({ req: request });
-    if (!token || !token.role) {
+    const session = await auth();
+
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    // Fetch user from Firestore using the new function
+    const user = await fetchUserFromFirestore(session.user.id);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const userRole = user.role as any;
     if (!hasPermission(userRole, "canUpdateOrders")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
@@ -192,13 +192,19 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    // Check authentication and permissions
-    const token = await getToken({ req: request });
-    if (!token || !token.role) {
+    const session = await auth();
+
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    // Fetch user from Firestore using the new function
+    const user = await fetchUserFromFirestore(session.user.id);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const userRole = user.role as any;
     if (!hasPermission(userRole, "canDeleteOrders")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }

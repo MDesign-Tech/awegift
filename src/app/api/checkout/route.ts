@@ -109,9 +109,17 @@ export const POST = async (request: NextRequest) => {
       customer_email: email,
     });
 
+    // Generate orderId if not provided
+    const finalOrderId = orderId || `ORD-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)
+      .toUpperCase()}`;
+
     // Create or update the order in the database
-    const orderRef = doc(collection(db, "orders"));
+    const orderRef = doc(db, "orders", finalOrderId);
     await setDoc(orderRef, {
+      id: finalOrderId,
+      orderId: finalOrderId,
       email,
       items: extractingItems.map((item: any) => ({
         productId: item.price_data.product_data.metadata.productId,
@@ -130,7 +138,6 @@ export const POST = async (request: NextRequest) => {
           ) / 100
         ),
       shippingAddress,
-      orderId: orderId || orderRef.id, // Use provided orderId or generated id
       status: ORDER_STATUSES.PENDING,
       paymentStatus: PAYMENT_STATUSES.PENDING,
       paymentMethod: PAYMENT_METHODS.ONLINE,

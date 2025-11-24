@@ -20,6 +20,8 @@ export const PAYMENT_METHODS = {
   CASH: "cash",
 } as const;
 
+
+
 export type OrderStatus = (typeof ORDER_STATUSES)[keyof typeof ORDER_STATUSES];
 export type PaymentStatus =
   (typeof PAYMENT_STATUSES)[keyof typeof PAYMENT_STATUSES];

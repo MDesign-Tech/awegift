@@ -1,3 +1,4 @@
+
 import { UserRole, OrderStatus } from "@/lib/rbac/roles";
 
 type Review = {
@@ -8,22 +9,25 @@ type Review = {
 };
 export interface ProductType {
   availabilityStatus: string;
+  description: string;
   brand: string;
   category: string;
-  description: string;
   dimensions: {
     depth: number;
     height: number;
     width: number;
   };
   discountPercentage: number;
-  id: number;
+  id: string;
   images: string[];
   meta: {
     createdAt: string;
     updatedAt: string;
     barcode: string;
     qrCode: string;
+    slug?: string;
+    title?: string;
+    description?: string;
   };
   minimumOrderQuantity: number;
   price: number;
@@ -81,8 +85,10 @@ export interface UserData {
   };
   cart: ProductType[];
   wishlist: ProductType[];
-  orders: OrderData[];
 }
+
+export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+export type PaymentMethod = "online" | "cash";
 
 export interface OrderData {
   id: string;
@@ -91,8 +97,8 @@ export interface OrderData {
   items: OrderItem[];
   totalAmount: number;
   shippingAddress: Address;
-  paymentMethod: string;
-  paymentStatus: "pending" | "paid" | "failed" | "refunded";
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
   trackingNumber?: string;
   assignedDeliveryman?: string;
   assignedPacker?: string;
@@ -121,4 +127,17 @@ export interface OrderStatusHistory {
   changedByRole: UserRole;
   timestamp: string;
   notes?: string;
+}
+
+
+export interface CategoryType {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  image: string;
+  meta?: {
+    createdAt: string;
+    updatedAt: string;
+  };
 }

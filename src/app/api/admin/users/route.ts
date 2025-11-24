@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
-import { USER_ROLES } from "@/lib/rbac/permissions";
 import {
   collection,
   getDocs,
@@ -8,9 +7,22 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
+import { hasPermission } from "@/lib/rbac/roles";
+import { getToken } from "next-auth/jwt";
 
 export async function GET(request: NextRequest) {
   try {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canViewUsers")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
     // Fetch real users from Firebase
     const usersSnapshot = await getDocs(collection(db, "users"));
     const users = usersSnapshot.docs.map((doc) => ({
@@ -48,6 +60,17 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canUpdateUsers")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
     const { userId, name, email, role } = await request.json();
 
     if (!userId) {
@@ -59,7 +82,7 @@ export async function PUT(request: NextRequest) {
 
     // Validate role if provided
     if (role !== undefined) {
-      const validRoles = Object.values(USER_ROLES);
+      const validRoles = ["user", "admin", "deliveryman", "packer", "accountant"];
       if (!validRoles.includes(role)) {
         return NextResponse.json(
           { error: `Invalid role. Valid roles are: ${validRoles.join(", ")}` },
@@ -95,6 +118,17 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canDeleteUsers")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
     const { userId } = await request.json();
 
     if (!userId) {

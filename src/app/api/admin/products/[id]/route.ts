@@ -1,13 +1,26 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
 import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
-import { ProductType } from "@/components/admin/ProductForm";
+import { ProductType } from "../../../../../../type";
+import { hasPermission } from "@/lib/rbac/roles";
+import { getToken } from "next-auth/jwt";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canViewProducts")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
     const docRef = doc(db, "products", params.id);
     const docSnap = await getDoc(docRef);
 
@@ -34,14 +47,25 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canUpdateProducts")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
     const productData: Partial<ProductType> = await request.json();
 
     // Validate required fields
-    if (!productData.basicInformation?.title || !productData.pricing?.price || !productData.basicInformation?.category) {
+    if (!productData.title || !productData.price || !productData.category) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -52,7 +76,7 @@ export async function PUT(
     const updatedData = {
       ...productData,
       meta: {
-        ...productData.metadata,
+        ...productData.meta,
         updatedAt: new Date().toISOString(),
       },
     };
@@ -74,10 +98,21 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canDeleteProducts")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
     const docRef = doc(db, "products", params.id);
     await deleteDoc(docRef);
 

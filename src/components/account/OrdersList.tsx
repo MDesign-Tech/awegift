@@ -63,13 +63,14 @@ export default function OrdersList({
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/user/profile?email=${encodeURIComponent(
-          session?.user?.email || ""
-        )}`
-      );
-      const data = await response.json();
+      const response = await fetch("/api/orders");
 
+      if (!response.ok) {
+        throw new Error("Failed to fetch orders");
+      }
+
+      const data = await response.json();
+console.log("Fetched orders:", data);
       if (data.orders && Array.isArray(data.orders)) {
         const sortedOrders = data.orders.sort(
           (a: Order, b: Order) =>

@@ -72,41 +72,25 @@ const OrderTrackingPage = () => {
   const fetchOrderDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/user/profile?email=${encodeURIComponent(
-          session?.user?.email || ""
-        )}`
-      );
+      const response = await fetch(`/api/orders/${orderId}`);
 
       if (!response.ok) {
-        throw new Error("Failed to fetch user data");
+        if (response.status === 404) {
+          throw new Error(`Order ${orderId} not found. It may not exist or you may not have permission to view it.`);
+        }
+        throw new Error("Failed to fetch order details");
       }
 
       const data = await response.json();
 
-      // Find the specific order from the user's orders
-      if (data.orders && Array.isArray(data.orders)) {
-        const foundOrder = data.orders.find(
-          (order: Order) => order.id === orderId || order.orderId === orderId
-        );
-        if (foundOrder) {
-          setOrder(foundOrder);
-        } else {
-          // Check if user has any orders at all
-          if (data.orders.length === 0) {
-            throw new Error("You haven't placed any orders yet. Start shopping to create your first order!");
-          } else {
-            throw new Error(`Order ${orderId} not found. It may not exist or you may not have permission to view it.`);
-          }
-        }
+      if (data.order) {
+        setOrder(data.order);
       } else {
-        // Handle case where orders array doesn't exist in response
-        console.warn("Orders data not found in user profile response:", data);
-        throw new Error("Unable to load order details. Please check your internet connection and try again.");
+        throw new Error(`Order ${orderId} not found. It may not exist or you may not have permission to view it.`);
       }
     } catch (err) {
       console.error("Error fetching order:", err);
-      setError("Failed to load order details");
+      setError(err instanceof Error ? err.message : "Failed to load order details");
     } finally {
       setLoading(false);
     }
