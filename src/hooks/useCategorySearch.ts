@@ -1,60 +1,64 @@
 import { useState, useEffect, useRef } from "react";
 import { getData } from "@/app/(user)/helpers";
-import { ProductType } from "../../type";
+import { CategoryType } from "../../type";
 
-interface UseProductSearchProps {
+interface UseCategorySearchProps {
   debounceDelay?: number;
 }
 
-interface UseProductSearchReturn {
+interface CategoryWithId extends CategoryType {
+  productCount?: number;
+}
+
+interface UseCategorySearchReturn {
   search: string;
   setSearch: (value: string) => void;
-  products: ProductType[];
-  filteredProducts: ProductType[];
-  suggestedProducts: ProductType[];
+  categories: CategoryWithId[];
+  filteredCategories: CategoryWithId[];
+  suggestedCategories: CategoryWithId[];
   isLoading: boolean;
   hasSearched: boolean;
   clearSearch: () => void;
-  refetchProducts: () => Promise<void>;
+  refetchCategories: () => Promise<void>;
 }
 
-export const useProductSearch = ({
+export const useCategorySearch = ({
   debounceDelay = 300,
-}: UseProductSearchProps = {}): UseProductSearchReturn => {
+}: UseCategorySearchProps = {}): UseCategorySearchReturn => {
   const [search, setSearch] = useState("");
-  const [products, setProducts] = useState<ProductType[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<ProductType[]>([]);
-  const [suggestedProducts, setSuggestedProducts] = useState<ProductType[]>([]);
+  const [categories, setCategories] = useState<CategoryWithId[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<CategoryWithId[]>([]);
+  const [suggestedCategories, setSuggestedCategories] = useState<CategoryWithId[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const API_BASE_URL = "/api/admin/products";
+  const API_BASE_URL = "/api/admin/categories";
 
-  // Function to fetch products
-  const fetchProducts = async () => {
+  // Function to fetch categories
+  const fetchCategories = async () => {
     const endpoint = API_BASE_URL;
     try {
       const data = await getData(endpoint);
-      setProducts(data || []);
-      // Set first 10 products as suggested/trending products
-      setSuggestedProducts((data || []).slice(0, 10));
+      setCategories(data || []);
+      // Set first 10 categories as suggested/trending categories
+      setSuggestedCategories((data || []).slice(0, 10));
     } catch (error) {
-      console.error("Error fetching products", error);
-      setProducts([]);
-      setSuggestedProducts([]);
+      console.error("Error fetching categories", error);
+      setCategories([]);
+      setSuggestedCategories([]);
     }
   };
 
-  // Fetch all products on hook initialization (fallback)
+  // Fetch all categories on hook initialization (fallback)
   useEffect(() => {
-    fetchProducts();
+    fetchCategories();
   }, [API_BASE_URL]);
 
   // Search function using API endpoint
   const performSearch = async (searchTerm: string) => {
     if (!searchTerm.trim()) {
-      setFilteredProducts([]);
+      setFilteredCategories([]);
       setIsLoading(false);
       setHasSearched(false);
       return;
@@ -65,31 +69,31 @@ export const useProductSearch = ({
 
     try {
       // Use API search endpoint for better results
-      const searchEndpoint = `/api/admin/products/search?q=${encodeURIComponent(
+      const searchEndpoint = `/api/admin/categories/search?q=${encodeURIComponent(
         searchTerm
       )}&limit=10`;
       const searchData = await getData(searchEndpoint);
 
       if (Array.isArray(searchData)) {
-        setFilteredProducts(searchData);
+        setFilteredCategories(searchData);
       } else {
         // Fallback to local filtering if API search fails
-        const filtered = products
-          .filter((item: ProductType) =>
-            item?.title.toLowerCase().includes(searchTerm.toLowerCase())
+        const filtered = categories
+          .filter((item: CategoryWithId) =>
+            item?.name.toLowerCase().includes(searchTerm.toLowerCase())
           )
           .slice(0, 10); // Limit results
-        setFilteredProducts(filtered);
+        setFilteredCategories(filtered);
       }
     } catch (error) {
       console.error("Error performing search", error);
       // Fallback to local filtering on error
-      const filtered = products
-        .filter((item: ProductType) =>
-          item?.title.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = categories
+        .filter((item: CategoryWithId) =>
+          item?.name.toLowerCase().includes(searchTerm.toLowerCase())
         )
         .slice(0, 10); // Limit results
-      setFilteredProducts(filtered);
+      setFilteredCategories(filtered);
     } finally {
       setIsLoading(false);
     }
@@ -113,23 +117,23 @@ export const useProductSearch = ({
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [search, products, API_BASE_URL, debounceDelay]);
+  }, [search, categories, API_BASE_URL, debounceDelay]);
 
   const clearSearch = () => {
     setSearch("");
-    setFilteredProducts([]);
+    setFilteredCategories([]);
     setHasSearched(false);
   };
 
   return {
     search,
     setSearch,
-    products,
-    filteredProducts,
-    suggestedProducts,
+    categories,
+    filteredCategories,
+    suggestedCategories,
     isLoading,
     hasSearched,
     clearSearch,
-    refetchProducts: fetchProducts,
+    refetchCategories: fetchCategories,
   };
 };

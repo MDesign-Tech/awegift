@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FiLoader } from "react-icons/fi";
+import { toast } from "react-hot-toast";
 import { ProductType } from "../../../type";
 
 const generateSKU = (product: { category: string; brand: string; title: string; id: string | number }) => {
@@ -15,29 +16,30 @@ const generateSKU = (product: { category: string; brand: string; title: string; 
 
 interface ProductFormProps {
   product?: ProductType | null;
-  onSubmit: (product: ProductType) => Promise<void>;
   onCancel: () => void;
-  loading?: boolean;
+  onSuccess: () => void;
+  refetchProducts: () => Promise<void>;
 }
 
-export default function ProductForm({ product, onSubmit, onCancel, loading = false }: ProductFormProps) {
+export default function ProductForm({ product, onCancel, onSuccess, refetchProducts }: ProductFormProps) {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<ProductType>({
     id: 0,
-    title: "",
-    description: "",
+    title: "M Design",
+    description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Rem dolores, quo soluta sit ea ratione eligendi neque suscipit sequi, veniam id, nostrum amet? Officia dolorem, adipisci velit error natus maxime sed, provident eum assumenda eaque perspiciatis. Sit culpa quaerat vero minus. Necessitatibus sapiente, sed dolor cumque magnam quam perferendis dolorem.",
     category: "",
-    price: 0,
-    discountPercentage: 0,
-    stock: 0,
+    price: 1,
+    discountPercentage: 1,
+    stock: 1,
     brand: "M Design",
     sku: "",
-    weight: 0,
-    dimensions: { width: 0, height: 0, depth: 0 },
+    weight: 1,
+    dimensions: { width: 1, height: 1, depth: 1 },
     warrantyInformation: "1 year warranty",
     shippingInformation: "Ships in 3-5 business days",
     availabilityStatus: "In Stock",
     returnPolicy: "30 days return policy",
-    minimumOrderQuantity: 1,
+    minimumOrderQuantity: 3,
     tags: [],
     images: [],
     thumbnail: "",
@@ -50,6 +52,7 @@ export default function ProductForm({ product, onSubmit, onCancel, loading = fal
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [tagInput, setTagInput] = useState("");
   const [imageInput, setImageInput] = useState("");
+
 
 
   // Fetch categories
@@ -72,6 +75,7 @@ export default function ProductForm({ product, onSubmit, onCancel, loading = fal
   useEffect(() => {
     if (product) setFormData(product);
   }, [product]);
+
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -126,9 +130,44 @@ export default function ProductForm({ product, onSubmit, onCancel, loading = fal
     handleInputChange(`dimensions.${dim}`, value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) onSubmit(formData);
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      const url = product
+        ? `/api/admin/products/${String(product.id)}`
+        : `/api/admin/products/add`;
+      const method = product ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        await refetchProducts();
+        toast.success(product ? "Product updated successfully!" : "Product added successfully!");
+        // Close modal after success message is shown
+        setTimeout(() => {
+          onSuccess();
+        }, 1500);
+      } else {
+        const errorData = await response.json();
+        if (response.status === 404 && errorData.error === "Product not found") {
+          toast.error("This product no longer exists. Please refresh the page.");
+        } else {
+          toast.error(errorData.error || `Failed to ${product ? 'update' : 'add'} product`);
+        }
+      }
+    } catch (error) {
+      console.error(`Error ${product ? 'updating' : 'adding'} product:`, error);
+      toast.error(`Error ${product ? 'updating' : 'adding'} product`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -24,7 +24,20 @@ export async function DELETE(request: NextRequest) {
     }
 
     const batch = writeBatch(db);
-    productIds.forEach((productId: string) => {
+    const validProductIds: string[] = [];
+
+    productIds.forEach((productId: any) => {
+      const cleanedId = String(productId).trim();
+      if (cleanedId && cleanedId !== '') {
+        validProductIds.push(cleanedId);
+      }
+    });
+
+    if (validProductIds.length === 0) {
+      return NextResponse.json({ error: "No valid product IDs provided" }, { status: 400 });
+    }
+
+    validProductIds.forEach((productId) => {
       const productRef = doc(db, "products", productId);
       batch.delete(productRef);
     });

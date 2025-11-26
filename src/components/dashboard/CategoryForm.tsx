@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FiLoader } from "react-icons/fi";
+import { toast } from "react-hot-toast";
 import { CategoryType } from "../../../type";
 
 // Function to generate slug from name
@@ -16,13 +17,13 @@ const generateSlug = (name: string): string => {
 
 interface CategoryFormProps {
   category?: CategoryType | null;
-  onSubmit: (category: Omit<CategoryType, 'id' | 'meta'>) => void;
   onCancel: () => void;
-  loading?: boolean;
-  isEdit?: boolean;
+  onSuccess: () => void;
+  refetchCategories: () => Promise<void>;
 }
 
-export default function CategoryForm({ category, onSubmit, onCancel, loading = false }: CategoryFormProps) {
+export default function CategoryForm({ category, onCancel, onSuccess, refetchCategories }: CategoryFormProps) {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -54,11 +55,39 @@ export default function CategoryForm({ category, onSubmit, onCancel, loading = f
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
 
-    if (validateForm()) {
-      onSubmit(formData);
+    setLoading(true);
+    try {
+      const url = category
+        ? `/api/admin/categories/${category.id}`
+        : `/api/admin/categories/add`;
+      const method = category ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        await refetchCategories();
+        toast.success(category ? "Category updated successfully!" : "Category added successfully!");
+        // Close modal after success message is shown
+        setTimeout(() => {
+          onSuccess();
+        }, 1500);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || `Failed to ${category ? 'update' : 'add'} category`);
+      }
+    } catch (error) {
+      console.error(`Error ${category ? 'updating' : 'adding'} category:`, error);
+      toast.error(`Error ${category ? 'updating' : 'adding'} category`);
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -9,7 +9,7 @@ export type Review = {
 };
 
 export interface ProductType {
-  id: number;
+  id: string;
   title: string;
   description: string;
   brand: string;
@@ -106,7 +106,7 @@ export interface OrderData {
 }
 
 export interface OrderItem {
-  productId: number;
+  productId: string;
   title: string;
   price: number;
   quantity: number;

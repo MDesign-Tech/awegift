@@ -84,6 +84,16 @@ export async function PUT(
     };
 
     const docRef = doc(db, "products", id);
+
+    // Check if document exists before updating
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) {
+      return NextResponse.json(
+        { error: "Product not found" },
+        { status: 404 }
+      );
+    }
+
     await updateDoc(docRef, updatedData);
 
     return NextResponse.json({
@@ -105,6 +115,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    console.log(`Attempting to delete product with ID: ${id}`);
+    
     // Check authentication and permissions
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.role) {
@@ -117,9 +129,24 @@ export async function DELETE(
     }
 
     const docRef = doc(db, "products", id);
-    await deleteDoc(docRef);
+    
+    // Check if document exists before deleting
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) {
+      console.log(`Product with ID ${id} not found`);
+      return NextResponse.json(
+        { error: "Product not found" },
+        { status: 404 }
+      );
+    }
 
-    return NextResponse.json({ success: true });
+    await deleteDoc(docRef);
+    console.log(`Product with ID ${id} deleted successfully`);
+
+    return NextResponse.json({ 
+      success: true,
+      message: "Product deleted successfully" 
+    });
   } catch (error) {
     console.error("Error deleting product:", error);
     return NextResponse.json(

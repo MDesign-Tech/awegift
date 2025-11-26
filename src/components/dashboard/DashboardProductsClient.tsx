@@ -24,13 +24,11 @@ import Sidebar from '../account/Sidebar';
 import PriceFormat from "@/components/PriceFormat";
 import { ProductType } from '../../../type';
 
-
-
-
 export default function DashboardProductsClient() {
   const { user, isAdmin, userRole } = useCurrentUser();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Use the product search hook
   const {
@@ -44,17 +42,13 @@ export default function DashboardProductsClient() {
     clearSearch,
     refetchProducts,
   } = useProductSearch();
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductType | null>(null);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(20);
-
-  // Infinite scroll states
-  const [hasMoreProducts, setHasMoreProducts] = useState(true);
-  const [infiniteProducts, setInfiniteProducts] = useState<ProductType[]>([]);
-  const [infiniteLoading, setInfiniteLoading] = useState(false);
 
   // Modal states
   const [viewProductModal, setViewProductModal] = useState<ProductType | null>(null);
@@ -65,61 +59,61 @@ export default function DashboardProductsClient() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Selected products state
-  const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
 
-  // Products are loaded by useProductSearch hook
-
-  // Additional category filtering (search is handled by useProductSearch)
-  useEffect(() => {
-    setCurrentPage(1); // Reset to first page when filters change
-    // Clear selections when filters change
-    setSelectedProducts([]);
-    setSelectAll(false);
-  }, [selectedCategory]);
-
-  // Load more products for infinite scroll
-  const loadMoreProducts = async () => {
-    if (infiniteLoading || !hasMoreProducts) return;
-
-    setInfiniteLoading(true);
+  // Handle refresh with loading state
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
     try {
-      // In a real implementation, you'd fetch more products from API
-      // For now, we'll just add more from the existing products
-      const currentLength = infiniteProducts.length;
-      const nextBatch = products.slice(currentLength, currentLength + 20);
-
-      if (nextBatch.length === 0) {
-        setHasMoreProducts(false);
-      } else {
-        setInfiniteProducts(prev => [...prev, ...nextBatch]);
-      }
+      await refetchProducts();
+      toast.success("Products refreshed successfully");
     } catch (error) {
-      console.error("Error loading more products:", error);
+      toast.error("Failed to refresh products");
     } finally {
-      setInfiniteLoading(false);
+      setIsRefreshing(false);
     }
   };
 
-  // Use infinite scroll hook
-  useInfiniteScroll(loadMoreProducts, hasMoreProducts, infiniteLoading);
+  // Set initial loading to false when products are loaded
+  useEffect(() => {
+    if (products.length > 0 || !searchLoading) {
+      setLoading(false);
+    }
+  }, [products, searchLoading]);
+
+  // FIX: Determine which products to display
+  const displayProducts = hasSearched || searchTerm ? filteredProducts : products;
+
+  // Apply category filtering on top of search results
+  const categoryFilteredProducts = selectedCategory 
+    ? displayProducts.filter(product => product.category === selectedCategory)
+    : displayProducts;
 
   // Calculate pagination
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(
+  const currentProducts = categoryFilteredProducts.slice(
     indexOfFirstProduct,
     indexOfLastProduct
   );
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+  const totalPages = Math.ceil(categoryFilteredProducts.length / productsPerPage);
 
-  // Update selectAll state based on selected products
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedProducts([]);
+    setSelectAll(false);
+  }, [selectedCategory, searchTerm, hasSearched]);
+
+  // FIXED: Update selectAll state based on selected products
   useEffect(() => {
     if (currentProducts.length > 0) {
-      const allCurrentProductsSelected = currentProducts.every((product) =>
+      // Check if all current page products are selected
+      const allCurrentPageSelected = currentProducts.every(product => 
         selectedProducts.includes(product.id)
       );
-      setSelectAll(allCurrentProductsSelected && selectedProducts.length > 0);
+      setSelectAll(allCurrentPageSelected);
     } else {
       setSelectAll(false);
     }
@@ -134,7 +128,7 @@ export default function DashboardProductsClient() {
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/admin/products/${deleteProductModal.id}`, {
+      const response = await fetch(`/api/admin/products/${String(deleteProductModal.id)}`, {
         method: "DELETE",
       });
 
@@ -177,8 +171,8 @@ export default function DashboardProductsClient() {
     }
   };
 
-  // Selection handlers
-  const handleSelectProduct = (productId: number) => {
+  // FIXED: Selection handlers
+  const handleSelectProduct = (productId: string) => {
     setSelectedProducts((prev) =>
       prev.includes(productId)
         ? prev.filter((id) => id !== productId)
@@ -186,13 +180,18 @@ export default function DashboardProductsClient() {
     );
   };
 
+  // FIXED: Handle select all on current page only
   const handleSelectAll = () => {
     if (selectAll) {
-      setSelectedProducts([]);
+      // Deselect all products from current page
+      const currentPageIds = currentProducts.map(product => product.id);
+      setSelectedProducts(prev => prev.filter(id => !currentPageIds.includes(id)));
     } else {
-      setSelectedProducts(currentProducts.map((product) => product.id));
+      // Select all products from current page
+      const currentPageIds = currentProducts.map(product => product.id);
+      const newSelected = [...new Set([...selectedProducts, ...currentPageIds])];
+      setSelectedProducts(newSelected);
     }
-    setSelectAll(!selectAll);
   };
 
   const handleDeleteSelected = () => {
@@ -236,100 +235,64 @@ export default function DashboardProductsClient() {
 
   const categories = [...new Set(products.map(p => p.category))];
 
-  const handleAddProduct = async (productData: ProductType): Promise<void> => {
-    if (!user) return;
-
-    setLoading(true);
-    try {
-      const response = await fetch(`https://dummyjson.com/products?limit=0`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(productData),
-      });
-      if (response.ok) {
-        setShowCreateModal(false);
-        refetchProducts();
-        toast.success("Product added successfully!");
-      } else {
-        toast.error("Failed to add product");
-      }
-    } catch (error) {
-      console.error("Error adding product:", error);
-      toast.error("Error adding product");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEditProduct = async (productData: ProductType): Promise<void> => {
-    if (!user) return;
-
-    setLoading(true);
-    if (!editingProduct) return;
-
-    try {
-      const response = await fetch(`/api/admin/products/${editingProduct.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(productData),
-      });
-      if (response.ok) {
-        setEditingProduct(null);
-        refetchProducts();
-        toast.success("Product updated successfully!");
-      } else {
-        toast.error("Failed to update product");
-      }
-    } catch (error) {
-      console.error("Error updating product:", error);
-      toast.error("Error updating product");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Show loading skeleton for initial load
   if (loading) {
-    return <TableSkeleton rows={10} />;
+    return (
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Loading Products...
+            </h2>
+          </div>
+        </div>
+        <TableSkeleton rows={10} />
+      </div>
+    );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="bg-white rounded-lg shadow overflow-hidden relative">
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200">
-        <div className="flex  items-center flex-wrap justify-between">
+        <div className="flex items-center flex-wrap justify-between">
           <h2 className="text-xl font-semibold text-gray-900">
-            Products Management ({filteredProducts.length})
+            Products Management ({categoryFilteredProducts.length})
           </h2>
           <div className="grid grid-cols-2 items-center sm:flex sm:grid-cols-none gap-2">
             {hasPermission(userRole as UserRole, "canDeleteProducts") && (
               <>
                 <button
                   onClick={handleDeleteSelected}
-                  className="flex items-center px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
-                  disabled={selectedProducts.length === 0}
+                  className="flex items-center px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm disabled:opacity-50"
+                  disabled={selectedProducts.length === 0 || isRefreshing}
                 >
                   Delete Selected ({selectedProducts.length})
                 </button>
                 <button
                   onClick={() => setDeleteAllModal(true)}
-                  className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
-                  disabled={products.length === 0}
+                  className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm disabled:opacity-50"
+                  disabled={products.length === 0 || isRefreshing}
                 >
                   Delete All
                 </button>
               </>
             )}
             <button
-              onClick={refetchProducts}
-              className="flex items-center px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex items-center px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm disabled:opacity-50"
             >
-              Refresh
+              <FiRefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
             </button>
             {hasPermission(userRole as UserRole, "canCreateProducts") && (
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="flex items-center px-3 py-2 bg-theme-color text-white rounded-lg hover:bg-theme-color/80 transition-colors text-sm"
+                className="flex items-center px-3 py-2 bg-theme-color text-white rounded-lg hover:bg-theme-color/80 transition-colors text-sm disabled:opacity-50"
+                disabled={isRefreshing}
               >
+                <FiPlus className="mr-2 h-4 w-4" />
                 Add New Product
               </button>
             )}
@@ -348,15 +311,26 @@ export default function DashboardProductsClient() {
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-transparent disabled:opacity-50"
+                disabled={isRefreshing}
               />
+              {searchTerm && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                  disabled={isRefreshing}
+                >
+                  <FiX className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </div>
           <div className="sm:w-48">
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-transparent disabled:opacity-50"
+              disabled={isRefreshing}
             >
               <option value="">All Categories</option>
               {categories.map(category => (
@@ -368,16 +342,27 @@ export default function DashboardProductsClient() {
       </div>
 
       {/* Products Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto relative">
+        {/* Show refreshing overlay */}
+        {isRefreshing && (
+          <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-10">
+            <div className="text-center">
+              <FiRefreshCw className="animate-spin mx-auto h-8 w-8 text-indigo-600 mb-2" />
+              <p className="text-sm text-gray-600">Refreshing products...</p>
+            </div>
+          </div>
+        )}
+        
         <table className="w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
                 <input
                   type="checkbox"
-                  checked={selectAll && currentProducts.length > 0}
+                  checked={selectAll}
                   onChange={handleSelectAll}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                  disabled={isRefreshing || currentProducts.length === 0}
                 />
               </th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
@@ -401,14 +386,15 @@ export default function DashboardProductsClient() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {currentProducts.map((product) => (
-              <tr key={product.id} className="hover:bg-gray-50">
+            {currentProducts.map((product, index) => (
+              <tr key={`${product.id}-${index}`} className="hover:bg-gray-50">
                 <td className="px-3 py-4 whitespace-nowrap">
                   <input
                     type="checkbox"
                     checked={selectedProducts.includes(product.id)}
                     onChange={() => handleSelectProduct(product.id)}
-                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                    disabled={isRefreshing}
                   />
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap">
@@ -486,16 +472,18 @@ export default function DashboardProductsClient() {
                   <div className="flex items-center space-x-1">
                     <button
                       onClick={() => setViewProductModal(product)}
-                      className="p-1 text-blue-600 hover:text-blue-900 transition-colors"
+                      className="p-1 text-blue-600 hover:text-blue-900 transition-colors disabled:opacity-50"
                       title="View"
+                      disabled={isRefreshing}
                     >
                       <FiEye className="h-4 w-4" />
                     </button>
                     {hasPermission(userRole as UserRole, "canUpdateProducts") && (
                       <button
                         onClick={() => setEditingProduct(product)}
-                        className="p-1 text-indigo-600 hover:text-indigo-900 transition-colors"
+                        className="p-1 text-indigo-600 hover:text-indigo-900 transition-colors disabled:opacity-50"
                         title="Edit"
+                        disabled={isRefreshing}
                       >
                         <FiEdit2 className="h-4 w-4" />
                       </button>
@@ -503,8 +491,9 @@ export default function DashboardProductsClient() {
                     {hasPermission(userRole as UserRole, "canDeleteProducts") && (
                       <button
                         onClick={() => handleDeleteProduct(product)}
-                        className="p-1 text-red-600 hover:text-red-900 transition-colors"
+                        className="p-1 text-red-600 hover:text-red-900 transition-colors disabled:opacity-50"
                         title="Delete"
+                        disabled={isRefreshing}
                       >
                         <FiTrash2 className="h-4 w-4" />
                       </button>
@@ -518,7 +507,7 @@ export default function DashboardProductsClient() {
       </div>
 
       {/* Empty State */}
-      {filteredProducts.length === 0 && !loading && (
+      {categoryFilteredProducts.length === 0 && !searchLoading && !isRefreshing && (
         <div className="px-6 py-12 text-center">
           <FiSearch className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">No products found</h3>
@@ -530,19 +519,32 @@ export default function DashboardProductsClient() {
         </div>
       )}
 
+      {/* Loading State for search */}
+      {searchLoading && (
+        <div className="px-6 py-12 text-center">
+          <FiLoader className="mx-auto h-8 w-8 text-gray-400 animate-spin" />
+          <p className="mt-2 text-sm text-gray-500">Searching products...</p>
+        </div>
+      )}
+
       {/* Pagination */}
-      {filteredProducts.length > productsPerPage && (
+      {categoryFilteredProducts.length > productsPerPage && (
         <div className="px-6 py-3 border-t border-gray-200 bg-gray-50">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
               Showing {indexOfFirstProduct + 1} to{" "}
-              {Math.min(indexOfLastProduct, filteredProducts.length)} of{" "}
-              {filteredProducts.length} results
+              {Math.min(indexOfLastProduct, categoryFilteredProducts.length)} of{" "}
+              {categoryFilteredProducts.length} results
+              {selectedProducts.length > 0 && (
+                <span className="ml-2 text-orange-600 font-medium">
+                  • {selectedProducts.length} selected
+                </span>
+              )}
             </div>
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 1}
+                disabled={currentPage === 1 || isRefreshing}
                 className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
@@ -552,7 +554,7 @@ export default function DashboardProductsClient() {
               </span>
               <button
                 onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
+                disabled={currentPage === totalPages || isRefreshing}
                 className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
@@ -570,9 +572,12 @@ export default function DashboardProductsClient() {
         width="w-[600px]"
       >
         <ProductForm
-          onSubmit={handleAddProduct}
           onCancel={() => setShowCreateModal(false)}
-          loading={loading}
+          onSuccess={() => {
+            setShowCreateModal(false);
+            refetchProducts();
+          }}
+          refetchProducts={refetchProducts}
         />
       </Sidebar>
 
@@ -586,9 +591,12 @@ export default function DashboardProductsClient() {
         {editingProduct && (
           <ProductForm
             product={editingProduct}
-            onSubmit={handleEditProduct}
             onCancel={() => setEditingProduct(null)}
-            loading={loading}
+            onSuccess={() => {
+              setEditingProduct(null);
+              refetchProducts();
+            }}
+            refetchProducts={refetchProducts}
           />
         )}
       </Sidebar>
@@ -745,8 +753,6 @@ export default function DashboardProductsClient() {
                   </div>
                 </div>
               )}
-              
-              
             </div>
             <div className="px-6 py-4 border-t border-gray-200">
               <div className="flex justify-end">
