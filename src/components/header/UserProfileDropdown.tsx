@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import { signOut } from "next-auth/react";
 import { getDefaultDashboardRoute, getRoleDisplayName } from "@/lib/rbac/roles";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface UserProfileDropdownProps {
   user: {
@@ -26,6 +27,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { user: currentUser } = useCurrentUser();
 
   const fallbackImage =
     "https://res.cloudinary.com/dlbqw7atu/image/upload/v1747734054/userImage_dhytay.png";
@@ -78,12 +80,12 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   };
 
   // Check if user has any admin role
-  const isAdminUser = user?.role && [
+  const isAdminUser = currentUser?.role && [
     "admin",
     "accountant",
     "packer",
     "deliveryman"
-  ].includes(user.role as any);
+  ].includes(currentUser.role as any);
 
   const menuItems = [
     {
@@ -112,9 +114,9 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   const adminMenuItems = isAdminUser
     ? [
         {
-          href: getDefaultDashboardRoute(user.role || "user"),
+          href: getDefaultDashboardRoute(currentUser.role as any || "user"),
           icon: FaShieldAlt,
-          label: `${getRoleDisplayName(user.role || "user")} Dashboard`,
+          label: "Admin Dashboard",
         },
       ]
     : [];
@@ -174,7 +176,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
                   href={`${item.href}`}
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors duration-200 ${
-                    item.label.includes("Dashboard")
+                    item.label === "Admin Dashboard"
                       ? "text-red-600 hover:bg-red-50 hover:text-red-700 border-t border-gray-100 mt-1 pt-3"
                       : "text-gray-700 hover:bg-gray-50 hover:text-sky-color"
                   }`}

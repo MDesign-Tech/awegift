@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  doc,
-  deleteDoc,
-  getDocs,
-  query,
-  where,
-  writeBatch,
-} from "firebase/firestore";
+import { collection, getDocs, writeBatch, doc } from "firebase/firestore";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
@@ -28,31 +20,25 @@ export async function DELETE(request: NextRequest) {
     const { userIds } = await request.json();
 
     if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
-      return NextResponse.json(
-        { error: "Invalid user IDs provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "User IDs array required" }, { status: 400 });
     }
 
-    // Create a batch for efficient deletion
     const batch = writeBatch(db);
-
-    // Delete users only (preserve orders for analytics)
-    for (const userId of userIds) {
+    userIds.forEach((userId: string) => {
       const userRef = doc(db, "users", userId);
       batch.delete(userRef);
-    }
+    });
 
-    // Commit the batch
     await batch.commit();
 
     return NextResponse.json({
-      message: `Successfully deleted ${userIds.length} users`,
+      message: "Users deleted successfully",
+      deletedCount: userIds.length
     });
   } catch (error) {
-    console.error("Error deleting users:", error);
+    console.error("Error deleting selected users:", error);
     return NextResponse.json(
-      { error: "Failed to delete users" },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }

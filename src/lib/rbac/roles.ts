@@ -26,12 +26,7 @@ export interface RolePermissions {
   canCreateUsers: boolean;
   canUpdateUsers: boolean;
   canDeleteUsers: boolean;
-  canChangeUserRoles: boolean; // Dashboard access
-  canAccessAdminDashboard: boolean;
-  canAccessDeliveryDashboard: boolean;
-  canAccessPackerDashboard: boolean;
-  canAccessUserDashboard: boolean;
-  canAccessAccountantDashboard: boolean;
+  canChangeUserRoles: boolean; // can change roles, not dashboard access
 
   // Specific actions
   canManageInventory: boolean;
@@ -47,7 +42,6 @@ export interface RolePermissions {
 
 export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
   admin: {
-    // Full access to everything
     canViewOrders: true,
     canCreateOrders: true,
     canUpdateOrders: true,
@@ -62,11 +56,6 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canUpdateUsers: true,
     canDeleteUsers: true,
     canChangeUserRoles: true,
-    canAccessAdminDashboard: true,
-    canAccessDeliveryDashboard: true,
-    canAccessPackerDashboard: true,
-    canAccessUserDashboard: true,
-    canAccessAccountantDashboard: true,
     canManageInventory: true,
     canViewAnalytics: true,
     canManageSettings: true,
@@ -78,12 +67,11 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canViewTransactions: true,
   },
   deliveryman: {
-    // Delivery-specific permissions
     canViewOrders: true,
     canCreateOrders: false,
-    canUpdateOrders: true, // Can update delivery status
+    canUpdateOrders: true,
     canDeleteOrders: false,
-    canChangeOrderStatus: true, // Can change to delivered, out for delivery, etc.
+    canChangeOrderStatus: true,
     canViewProducts: true,
     canCreateProducts: false,
     canUpdateProducts: false,
@@ -93,11 +81,6 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canUpdateUsers: false,
     canDeleteUsers: false,
     canChangeUserRoles: false,
-    canAccessAdminDashboard: false,
-    canAccessDeliveryDashboard: true,
-    canAccessPackerDashboard: false,
-    canAccessUserDashboard: true,
-    canAccessAccountantDashboard: false,
     canManageInventory: false,
     canViewAnalytics: false,
     canManageSettings: false,
@@ -109,12 +92,11 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canViewTransactions: false,
   },
   packer: {
-    // Packer-specific permissions
     canViewOrders: true,
     canCreateOrders: false,
-    canUpdateOrders: true, // Can update packing status
+    canUpdateOrders: true,
     canDeleteOrders: false,
-    canChangeOrderStatus: true, // Can change to packed, ready for shipping, etc.
+    canChangeOrderStatus: true,
     canViewProducts: true,
     canCreateProducts: false,
     canUpdateProducts: false,
@@ -124,12 +106,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canUpdateUsers: false,
     canDeleteUsers: false,
     canChangeUserRoles: false,
-    canAccessAdminDashboard: false,
-    canAccessDeliveryDashboard: false,
-    canAccessPackerDashboard: true,
-    canAccessUserDashboard: true,
-    canAccessAccountantDashboard: false,
-    canManageInventory: true, // Can manage stock for packing
+    canManageInventory: true,
     canViewAnalytics: false,
     canManageSettings: false,
     canProcessPayments: false,
@@ -140,8 +117,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canViewTransactions: false,
   },
   user: {
-    // Regular user permissions
-    canViewOrders: true, // Own orders only
+    canViewOrders: true,
     canCreateOrders: true,
     canUpdateOrders: false,
     canDeleteOrders: false,
@@ -152,14 +128,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canDeleteProducts: false,
     canViewUsers: false,
     canCreateUsers: false,
-    canUpdateUsers: false, // Can update own profile
+    canUpdateUsers: true, // Can update own profile
     canDeleteUsers: false,
     canChangeUserRoles: false,
-    canAccessAdminDashboard: false,
-    canAccessDeliveryDashboard: false,
-    canAccessPackerDashboard: false,
-    canAccessUserDashboard: true,
-    canAccessAccountantDashboard: false,
     canManageInventory: false,
     canViewAnalytics: false,
     canManageSettings: false,
@@ -171,28 +142,22 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canViewTransactions: false,
   },
   accountant: {
-    // Accountant-specific permissions
-    canViewOrders: true, // For financial tracking
+    canViewOrders: true,
     canCreateOrders: false,
     canUpdateOrders: false,
     canDeleteOrders: false,
     canChangeOrderStatus: false,
-    canViewProducts: true, // For pricing and cost analysis
+    canViewProducts: true,
     canCreateProducts: false,
     canUpdateProducts: false,
     canDeleteProducts: false,
-    canViewUsers: true, // For customer account management
+    canViewUsers: true,
     canCreateUsers: false,
     canUpdateUsers: false,
     canDeleteUsers: false,
     canChangeUserRoles: false,
-    canAccessAdminDashboard: false,
-    canAccessDeliveryDashboard: false,
-    canAccessPackerDashboard: false,
-    canAccessUserDashboard: true,
-    canAccessAccountantDashboard: true,
     canManageInventory: false,
-    canViewAnalytics: true, // Financial analytics
+    canViewAnalytics: true,
     canManageSettings: false,
     canProcessPayments: true,
     canManageShipping: false,
@@ -203,84 +168,21 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
   },
 };
 
-export const ORDER_STATUSES = {
-  // General statuses
-  PENDING: "pending",
-  CONFIRMED: "confirmed",
-  CANCELLED: "cancelled",
-
-  // Packer statuses
-  PROCESSING: "processing",
-  PACKED: "packed",
-  READY_FOR_SHIPPING: "ready_for_shipping",
-
-  // Deliveryman statuses
-  OUT_FOR_DELIVERY: "out_for_delivery",
-  DELIVERED: "delivered",
-  DELIVERY_FAILED: "delivery_failed",
-  RETURNED: "returned",
-} as const;
-
-// Payment methods are now defined in orderStatus.ts
-
-export type OrderStatus = (typeof ORDER_STATUSES)[keyof typeof ORDER_STATUSES];
-
-// Status transitions allowed by each role
-export const ROLE_STATUS_TRANSITIONS: Record<UserRole, OrderStatus[]> = {
-  admin: Object.values(ORDER_STATUSES), // Can change to any status
-  packer: [
-    ORDER_STATUSES.PROCESSING,
-    ORDER_STATUSES.PACKED,
-    ORDER_STATUSES.READY_FOR_SHIPPING,
-  ],
-  deliveryman: [
-    ORDER_STATUSES.OUT_FOR_DELIVERY,
-    ORDER_STATUSES.DELIVERED,
-    ORDER_STATUSES.DELIVERY_FAILED,
-    ORDER_STATUSES.RETURNED,
-  ],
-  user: [], // Users cannot change order status
-  accountant: [], // Accountants cannot change order status (view only)
-};
 
 // Utility functions
+
+// Check if a role has a specific permission
 export function hasPermission(
-  userRole: UserRole | string,
+  userRole: UserRole,
   permission: keyof RolePermissions
 ): boolean {
-  return ROLE_PERMISSIONS[userRole as UserRole]?.[permission] ?? false;
+  if (!userRole || !ROLE_PERMISSIONS[userRole]) return false;
+  return ROLE_PERMISSIONS[userRole][permission];
 }
 
-export function canAccessDashboard(
-  userRole: UserRole | string,
-  dashboardType: "admin" | "delivery" | "packer" | "accountant" | "user"
-): boolean {
-  const permissionMap = {
-    admin: "canAccessAdminDashboard",
-    delivery: "canAccessDeliveryDashboard",
-    packer: "canAccessPackerDashboard",
-    accountant: "canAccessAccountantDashboard",
-    user: "canAccessUserDashboard",
-  } as const;
-
-  return hasPermission(userRole, permissionMap[dashboardType]);
-}
-
-export function canChangeOrderStatus(
-  userRole: UserRole | string,
-  fromStatus: OrderStatus,
-  toStatus: OrderStatus
-): boolean {
-  if (!hasPermission(userRole, "canChangeOrderStatus")) {
-    return false;
-  }
-
-  const allowedStatuses = ROLE_STATUS_TRANSITIONS[userRole as UserRole];
-  return allowedStatuses.includes(toStatus);
-}
-
-export function getRoleDisplayName(role: UserRole | string): string {
-  const displayNames = {
+// Get a friendly display name for a role
+export function getRoleDisplayName(role: UserRole): string {
+  const displayNames: Record<UserRole, string> = {
     admin: "Administrator",
     deliveryman: "Delivery Person",
     packer: "Packer",
@@ -288,11 +190,12 @@ export function getRoleDisplayName(role: UserRole | string): string {
     accountant: "Accountant",
   };
 
-  return displayNames[role as UserRole] || role;
+  return displayNames[role];
 }
 
-export function getRoleBadgeColor(role: UserRole | string): string {
-  const colors = {
+// Get a badge color for a role (for UI)
+export function getRoleBadgeColor(role: UserRole): string {
+  const colors: Record<UserRole, string> = {
     admin: "bg-red-100 text-red-800",
     deliveryman: "bg-blue-100 text-blue-800",
     packer: "bg-green-100 text-green-800",
@@ -300,12 +203,12 @@ export function getRoleBadgeColor(role: UserRole | string): string {
     accountant: "bg-purple-100 text-purple-800",
   };
 
-  return colors[role as UserRole] || "bg-gray-100 text-gray-800";
+  return colors[role];
 }
 
-// Utility to redirect users to appropriate dashboard based on role
-export function getDefaultDashboardRoute(role: UserRole | string): string {
-  switch (role as UserRole) {
+// Get default route for a role (redirect after login)
+export function getDefaultDashboardRoute(role: UserRole): string {
+  switch (role) {
     case "admin":
       return "/dashboard/admin";
     case "deliveryman":
@@ -316,6 +219,6 @@ export function getDefaultDashboardRoute(role: UserRole | string): string {
       return "/dashboard/accountant";
     case "user":
     default:
-      return "/account";
+      return "/account"; // users go to /account
   }
 }

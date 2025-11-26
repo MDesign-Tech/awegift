@@ -1,48 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
 import {
-  collection,
   doc,
   setDoc,
-  serverTimestamp,
 } from "firebase/firestore";
+import { auth } from "../../../../../auth";
+import { OrderData } from "../../../../../type";
+
 
 export async function POST(request: NextRequest) {
   try {
-    const orderData = await request.json();
-    const { customerEmail } = orderData;
+    const session = await auth();
 
-    if (!customerEmail) {
-      return NextResponse.json(
-        { error: "Customer email required" },
-        { status: 400 }
-      );
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Generate a unique order ID
-    const orderId = `ORD-${Date.now()}-${Math.random()
-      .toString(36)
-      .substr(2, 9)
-      .toUpperCase()}`;
+    const orderData: OrderData = await request.json();
+    const userId = session.user.id;
+    orderData.userId = userId;
 
-    // Create the order object
-    const order = {
-      id: orderId,
-      orderId: orderId,
-      ...orderData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    };
-
-    // Save the order to the orders collection using orderId as document ID
-    const orderRef = doc(db, "orders", orderId);
-    await setDoc(orderRef, order);
+    // Save the order to the orders collection with custom ID
+    await setDoc(doc(db, "orders", orderData.id), orderData);
 
     return NextResponse.json({
       message: "Order placed successfully",
       success: true,
-      orderId: orderId,
-      order: order,
+      id: orderData.id,
     });
   } catch (error) {
     console.error("Error placing order:", error);

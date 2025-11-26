@@ -91,11 +91,7 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
 
   const fetchOrderCount = async () => {
     try {
-      const response = await fetch(
-        `/api/user/profile?email=${encodeURIComponent(
-          session?.user?.email || ""
-        )}`
-      );
+      const response = await fetch("/api/orders");
       const data = await response.json();
       if (data.orders && Array.isArray(data.orders)) {
         setOrderCount(data.orders.length);

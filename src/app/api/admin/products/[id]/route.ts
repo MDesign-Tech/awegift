@@ -2,26 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
 import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { ProductType } from "../../../../../../type";
-import { hasPermission } from "@/lib/rbac/roles";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Check authentication and permissions
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.role) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    const userRole = token.role as UserRole;
     if (!hasPermission(userRole, "canViewProducts")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const docRef = doc(db, "products", params.id);
+    const docRef = doc(db, "products", id);
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
@@ -48,16 +49,17 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Check authentication and permissions
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.role) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    const userRole = token.role as UserRole;
     if (!hasPermission(userRole, "canUpdateProducts")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
@@ -81,11 +83,11 @@ export async function PUT(
       },
     };
 
-    const docRef = doc(db, "products", params.id);
+    const docRef = doc(db, "products", id);
     await updateDoc(docRef, updatedData);
 
     return NextResponse.json({
-      id: params.id,
+      id,
       ...updatedData,
     });
   } catch (error) {
@@ -99,21 +101,22 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Check authentication and permissions
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.role) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    const userRole = token.role as UserRole;
     if (!hasPermission(userRole, "canDeleteProducts")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const docRef = doc(db, "products", params.id);
+    const docRef = doc(db, "products", id);
     await deleteDoc(docRef);
 
     return NextResponse.json({ success: true });

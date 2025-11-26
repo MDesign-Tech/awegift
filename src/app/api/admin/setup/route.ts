@@ -8,7 +8,8 @@ export async function POST(request: NextRequest) {
     const { email, secretKey } = await request.json();
 
     // Simple protection - in production use proper authentication
-    if (secretKey !== "admin_setup_2024") {
+    const setupSecret = process.env.ADMIN_SETUP_SECRET || "admin_setup_2024";
+    if (secretKey !== setupSecret) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

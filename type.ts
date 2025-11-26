@@ -1,48 +1,44 @@
+import { UserRole } from "@/lib/rbac/roles";
+import { OrderStatus, PaymentStatus, PaymentMethod } from "@/lib/orderStatus";
 
-import { UserRole, OrderStatus } from "@/lib/rbac/roles";
-
-type Review = {
+export type Review = {
   reviewerName: string;
   rating: number;
   comment: string;
   reviewerEmail: string;
 };
+
 export interface ProductType {
-  availabilityStatus: string;
+  id: number;
+  title: string;
   description: string;
   brand: string;
+  sku: string,
   category: string;
-  dimensions: {
-    depth: number;
-    height: number;
-    width: number;
-  };
+  price: number;
+  stock: number;
+  minimumOrderQuantity: number;
+  availabilityStatus: string;
   discountPercentage: number;
-  id: string;
+  weight: number;
+  dimensions: {
+    width: number;
+    height: number;
+    depth: number;
+  };
   images: string[];
+  thumbnail: string;
+  tags: string[];
+  returnPolicy: string;
+  warrantyInformation: string;
+  shippingInformation: string;
+  quantity?: number;
   meta: {
     createdAt: string;
     updatedAt: string;
     barcode: string;
     qrCode: string;
-    slug?: string;
-    title?: string;
-    description?: string;
   };
-  minimumOrderQuantity: number;
-  price: number;
-  rating: number;
-  returnPolicy: string;
-  reviews: Review[];
-  shippingInformation: string;
-  sku: string;
-  stock: number;
-  tags: string[];
-  thumbnail: string;
-  title: string;
-  warrantyInformation: string;
-  weight: number;
-  quantity?: number;
 }
 
 export interface StateType {
@@ -86,9 +82,6 @@ export interface UserData {
   cart: ProductType[];
   wishlist: ProductType[];
 }
-
-export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
-export type PaymentMethod = "online" | "cash";
 
 export interface OrderData {
   id: string;

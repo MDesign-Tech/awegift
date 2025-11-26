@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
 import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
-import { hasPermission } from "@/lib/rbac/roles";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
 export async function GET(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    const userRole = token.role as UserRole;
     if (!hasPermission(userRole, "canViewAnalytics")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }

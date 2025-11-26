@@ -43,7 +43,7 @@ const OrderActions = ({
     <div className="flex items-center space-x-2">
       {showViewDetails && (
         <Link
-          href={`/admin/orders/${orderId}`}
+          href={`/dashboard/admin/orders/${orderId}`}
           className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded"
           title="View Details"
         >
@@ -53,7 +53,7 @@ const OrderActions = ({
 
       {showEdit && (
         <Link
-          href={`/admin/orders/${orderId}/edit`}
+          href={`/dashboard/admin/orders/${orderId}/edit`}
           className="p-1 text-green-600 hover:text-green-900 hover:bg-green-50 rounded"
           title="Edit Order"
         >
@@ -75,3 +75,4 @@ const OrderActions = ({
 };
 
 export default OrderActions;
+

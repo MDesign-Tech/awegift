@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, writeBatch } from "firebase/firestore";
 import { ProductType } from "../../../../../type";
-import { hasPermission } from "@/lib/rbac/roles";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
 export async function GET(request: NextRequest) {
@@ -13,20 +13,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    const userRole = token.role as UserRole;
     if (!hasPermission(userRole, "canViewProducts")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
     // Fetch products
     const productsRef = collection(db, "products");
-    const q = query(productsRef, orderBy("title"));
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(productsRef);
 
     const products = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
     })) as (ProductType & { id: string })[];
+    console.log("Fetched products:", products);
 
     return NextResponse.json(products);
   } catch (error) {
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    const userRole = token.role as UserRole;
     if (!hasPermission(userRole, "canCreateProducts")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }

@@ -7,7 +7,7 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { hasPermission } from "@/lib/rbac/roles";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
 export async function GET(request: NextRequest) {
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    const userRole = token.role as UserRole;
     if (!hasPermission(userRole, "canViewUsers")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
@@ -66,7 +66,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    const userRole = token.role as UserRole;
     if (!hasPermission(userRole, "canUpdateUsers")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
@@ -82,8 +82,8 @@ export async function PUT(request: NextRequest) {
 
     // Validate role if provided
     if (role !== undefined) {
-      const validRoles = ["user", "admin", "deliveryman", "packer", "accountant"];
-      if (!validRoles.includes(role)) {
+      const validRoles: UserRole[] = ["user", "admin", "deliveryman", "packer", "accountant"];
+      if (!validRoles.includes(role as UserRole)) {
         return NextResponse.json(
           { error: `Invalid role. Valid roles are: ${validRoles.join(", ")}` },
           { status: 400 }
@@ -124,7 +124,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    const userRole = token.role as UserRole;
     if (!hasPermission(userRole, "canDeleteUsers")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }

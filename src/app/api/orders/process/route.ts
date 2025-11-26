@@ -3,13 +3,16 @@ import Stripe from "stripe";
 import { db } from "@/lib/firebase/config";
 import {
   collection,
-  query,
-  where,
   getDocs,
+  addDoc,
+  serverTimestamp,
   updateDoc,
-  doc,
-  arrayUnion,
 } from "firebase/firestore";
+import { OrderData, OrderItem, Address } from "../../../../../type";
+import { ORDER_STATUSES, PAYMENT_STATUSES, PAYMENT_METHODS, PaymentStatus, PaymentMethod } from "@/lib/orderStatus";
+import { UserRole } from "@/lib/rbac/roles";
+import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { auth } from "../../../../../auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -36,103 +39,71 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user in Firestore first
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", email));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
+    // Fetch user from Firestore using the new function
+    const user = await fetchUserFromFirestore(email);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const userDoc = querySnapshot.docs[0];
-    const userData = userDoc.data();
-
-    // Check if order already exists to prevent duplicates
-    if (userData.orders && Array.isArray(userData.orders)) {
-      const existingOrder = userData.orders.find(
-        (order: any) => order.id === sessionId
-      );
-      if (existingOrder) {
-        return NextResponse.json({
-          success: true,
-          message: "Order already processed",
-          order: {
-            id: existingOrder.orderId,
-            amount: existingOrder.amount,
-            status: existingOrder.status,
-            items: existingOrder.items?.length || 0,
-          },
-        });
-      }
-    }
-
-    // Extract order information with enhanced details
-    let shippingAddress = null;
+    // Extract shipping address
+    let shippingAddress: Address | undefined;
     if (session.metadata?.shippingAddress) {
       try {
         shippingAddress = JSON.parse(session.metadata.shippingAddress);
       } catch (e) {
         console.warn("Failed to parse shipping address from metadata:", e);
       }
-    } else {
-      console.warn("No shipping address found in session metadata");
     }
 
-    const orderData = {
-      id: sessionId,
-      orderId: `ORD-${Date.now()}`,
-      amount: session.amount_total
-        ? (session.amount_total / 100).toFixed(2)
-        : "0.00",
-      currency: session.currency || "usd",
-      status: "confirmed",
-      paymentStatus: session.payment_status,
-      paymentMethod: "card",
-      customerEmail: session.customer_details?.email || email,
-      customerName: session.customer_details?.name || "",
-      shippingAddress: shippingAddress,
-      billingAddress: session.customer_details?.address || null,
-      items:
-        session.line_items?.data?.map((item: any) => ({
-          id:
-            item.price?.product?.metadata?.productId ||
-            item.price?.product?.id ||
-            "",
-          name: item.price?.product?.name || "",
-          description: item.price?.product?.description || "",
-          images: item.price?.product?.images || [],
-          quantity: item.quantity,
-          price: item.price?.unit_amount ? item.price.unit_amount / 100 : 0,
-          total: item.amount_total ? item.amount_total / 100 : 0,
-          category: item.price?.product?.metadata?.category || "",
-          originalPrice: item.price?.product?.metadata?.originalPrice || "",
-          discountPercentage:
-            item.price?.product?.metadata?.discountPercentage || "0",
-        })) || [],
+    // Map items to OrderItem
+    const items: OrderItem[] = session.line_items?.data?.map((item: any) => ({
+      productId: parseInt(item.price?.product?.metadata?.productId || item.price?.product?.id || "0"),
+      title: item.price?.product?.name || "",
+      price: item.price?.unit_amount ? item.price.unit_amount / 100 : 0,
+      quantity: item.quantity,
+      thumbnail: item.price?.product?.images?.[0] || "",
+      sku: item.price?.product?.metadata?.sku || "",
+      total: item.amount_total ? item.amount_total / 100 : 0,
+    })) || [];
+
+    // Calculate total amount
+    const totalAmount = session.amount_total ? session.amount_total / 100 : 0;
+
+    // Create order data matching OrderData interface
+    const orderData: OrderData = {
+      id: "", // Will be set after addDoc
+      userId: user.id,
+      status: ORDER_STATUSES.PENDING,
+      items: items,
+      totalAmount: totalAmount,
+      shippingAddress: shippingAddress!,
+      paymentMethod: "online" as PaymentMethod,
+      paymentStatus: "paid" as PaymentStatus,
+      statusHistory: [
+        {
+          status: ORDER_STATUSES.PENDING,
+          changedBy: user.email,
+          changedByRole: user.role as UserRole,
+          timestamp: new Date().toISOString(),
+          notes: "Order placed via Stripe payment",
+        },
+      ],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    // Add order to user's orders array
-    const userDocRef = doc(db, "users", userDoc.id);
-    await updateDoc(userDocRef, {
-      orders: arrayUnion(orderData),
-      updatedAt: new Date().toISOString(),
+    // Add to orders collection with auto-generated ID
+    const docRef = await addDoc(collection(db, "orders"), {
+      ...orderData
     });
+
+    // Update doc to set id field to docRef.id
+    await updateDoc(docRef, { id: docRef.id });
 
     return NextResponse.json({
       success: true,
-      message: "Order processed successfully",
-      order: {
-        id: orderData.orderId,
-        amount: orderData.amount,
-        status: orderData.status,
-        items: orderData.items.length,
-      },
+      id: docRef.id,
+      message: "Order created successfully",
     });
   } catch (error) {
     console.error("Order processing error:", error);

@@ -29,12 +29,11 @@ export const useProductSearch = ({
   const [hasSearched, setHasSearched] = useState(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "https://dummyjson.com";
+  const API_BASE_URL = "";
 
   // Function to fetch products
   const fetchProducts = async () => {
-    const endpoint = `${API_BASE_URL}/products`;
+    const endpoint = `${API_BASE_URL}/api/products`;
     try {
       const data = await getData(endpoint);
       setProducts(data?.products || []);
@@ -64,7 +63,7 @@ export const useProductSearch = ({
 
     try {
       // Use API search endpoint for better results
-      const searchEndpoint = `${API_BASE_URL}/products/search?q=${encodeURIComponent(
+      const searchEndpoint = `${API_BASE_URL}/api/products?q=${encodeURIComponent(
         searchTerm
       )}&limit=10`;
       const searchData = await getData(searchEndpoint);

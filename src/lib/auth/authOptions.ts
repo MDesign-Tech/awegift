@@ -146,7 +146,7 @@ export const authConfig: NextAuthConfig = {
       // On first sign in, user object is available
       if (user) {
         token.id = user.id || token.sub || `user_${Date.now()}`;
-        token.role = "user"; // Default role for OAuth users
+        token.role = user.role || "user"; // Use role from user object (set in authorize for credentials)
         token.email = user.email;
         if (user.image) {
           token.picture = user.image;
@@ -162,9 +162,26 @@ export const authConfig: NextAuthConfig = {
         }
       }
 
-      // Ensure we always have a role
-      if (!token.role) {
-        token.role = "user";
+      // Always fetch the latest role from database to keep token up to date
+      if (token.id) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", token.id as string));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            token.role = (userData.role as UserRole) || "user";
+          }
+        } catch (error) {
+          console.error("Error fetching user role for token:", error);
+          // Keep existing role or default
+          if (!token.role) {
+            token.role = "user";
+          }
+        }
+      } else {
+        // Ensure we always have a role
+        if (!token.role) {
+          token.role = "user";
+        }
       }
 
       return token;

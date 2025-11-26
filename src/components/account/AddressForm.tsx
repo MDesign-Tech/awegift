@@ -2,16 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { countries, getCitiesByCountryCode } from "./countryData";
-
-interface Address {
-  id?: string;
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  isDefault?: boolean;
-}
+import { Address } from "../../../type";
 
 interface AddressFormProps {
   address?: Address;

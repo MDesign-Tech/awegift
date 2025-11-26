@@ -5,7 +5,8 @@ import { useSession } from "next-auth/react";
 import { TableSkeleton } from "./Skeletons";
 import { toast } from "react-hot-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { hasPermission, canChangeOrderStatus, OrderStatus, ROLE_STATUS_TRANSITIONS } from "@/lib/rbac/roles";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
+import { canUpdateOrderStatus, OrderStatus, getNextPossibleStatuses, getStatusDisplayInfo, getPaymentStatusDisplayInfo, ORDER_STATUSES, PAYMENT_STATUSES, PaymentStatus, PaymentMethod } from "@/lib/orderStatus";
 import {
   FiPackage,
   FiX,
@@ -18,26 +19,8 @@ import {
 } from "react-icons/fi";
 
 import PriceFormat from "@/components/PriceFormat";
-import { OrderData, Address, OrderItem, OrderStatusHistory, PaymentStatus, PaymentMethod } from '../../../type';
+import { OrderData, Address, OrderItem, OrderStatusHistory } from '../../../type';
 
-const statusColors = {
-  pending: "bg-yellow-100 text-yellow-800",
-  processing: "bg-blue-100 text-blue-800",
-  shipped: "bg-indigo-100 text-indigo-800",
-  delivered: "bg-green-100 text-green-800",
-  cancelled: "bg-red-100 text-red-800",
-  completed: "bg-green-100 text-green-800",
-  confirmed: "bg-blue-100 text-blue-800",
-  out_for_delivery: "bg-purple-100 text-purple-800",
-};
-
-const paymentStatusColors = {
-  paid: "bg-green-100 text-green-800",
-  pending: "bg-yellow-100 text-yellow-800",
-  failed: "bg-red-100 text-red-800",
-  refunded: "bg-gray-100 text-gray-800",
-  partial: "bg-orange-100 text-orange-800",
-};
 
 export default function DashboardOrdersClient() {
   const { data: session } = useSession();
@@ -202,7 +185,7 @@ export default function DashboardOrdersClient() {
       }
 
       // Validate status transition using RBAC
-      if (!canChangeOrderStatus(userRole as any, order.status, status as OrderStatus)) {
+      if (!canUpdateOrderStatus(userRole, order.status, status as OrderStatus)) {
         toast.error(`You don't have permission to change status from ${order.status} to ${status}`);
         return;
       }
@@ -439,12 +422,11 @@ export default function DashboardOrdersClient() {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="processing">Processing</option>
-              <option value="shipped">Shipped</option>
-              <option value="delivered">Delivered</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
+              {Object.values(ORDER_STATUSES).map((status: string) => (
+                <option key={status} value={status}>
+                  {getStatusDisplayInfo(status as OrderStatus).label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -456,11 +438,11 @@ export default function DashboardOrdersClient() {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="all">All Payments</option>
-              <option value="paid">Paid</option>
-              <option value="pending">Payment Pending</option>
-              <option value="failed">Payment Failed</option>
-              <option value="refunded">Refunded</option>
-              <option value="partial">Partial Payment</option>
+              {Object.values(PAYMENT_STATUSES).map((status: string) => (
+                <option key={status} value={status}>
+                  {getPaymentStatusDisplayInfo(status as PaymentStatus, "online" as PaymentMethod).label}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -544,7 +526,7 @@ export default function DashboardOrdersClient() {
                       className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
                     >
                       <option value="">Select Status</option>
-                      {userRole && ROLE_STATUS_TRANSITIONS[userRole as keyof typeof ROLE_STATUS_TRANSITIONS]?.map((status) => (
+                      {userRole && getNextPossibleStatuses(userRole, order.status).map((status) => (
                         <option key={status} value={status}>
                           {status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                         </option>
@@ -552,11 +534,7 @@ export default function DashboardOrdersClient() {
                     </select>
                   ) : (
                     <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        statusColors[
-                          order.status as keyof typeof statusColors
-                        ] || "bg-gray-100 text-gray-800"
-                      }`}
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusDisplayInfo(order.status).color}`}
                     >
                       {order.status}
                     </span>
@@ -570,22 +548,18 @@ export default function DashboardOrdersClient() {
                       className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
                     >
                       <option value="">Select Payment</option>
-                      <option value="paid">Paid</option>
-                      <option value="pending">Pending</option>
-                      <option value="failed">Failed</option>
-                      <option value="refunded">Refunded</option>
-                      <option value="partial">Partial</option>
+                      {Object.values(PAYMENT_STATUSES).map((status: string) => (
+                        <option key={status} value={status}>
+                          {getPaymentStatusDisplayInfo(status as PaymentStatus, order.paymentMethod as PaymentMethod).label}
+                        </option>
+                      ))}
                     </select>
                   ) : (
                     <div>
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          paymentStatusColors[
-                            order.paymentStatus as keyof typeof paymentStatusColors
-                          ] || "bg-gray-100 text-gray-800"
-                        }`}
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusDisplayInfo(order.paymentStatus, order.paymentMethod).color}`}
                       >
-                        {order.paymentStatus || "Unknown"}
+                        {getPaymentStatusDisplayInfo(order.paymentStatus, order.paymentMethod).label}
                       </span>
                       {order.paymentMethod && (
                         <div className="text-xs text-gray-500 capitalize mt-1 truncate">
@@ -742,11 +716,7 @@ export default function DashboardOrdersClient() {
                     </dt>
                     <dd className="text-sm text-gray-900">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          statusColors[
-                            viewOrderModal.status as keyof typeof statusColors
-                          ] || "bg-gray-100 text-gray-800"
-                        }`}
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusDisplayInfo(viewOrderModal.status).color}`}
                       >
                         {viewOrderModal.status}
                       </span>
@@ -788,13 +758,9 @@ export default function DashboardOrdersClient() {
                     </dt>
                     <dd className="text-sm text-gray-900">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          paymentStatusColors[
-                            viewOrderModal.paymentStatus as keyof typeof paymentStatusColors
-                          ] || "bg-gray-100 text-gray-800"
-                        }`}
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusDisplayInfo(viewOrderModal.paymentStatus, viewOrderModal.paymentMethod).color}`}
                       >
-                        {viewOrderModal.paymentStatus || "Unknown"}
+                        {getPaymentStatusDisplayInfo(viewOrderModal.paymentStatus, viewOrderModal.paymentMethod).label}
                       </span>
                     </dd>
                   </div>

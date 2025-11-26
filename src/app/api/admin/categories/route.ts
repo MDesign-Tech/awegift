@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
 import { collection, getDocs, addDoc, query, orderBy, getCountFromServer, where } from "firebase/firestore";
 import { CategoryType } from "../../../../../type";
-import { hasPermission } from "@/lib/rbac/roles";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
 export async function GET(request: NextRequest) {
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    const userRole = token.role as UserRole;
     if (!hasPermission(userRole, "canViewProducts")) { // Categories are related to products
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
+    const userRole = token.role as UserRole;
     if (!hasPermission(userRole, "canCreateProducts")) { // Categories are related to products
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }

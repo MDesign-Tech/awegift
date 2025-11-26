@@ -1,32 +1,21 @@
-export const config = {
-  matcher: [
-    "/account/:path*",
-    "/cart/:path*",
-    "/auth/:path*",
-    "/success/:path*",
-    "/checkout/:path*",
-    "/admin/:path*",
-    "/delivery/:path*",
-    "/packer/:path*",
-    "/accountant/:path*",
-  ],
-};
-
 import { NextResponse } from "next/server";
 import { auth } from "./auth";
 import { checkRouteAccess } from "@/lib/rbac/middleware";
 import { UserRole, getDefaultDashboardRoute } from "@/lib/rbac/roles";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
+
+const roles: UserRole[] = ["user", "admin", "deliveryman", "packer", "accountant"];
+
+const dashboardRoutes = roles
+  .map(role => getDefaultDashboardRoute(role))
+  .filter(route => route.startsWith("/dashboard"));
+
+const dashboardMatchers = dashboardRoutes.map(route => `${route}/:path*`);
 
 const protectedRoutes = [
   "/account",
   "/checkout",
   "/success",
-  "/admin",
-  "/delivery",
-  "/packer",
-  "/accountant",
+  ...dashboardRoutes,
 ];
 const authRoutes = ["/auth/signin", "/auth/register"];
 
@@ -79,3 +68,14 @@ export async function middleware(request: any) {
 
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: [
+    "/account/:path*",
+    "/cart/:path*",
+    "/auth/:path*",
+    "/success/:path*",
+    "/checkout/:path*",
+    ...dashboardMatchers,
+  ],
+};

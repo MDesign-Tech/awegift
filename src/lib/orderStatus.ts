@@ -10,6 +10,7 @@ export const ORDER_STATUSES = {
 
 export const PAYMENT_STATUSES = {
   PENDING: "pending",
+  CASH_ON_DELIVERY: "cash_on_delivery",
   PAID: "paid",
   FAILED: "failed",
   REFUNDED: "refunded",
@@ -19,8 +20,6 @@ export const PAYMENT_METHODS = {
   ONLINE: "online",
   CASH: "cash",
 } as const;
-
-
 
 export type OrderStatus = (typeof ORDER_STATUSES)[keyof typeof ORDER_STATUSES];
 export type PaymentStatus =
@@ -45,7 +44,7 @@ export const getVisibleOrderStatuses = (userRole: string) => {
         ORDER_STATUSES.OUT_FOR_DELIVERY,
         ORDER_STATUSES.DELIVERED,
       ];
-    case "accountant":
+    case "account":
       return Object.values(ORDER_STATUSES); // Accountant can see all for financial tracking
     default:
       return []; // Regular users don't access admin order management
@@ -81,7 +80,7 @@ export const canUpdateOrderStatus = (
           newStatus === ORDER_STATUSES.DELIVERED)
       );
 
-    case "accountant":
+    case "account":
       // Accountant can only cancel orders for financial reasons
       return newStatus === ORDER_STATUSES.CANCELLED;
 
@@ -95,7 +94,8 @@ export const canUpdatePaymentStatus = (
   userRole: string,
   paymentMethod: PaymentMethod,
   currentPaymentStatus: PaymentStatus,
-  newPaymentStatus: PaymentStatus
+  newPaymentStatus: PaymentStatus,
+  newPaymentMethod?: PaymentMethod
 ): boolean => {
   switch (userRole) {
     case "admin":
@@ -110,12 +110,29 @@ export const canUpdatePaymentStatus = (
         newPaymentStatus === PAYMENT_STATUSES.PAID
       );
 
-    case "accountant":
+    case "account":
       // Accountant can manage all payment statuses
       return true;
 
     default:
-      return false;
+      // Regular users can:
+      // - Mark their online payments as paid (after successful Stripe payment)
+      // - Update their cash payments to cash_on_delivery (when selecting COD)
+      // - Update payment method to online and status to paid (for Stripe success)
+      // - Update cash payments from pending to cash_on_delivery (when selecting COD in checkout)
+      return (
+        (paymentMethod === PAYMENT_METHODS.ONLINE &&
+          currentPaymentStatus === PAYMENT_STATUSES.PENDING &&
+          newPaymentStatus === PAYMENT_STATUSES.PAID) ||
+        (paymentMethod === PAYMENT_METHODS.CASH &&
+          currentPaymentStatus === PAYMENT_STATUSES.CASH_ON_DELIVERY &&
+          newPaymentStatus === PAYMENT_STATUSES.CASH_ON_DELIVERY) ||
+        (paymentMethod === PAYMENT_METHODS.CASH &&
+          currentPaymentStatus === PAYMENT_STATUSES.PENDING &&
+          newPaymentStatus === PAYMENT_STATUSES.CASH_ON_DELIVERY) ||
+        (newPaymentMethod === PAYMENT_METHODS.ONLINE &&
+          newPaymentStatus === PAYMENT_STATUSES.PAID)
+      );
   }
 };
 
@@ -201,12 +218,15 @@ export const getPaymentStatusDisplayInfo = (
   switch (status) {
     case PAYMENT_STATUSES.PENDING:
       return {
-        label:
-          method === PAYMENT_METHODS.CASH
-            ? "Cash on Delivery"
-            : "Payment Pending",
+        label: "Payment Pending",
         color: "bg-yellow-100 text-yellow-800",
-        icon: method === PAYMENT_METHODS.CASH ? "💵" : "⏳",
+        icon: "⏳",
+      };
+    case PAYMENT_STATUSES.CASH_ON_DELIVERY:
+      return {
+        label: "Cash on Delivery",
+        color: "bg-blue-100 text-blue-800",
+        icon: "💵",
       };
     case PAYMENT_STATUSES.PAID:
       return {

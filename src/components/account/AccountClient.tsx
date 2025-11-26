@@ -7,24 +7,8 @@ import ProfileEditForm from "@/components/account/ProfileEditForm";
 import Sidebar from "@/components/account/Sidebar";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useUserSync } from "@/hooks/useUserSync";
-import { getDefaultDashboardRoute, getRoleDisplayName, hasPermission } from "@/lib/rbac/roles";
-
-interface UserProfile {
-  firstName: string;
-  lastName: string;
-  phone: string;
-  addresses: Address[];
-}
-
-interface Address {
-  id?: string;
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  isDefault?: boolean;
-}
+import { UserRole, getDefaultDashboardRoute, getRoleDisplayName, getRoleBadgeColor } from "@/lib/rbac/roles";
+import { UserData } from "../../../type";
 
 export default function AccountClient() {
   const { data: session, update } = useSession();
@@ -34,13 +18,10 @@ export default function AccountClient() {
 
   const { user, isAdmin, isAuthenticated, userRole } = useCurrentUser();
 
-  // Check if user has access to any dashboard
-  const hasDashboardAccess = hasPermission(userRole, "canAccessAdminDashboard") ||
-                            hasPermission(userRole, "canAccessDeliveryDashboard") ||
-                            hasPermission(userRole, "canAccessPackerDashboard") ||
-                            hasPermission(userRole, "canAccessAccountantDashboard");
+  // Check if user has access to any dashboard (all roles except 'user' have dashboard access)
+  const hasDashboardAccess = userRole !== "user";
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserData['profile'] | null>(null);
   const [loading, setLoading] = useState(true);
   const [orderCount, setOrderCount] = useState(0);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -235,11 +216,7 @@ export default function AccountClient() {
               <p>
                 <span className="font-medium">Role:</span>{" "}
                 <span
-                  className={`px-2 py-1 rounded text-xs ${
-                    ["admin", "accountant", "packer", "deliveryman"].includes(userRole as any)
-                      ? "bg-red-100 text-red-800"
-                      : "bg-green-100 text-green-800"
-                  }`}
+                  className={`px-2 py-1 rounded text-xs ${getRoleBadgeColor(userRole as UserRole)}`}
                 >
                   {userRole}
                 </span>
@@ -306,13 +283,13 @@ export default function AccountClient() {
             {/* Dashboard Button - Only show for users with dashboard access */}
             {hasDashboardAccess && (
               <Link
-                href={getDefaultDashboardRoute(userRole)}
+                href={getDefaultDashboardRoute(userRole as UserRole)}
                 className="flex items-center p-4 border-2 border-red-200 bg-red-50 rounded-lg hover:border-red-400 hover:bg-red-100 transition-colors group"
               >
                 <div className="mr-3 text-2xl">👑</div>
                 <div>
                   <div className="font-medium text-red-800 group-hover:text-red-900">
-                    {getRoleDisplayName(userRole)} Dashboard
+                    {getRoleDisplayName(userRole as UserRole)} Dashboard
                   </div>
                   <div className="text-sm text-red-600">Super user access</div>
                 </div>

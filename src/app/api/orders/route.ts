@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-
+import { OrderData, OrderItem, OrderStatusHistory } from "../../../../type";
+import { UserRole, hasPermission } from "@/lib/rbac/roles";
 import {
   ORDER_STATUSES,
   PAYMENT_STATUSES,
   PAYMENT_METHODS,
-  canUpdateOrderStatus,
-  canUpdatePaymentStatus,
-  isValidStatusTransition,
   OrderStatus,
   PaymentStatus,
   PaymentMethod,
 } from "@/lib/orderStatus";
-import { hasPermission } from "@/lib/rbac/roles";
 import { db } from "@/lib/firebase/config";
 import {
   collection,
@@ -20,6 +17,7 @@ import {
   getDoc,
   updateDoc,
   setDoc,
+  addDoc,
   query,
   where,
   orderBy,
@@ -37,206 +35,36 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch user from Firestore using the new function
+    // Fetch user role
     const user = await fetchUserFromFirestore(session.user.id);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const userRole = user.role as any;
+    // Users can only see their own orders
+    const ordersQuery = query(
+      collection(db, "orders"),
+      where("userId", "==", user.id)
+    );
 
-    // Check if user has permission to view orders
-    if (!hasPermission(userRole, "canViewOrders")) {
-      return NextResponse.json(
-        { error: "Insufficient permissions" },
-        { status: 403 }
-      );
-    }
-
-    // Always return user's own orders for account/orderlist
-    const ordersQuery = collection(db, "orders");
     const ordersSnapshot = await getDocs(ordersQuery);
+
     const orders = ordersSnapshot.docs
-      .map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          orderId: data.orderId,
-          amount: data.total || "0",
-          currency: "USD",
-          status: data.status,
-          paymentStatus: data.paymentStatus,
-          createdAt:
-            data.createdAt?.toDate?.()?.toISOString() ||
-            new Date().toISOString(),
-          updatedAt:
-            data.updatedAt?.toDate?.()?.toISOString() ||
-            new Date().toISOString(),
-          items: data.items || [],
-          customerEmail: data.userEmail || data.email,
-          customerName: data.customerName || (data.userEmail?.split('@')[0]) || "Customer",
-        };
-      })
-      .filter((order) => order.customerEmail === session.user.email);
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || doc.data().createdAt,
+        updatedAt: doc.data().updatedAt?.toDate?.()?.toISOString() || doc.data().updatedAt,
+      }))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Sort by createdAt desc
+
+    console.log(orders)
 
     return NextResponse.json({ orders });
   } catch (error) {
     console.error("Error fetching orders:", error);
     return NextResponse.json(
       { error: "Failed to fetch orders" },
-      { status: 500 }
-    );
-  }
-}
-
-// PUT - Update order status
-export async function PUT(request: NextRequest) {
-  try {
-    const session = await auth();
-
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { orderId, status, paymentStatus, deliveryNotes } =
-      await request.json();
-
-    if (!orderId) {
-      return NextResponse.json(
-        { error: "Order ID is required" },
-        { status: 400 }
-      );
-    }
-
-    // Fetch user from Firestore using the new function
-    const user = await fetchUserFromFirestore(session.user.id);
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const userRole = user.role as any;
-
-    // Check if user has permission to update orders
-    if (!hasPermission(userRole, "canUpdateOrders")) {
-      return NextResponse.json(
-        { error: "Insufficient permissions" },
-        { status: 403 }
-      );
-    }
-
-    // Get current order
-    const orderRef = doc(db, "orders", orderId);
-    const orderDoc = await getDoc(orderRef);
-
-    if (!orderDoc.exists()) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    }
-
-    const currentOrder = orderDoc.data();
-    const currentStatus = currentOrder.status as OrderStatus;
-    const currentPaymentStatus = currentOrder.paymentStatus as PaymentStatus;
-    const paymentMethod = currentOrder.paymentMethod as PaymentMethod;
-
-    const updateData: any = {
-      updatedAt: serverTimestamp(),
-      updatedBy: session.user.email,
-    };
-
-    // Handle order status update
-    if (status && status !== currentStatus) {
-      // Validate status transition
-      if (!isValidStatusTransition(currentStatus, status)) {
-        return NextResponse.json(
-          {
-            error: `Invalid status transition from ${currentStatus} to ${status}`,
-          },
-          { status: 400 }
-        );
-      }
-
-      // Check role permissions for status update
-      if (!canUpdateOrderStatus(userRole, currentStatus, status)) {
-        return NextResponse.json(
-          {
-            error: `You don't have permission to change status from ${currentStatus} to ${status}`,
-          },
-          { status: 403 }
-        );
-      }
-
-      updateData.status = status;
-
-      // Add status history
-      const statusHistory = currentOrder.statusHistory || [];
-      statusHistory.push({
-        status,
-        timestamp: new Date().toISOString(),
-        updatedBy: session.user.email,
-        userRole,
-        notes: deliveryNotes || `Status changed to ${status}`,
-      });
-      updateData.statusHistory = statusHistory;
-    }
-
-    // Handle payment status update
-    if (paymentStatus && paymentStatus !== currentPaymentStatus) {
-      // Check role permissions for payment status update
-      if (
-        !canUpdatePaymentStatus(
-          userRole,
-          paymentMethod,
-          currentPaymentStatus,
-          paymentStatus
-        )
-      ) {
-        return NextResponse.json(
-          {
-            error: `You don't have permission to update payment status for ${paymentMethod} payments`,
-          },
-          { status: 403 }
-        );
-      }
-
-      updateData.paymentStatus = paymentStatus;
-
-      // Add payment history
-      const paymentHistory = currentOrder.paymentHistory || [];
-      paymentHistory.push({
-        status: paymentStatus,
-        timestamp: new Date().toISOString(),
-        updatedBy: session.user.email,
-        userRole,
-        method: paymentMethod,
-        notes: deliveryNotes || `Payment status changed to ${paymentStatus}`,
-      });
-      updateData.paymentHistory = paymentHistory;
-    }
-
-    // Add delivery notes if provided
-    if (deliveryNotes) {
-      const notes = currentOrder.deliveryNotes || [];
-      notes.push({
-        note: deliveryNotes,
-        timestamp: new Date().toISOString(),
-        addedBy: session.user.email,
-        userRole,
-      });
-      updateData.deliveryNotes = notes;
-    }
-
-    // Update the order
-    await updateDoc(orderRef, updateData);
-
-    return NextResponse.json({
-      success: true,
-      message: "Order updated successfully",
-      orderId,
-      updates: updateData,
-    });
-  } catch (error) {
-    console.error("Error updating order:", error);
-    return NextResponse.json(
-      { error: "Failed to update order" },
       { status: 500 }
     );
   }
@@ -257,61 +85,43 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const orderData = await request.json();
+    // Check if user has permission to create orders
+    if (!hasPermission(user.role as UserRole, "canCreateOrders")) {
+      return NextResponse.json({ error: "You don't have permission to create orders" }, { status: 403 });
+    }
 
-    // Generate orderId if not provided
-    const orderId = orderData.orderId || `ORD-${Date.now()}-${Math.random()
-      .toString(36)
-      .substr(2, 9)
-      .toUpperCase()}`;
+    const orderData: OrderData = await request.json();
 
-    // Create order with initial status
-    const newOrder = {
+    // Create order with OrderData structure
+    const newOrder: OrderData = {
       ...orderData,
-      id: orderId,
-      orderId: orderId,
       userId: user.id,
       status: ORDER_STATUSES.PENDING,
       paymentStatus:
         orderData.paymentMethod === PAYMENT_METHODS.CASH
           ? PAYMENT_STATUSES.PENDING
           : PAYMENT_STATUSES.PAID,
-      userEmail: session.user.email,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       statusHistory: [
         {
           status: ORDER_STATUSES.PENDING,
+          changedBy: session.user.email,
+          changedByRole: user.role as UserRole,
           timestamp: new Date().toISOString(),
-          updatedBy: session.user.email,
-          userRole: user.role,
           notes: "Order placed",
-        },
-      ],
-      paymentHistory: [
-        {
-          status:
-            orderData.paymentMethod === PAYMENT_METHODS.CASH
-              ? PAYMENT_STATUSES.PENDING
-              : PAYMENT_STATUSES.PAID,
-          timestamp: new Date().toISOString(),
-          updatedBy: session.user.email,
-          userRole: user.role,
-          method: orderData.paymentMethod || PAYMENT_METHODS.ONLINE,
-          notes: `Order created with ${
-            orderData.paymentMethod || "online"
-          } payment`,
         },
       ],
     };
 
-    // Add to orders collection
-    const orderRef = doc(db, "orders", orderId);
-    await setDoc(orderRef, newOrder);
+    // Add to orders collection with auto-generated ID
+    const docRef = await addDoc(collection(db, "orders"), newOrder);
+
+    await updateDoc(docRef, { id: docRef.id });
 
     return NextResponse.json({
       success: true,
-      orderId: orderId,
+      id: docRef.id,
       message: "Order created successfully",
     });
   } catch (error) {

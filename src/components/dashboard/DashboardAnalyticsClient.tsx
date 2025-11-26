@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { StatsSkeleton, DashboardCardSkeleton } from "./Skeletons";
-import { hasPermission, getRoleBadgeColor, getRoleDisplayName } from "@/lib/rbac/roles";
+import { UserRole, hasPermission, getRoleBadgeColor, getRoleDisplayName } from "@/lib/rbac/roles";
 import { useUserSync } from "@/hooks/useUserSync";
 import {
   FiTrendingUp,
@@ -50,7 +50,7 @@ export default function DashboardAnalyticsClient() {
   const userProfile = user;
 
   // Check if user has permission to view analytics
-  const canViewAnalytics = hasPermission(userRole as any, "canViewAnalytics");
+  const canViewAnalytics = hasPermission(userRole as UserRole, "canViewAnalytics");
 
     const fetchAnalytics = async () => {
     try {
@@ -140,8 +140,8 @@ export default function DashboardAnalyticsClient() {
       bgColor: "bg-green-100",
     },
     {
-      title: userProfile ? `${getRoleDisplayName(userProfile.role)} Orders` : "My Orders",
-      value: userProfile?.orders?.length?.toString() || "0",
+      title: userProfile ? `${getRoleDisplayName(userProfile.role as UserRole)} Orders` : "My Orders",
+      value: analytics?.data.overview.totalOrders?.toString() || "0",
       change: analytics.data.overview.orderGrowth,
       icon: FiShoppingCart,
       color: textColorClass,
@@ -180,14 +180,14 @@ export default function DashboardAnalyticsClient() {
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-gray-900">
-                {getRoleDisplayName(userProfile.role)} Analytics
+                {getRoleDisplayName(userProfile.role as UserRole)} Analytics
               </h2>
               <p className="text-gray-600">
                 Welcome back, {userProfile.name || userProfile.email}!
               </p>
               <div className="flex items-center mt-2">
                 <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${roleColors}`}>
-                  {getRoleDisplayName(userProfile.role)}
+                  {getRoleDisplayName(userProfile.role as UserRole)}
                 </span>
                 <span className="ml-3 text-sm text-gray-500">
                   Member since {userProfile.createdAt ? new Date(userProfile.createdAt).toLocaleDateString() : 'N/A'}

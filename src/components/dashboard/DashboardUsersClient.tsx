@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { TableSkeleton } from "./Skeletons";
-import { hasPermission } from "@/lib/rbac/roles";
+import { UserRole, hasPermission, getRoleDisplayName, getRoleBadgeColor } from "@/lib/rbac/roles";
+import { UserData } from "../../../type";
 import { useUserSync } from "@/hooks/useUserSync";
 import { toast } from "react-hot-toast";
 import {
@@ -20,12 +21,7 @@ import {
   FiChevronRight,
 } from "react-icons/fi";
 
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  createdAt: string;
+interface User extends UserData {
   orders?: number;
   totalSpent?: number;
 }
@@ -46,6 +42,12 @@ export default function DashboardUsersClient() {
   const [selectAll, setSelectAll] = useState(false);
   const [showDeleteSelectedModal, setShowDeleteSelectedModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
+
+  // Setup admin states
+  const [showSetupAdminModal, setShowSetupAdminModal] = useState(false);
+  const [setupForm, setSetupForm] = useState({ email: "", secretKey: "" });
+  const [isSettingUp, setIsSettingUp] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -179,32 +181,65 @@ export default function DashboardUsersClient() {
       toast.error("Please select users to delete");
       return;
     }
+    setIsDeletingAll(false);
     setShowDeleteSelectedModal(true);
   };
 
+  const handleSetupAdmin = async () => {
+    if (!setupForm.email.trim() || !setupForm.secretKey.trim()) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    setIsSettingUp(true);
+    try {
+      const response = await fetch("/api/admin/setup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(setupForm),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message);
+        await fetchUsers(); // Refresh the data
+        setShowSetupAdminModal(false);
+        setSetupForm({ email: "", secretKey: "" });
+      } else {
+        toast.error(data.error || "Failed to setup admin");
+      }
+    } catch (error) {
+      console.error("Error setting up admin:", error);
+      toast.error("Failed to setup admin");
+    } finally {
+      setIsSettingUp(false);
+    }
+  };
+
   const confirmDeleteSelected = async () => {
-    if (selectedUsers.length === 0) return;
+    const usersToDelete = isDeletingAll ? users.map(u => u.id) : selectedUsers;
+    if (usersToDelete.length === 0) return;
 
     setIsDeleting(true);
     try {
-      const response = await fetch("/api/admin/users/bulk-delete", {
+      const apiEndpoint = "/api/admin/users/bulk-delete-selected";
+      const response = await fetch(apiEndpoint, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userIds: selectedUsers }),
+        body: JSON.stringify({ userIds: usersToDelete }),
       });
 
       if (response.ok) {
-        toast.success(`${selectedUsers.length} users deleted successfully`);
+        const message = `${usersToDelete.length} users deleted successfully`;
+        toast.success(message);
         await fetchUsers();
         setSelectedUsers([]);
         setSelectAll(false);
         setShowDeleteSelectedModal(false);
-        // Reset to page 1 if current page would be empty
-        const remainingUsers = users.length - selectedUsers.length;
-        const maxPage = Math.ceil(remainingUsers / usersPerPage);
-        if (currentPage > maxPage && maxPage > 0) {
-          setCurrentPage(maxPage);
-        }
+        setIsDeletingAll(false);
+        // Reset to page 1
+        setCurrentPage(1);
       } else {
         const errorData = await response.json();
         toast.error(errorData.error || "Failed to delete users");
@@ -217,37 +252,6 @@ export default function DashboardUsersClient() {
     }
   };
 
-  const getRoleDisplayName = (role: string) => {
-    switch (role) {
-      case "admin":
-        return "Administrator";
-      case "accountant":
-        return "Accountant";
-      case "packer":
-        return "Packer";
-      case "deliveryman":
-        return "Delivery Person";
-      case "user":
-      default:
-        return "User";
-    }
-  };
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case "admin":
-        return "bg-red-100 text-red-800";
-      case "accountant":
-        return "bg-blue-100 text-blue-800";
-      case "packer":
-        return "bg-yellow-100 text-yellow-800";
-      case "deliveryman":
-        return "bg-purple-100 text-purple-800";
-      case "user":
-      default:
-        return "bg-green-100 text-green-800";
-    }
-  };
 
   // Calculate pagination
   const totalPages = Math.ceil(users.length / usersPerPage);
@@ -295,13 +299,34 @@ export default function DashboardUsersClient() {
             )}
           </div>
           <div className="flex items-center space-x-2">
-            {selectedUsers.length > 0 && userRole && hasPermission(userRole as any, "canDeleteUsers") && (
+            {userRole && hasPermission(userRole as UserRole, "canUpdateUsers") && (
               <button
-                onClick={handleDeleteSelected}
+                onClick={() => setShowSetupAdminModal(true)}
+                className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+              >
+                <FiShield className="mr-2 h-4 w-4" />
+                Setup Admin
+              </button>
+            )}
+            {userRole && hasPermission(userRole as UserRole, "canDeleteUsers") && users.length > 0 && (
+              <button
+                onClick={() => {
+                  setIsDeletingAll(true);
+                  setShowDeleteSelectedModal(true);
+                }}
                 className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
               >
                 <FiTrash2 className="mr-2 h-4 w-4" />
-                Delete {selectedUsers.length} Users
+                Delete All Users
+              </button>
+            )}
+            {selectedUsers.length > 0 && userRole && hasPermission(userRole as UserRole, "canDeleteUsers") && (
+              <button
+                onClick={handleDeleteSelected}
+                className="flex items-center px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
+              >
+                <FiTrash2 className="mr-2 h-4 w-4" />
+                Delete {selectedUsers.length} Selected
               </button>
             )}
             <div className="text-sm text-gray-600">
@@ -385,11 +410,11 @@ export default function DashboardUsersClient() {
                       {/* Mobile role display */}
                       <div className="sm:hidden mt-1">
                         <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(
-                            user.role
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(
+                            user.role as UserRole
                           )}`}
                         >
-                          {getRoleDisplayName(user.role)}
+                          {getRoleDisplayName(user.role as UserRole)}
                         </span>
                       </div>
                       {/* Mobile stats */}
@@ -403,11 +428,11 @@ export default function DashboardUsersClient() {
                 <td className="hidden sm:table-cell px-6 py-4">
                   <div className="flex items-center">
                     <span
-                      className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getRoleColor(
-                        user.role
+                      className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(
+                        user.role as UserRole
                       )}`}
                     >
-                      {getRoleDisplayName(user.role)}
+                      {getRoleDisplayName(user.role as UserRole)}
                     </span>
                   </div>
                 </td>
@@ -427,7 +452,7 @@ export default function DashboardUsersClient() {
                 </td>
                 <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
-                    {userRole && hasPermission(userRole as any, "canUpdateUsers") && user.id !== session?.user?.id && (
+                    {userRole && hasPermission(userRole as UserRole, "canUpdateUsers") && user.id !== session?.user?.id && (
                       <button
                         onClick={() => handleEditUser(user)}
                         className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
@@ -660,8 +685,8 @@ export default function DashboardUsersClient() {
                   <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
                     <p className="text-xs text-blue-800">
                       <strong>Current:</strong>{" "}
-                      {getRoleDisplayName(editingUser.role)} →
-                      <strong> New:</strong> {getRoleDisplayName(editForm.role)}
+                      {getRoleDisplayName(editingUser.role as UserRole)} →
+                      <strong> New:</strong> {getRoleDisplayName(editForm.role as UserRole)}
                     </p>
                     <p className="text-xs text-blue-600 mt-1">
                       User will be notified of role changes via email
@@ -708,11 +733,11 @@ export default function DashboardUsersClient() {
                       Current Role
                     </p>
                     <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(
-                        editingUser.role
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeColor(
+                        editingUser.role as UserRole
                       )}`}
                     >
-                      {getRoleDisplayName(editingUser.role)}
+                      {getRoleDisplayName(editingUser.role as UserRole)}
                     </span>
                   </div>
                 </div>
@@ -805,7 +830,7 @@ export default function DashboardUsersClient() {
                       {userToDelete.email}
                     </div>
                     <div className="text-xs text-red-600 mt-1">
-                      Role: {getRoleDisplayName(userToDelete.role)} •
+                      Role: {getRoleDisplayName(userToDelete.role as UserRole)} •
                       {userToDelete.orders || 0} orders • $
                       {(userToDelete.totalSpent || 0).toFixed(2)} spent
                     </div>
@@ -855,7 +880,7 @@ export default function DashboardUsersClient() {
           <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-auto">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h3 className="text-lg font-medium text-gray-900">
-                Delete Multiple Users
+                {isDeletingAll ? "Delete All Users" : "Delete Multiple Users"}
               </h3>
               <button
                 onClick={() => setShowDeleteSelectedModal(false)}
@@ -873,7 +898,7 @@ export default function DashboardUsersClient() {
                 </div>
                 <div className="ml-4">
                   <h4 className="text-lg font-medium text-gray-900">
-                    Delete {selectedUsers.length} Users?
+                    {isDeletingAll ? `Delete All ${users.length} Users?` : `Delete ${selectedUsers.length} Selected Users?`}
                   </h4>
                   <p className="text-sm text-gray-500">
                     This action cannot be undone.
@@ -883,14 +908,13 @@ export default function DashboardUsersClient() {
 
               <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
                 <p className="text-sm text-red-800 font-medium mb-2">
-                  You are about to delete {selectedUsers.length} users:
+                  You are about to delete {isDeletingAll ? users.length : selectedUsers.length} users:
                 </p>
                 <div className="max-h-32 overflow-y-auto">
-                  {selectedUsers.slice(0, 5).map((userId) => {
-                    const user = users.find((u) => u.id === userId);
-                    return user ? (
+                  {(isDeletingAll ? users : selectedUsers.map(id => users.find(u => u.id === id)).filter(Boolean)).slice(0, 5).map((user) =>
+                    user ? (
                       <div
-                        key={userId}
+                        key={user.id}
                         className="flex items-center mb-2 last:mb-0"
                       >
                         <div className="flex-shrink-0 h-6 w-6">
@@ -910,20 +934,18 @@ export default function DashboardUsersClient() {
                           </span>
                         </div>
                       </div>
-                    ) : null;
-                  })}
-                  {selectedUsers.length > 5 && (
+                    ) : null
+                  )}
+                  {(isDeletingAll ? users.length : selectedUsers.length) > 5 && (
                     <p className="text-xs text-red-600 mt-2">
-                      ...and {selectedUsers.length - 5} more users
+                      ...and {(isDeletingAll ? users.length : selectedUsers.length) - 5} more users
                     </p>
                   )}
                 </div>
               </div>
 
               <p className="text-sm text-gray-600">
-                Deleting these users will permanently remove their accounts,
-                order histories, and all associated data. This action cannot be
-                undone.
+                Deleting these users will permanently remove their accounts and associated data. This action cannot be undone.
               </p>
             </div>
 
@@ -941,7 +963,7 @@ export default function DashboardUsersClient() {
                 ) : (
                   <>
                     <FiTrash2 className="mr-2 h-4 w-4" />
-                    Delete {selectedUsers.length} Users
+                    Delete {isDeletingAll ? users.length : selectedUsers.length} Users
                   </>
                 )}
               </button>
@@ -949,6 +971,123 @@ export default function DashboardUsersClient() {
                 onClick={() => setShowDeleteSelectedModal(false)}
                 disabled={isDeleting}
                 className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50"
+              >
+                <FiX className="mr-2 h-4 w-4" />
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Setup Admin Modal */}
+      {showSetupAdminModal && (
+        <div
+          className="fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowSetupAdminModal(false);
+              setSetupForm({ email: "", secretKey: "" });
+            }
+          }}
+        >
+          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
+              <div className="flex items-center">
+                <FiShield className="h-6 w-6 text-green-600 mr-3" />
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Setup Admin User
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowSetupAdminModal(false);
+                  setSetupForm({ email: "", secretKey: "" });
+                }}
+                className="text-gray-400 hover:text-gray-600 focus:outline-none p-1 rounded-full hover:bg-gray-100 transition-colors"
+                title="Close modal"
+              >
+                <FiX className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                <p className="text-sm text-blue-800">
+                  <strong>Admin Setup:</strong> Promote an existing user to administrator role.
+                  This requires the setup secret key for security.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    User Email <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      type="email"
+                      value={setupForm.email}
+                      onChange={(e) =>
+                        setSetupForm({ ...setupForm, email: e.target.value })
+                      }
+                      className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                      placeholder="Enter user email"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Setup Secret Key <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <FiShield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      type="password"
+                      value={setupForm.secretKey}
+                      onChange={(e) =>
+                        setSetupForm({ ...setupForm, secretKey: e.target.value })
+                      }
+                      className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                      placeholder="Enter setup secret key"
+                      required
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Secret key is configured in environment variables
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:space-x-3 space-y-3 sm:space-y-0 px-6 py-4 border-t border-gray-200 bg-gray-50">
+              <button
+                onClick={handleSetupAdmin}
+                disabled={!setupForm.email.trim() || !setupForm.secretKey.trim() || isSettingUp}
+                className="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              >
+                {isSettingUp ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Setting up...
+                  </>
+                ) : (
+                  <>
+                    <FiShield className="mr-2 h-4 w-4" />
+                    Setup Admin
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  setShowSetupAdminModal(false);
+                  setSetupForm({ email: "", secretKey: "" });
+                }}
+                disabled={isSettingUp}
+                className="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors shadow-sm disabled:opacity-50"
               >
                 <FiX className="mr-2 h-4 w-4" />
                 Cancel

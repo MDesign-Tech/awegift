@@ -14,6 +14,7 @@ import {
 import { StatsSkeleton, DashboardCardSkeleton } from "./Skeletons";
 import { hasPermission, getDefaultDashboardRoute } from "@/lib/rbac/roles";
 import { useUserSync } from "@/hooks/useUserSync";
+import PriceFormat from "@/components/PriceFormat";
 
 interface Stats {
   totalUsers: number;
@@ -29,7 +30,6 @@ export default function DashboardOverviewClient() {
   const { user, isLoading: userLoading } = useUserSync();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [addingSampleData, setAddingSampleData] = useState(false);
 
   const userRole = user?.role || "user";
 
@@ -46,15 +46,18 @@ export default function DashboardOverviewClient() {
       if (response.ok) {
         const data = await response.json();
         // Ensure numeric values are properly converted
+        // Example normalization
         const normalizedStats = {
           ...data,
-          totalUsers: Number(data.totalUsers) || 0,
-          totalOrders: Number(data.totalOrders) || 0,
           totalRevenue: Number(data.totalRevenue) || 0,
-          totalProducts: Number(data.totalProducts) || 0,
-          pendingOrders: Number(data.pendingOrders) || 0,
+          todayRevenue: Number(data.todayRevenue) || 0,
+          totalOrders: Number(data.totalOrders) || 0,
           completedOrders: Number(data.completedOrders) || 0,
+          pendingOrders: Number(data.pendingOrders) || 0,
+          totalUsers: Number(data.totalUsers) || 0,
+          totalProducts: Number(data.totalProducts) || 0,
         };
+
         setStats(normalizedStats);
       }
     } catch (error) {
@@ -116,7 +119,7 @@ export default function DashboardOverviewClient() {
               <FiDollarSign className="h-6 w-6 text-emerald-600" />
             </div>
             <div className="text-2xl font-bold text-gray-900">
-              ${(stats?.totalRevenue || 0).toFixed(2)}
+              <PriceFormat amount={stats?.totalRevenue || 0} />
             </div>
             <p className="text-xs text-gray-500 mt-1">Total earnings</p>
           </div>

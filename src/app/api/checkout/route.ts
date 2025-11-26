@@ -1,24 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { ORDER_STATUSES } from "@/lib/orderStatus";
 import {
-  ORDER_STATUSES,
   PAYMENT_STATUSES,
   PAYMENT_METHODS,
 } from "@/lib/orderStatus";
 import { db } from "@/lib/firebase/config";
-import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, setDoc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 
 export const POST = async (request: NextRequest) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   try {
     const reqBody = await request.json();
-    const { items, email, shippingAddress, orderId, orderAmount } = reqBody;
+    let { items, email, shippingAddress, orderId, orderAmount } = reqBody;
+
+    let orderItems = items;
+    let orderTotal = orderAmount;
+    let existingOrder = null;
+
+    // If orderId is provided, fetch the existing order
+    if (orderId) {
+      const orderRef = doc(db, "orders", orderId);
+      const orderDoc = await getDoc(orderRef);
+
+      if (orderDoc.exists()) {
+        existingOrder = orderDoc.data();
+        orderItems = existingOrder.items;
+        orderTotal = existingOrder.totalAmount;
+        shippingAddress = existingOrder.shippingAddress;
+      }
+    }
 
     // Always use individual items for better display in Stripe checkout
     // Only use orderAmount as fallback if items are missing or invalid
     const extractingItems =
-      items && items.length > 0
-        ? items.map((item: any) => {
+      orderItems && orderItems.length > 0
+        ? orderItems.map((item: any) => {
             const itemPrice =
               item.price ||
               (item.total ? item.total / (item.quantity || 1) : 0);
@@ -101,69 +118,93 @@ export const POST = async (request: NextRequest) => {
       metadata: {
         email,
         orderDate: new Date().toISOString(),
-        itemCount: items && items.length > 0 ? items.length.toString() : "1",
+        itemCount: orderItems && orderItems.length > 0 ? orderItems.length.toString() : "1",
         shippingAddress: shippingAddress ? JSON.stringify(shippingAddress) : "",
         orderId: orderId || "",
-        orderAmount: orderAmount || "",
+        orderAmount: orderTotal || "",
       },
       customer_email: email,
     });
 
-    // Generate orderId if not provided
-    const finalOrderId = orderId || `ORD-${Date.now()}-${Math.random()
-      .toString(36)
-      .substr(2, 9)
-      .toUpperCase()}`;
+    // If existing order, update it for online payment
+    if (existingOrder) {
+      const orderRef = doc(db, "orders", orderId);
+      await updateDoc(orderRef, {
+        paymentMethod: PAYMENT_METHODS.ONLINE,
+        paymentStatus: PAYMENT_STATUSES.PENDING,
+        updatedAt: serverTimestamp(),
+        paymentHistory: [
+          ...(existingOrder.paymentHistory || []),
+          {
+            status: PAYMENT_STATUSES.PENDING,
+            timestamp: new Date().toISOString(),
+            updatedBy: email,
+            userRole: "user",
+            method: PAYMENT_METHODS.ONLINE,
+            notes: "Stripe checkout session created",
+          },
+        ],
+      });
+    }
 
-    // Create or update the order in the database
-    const orderRef = doc(db, "orders", finalOrderId);
-    await setDoc(orderRef, {
-      id: finalOrderId,
-      orderId: finalOrderId,
-      email,
-      items: extractingItems.map((item: any) => ({
-        productId: item.price_data.product_data.metadata.productId,
-        title: item.price_data.product_data.name,
-        quantity: item.quantity,
-        price: item.price_data.unit_amount / 100, // Convert back to original price
-        image: item.price_data.product_data.images?.[0] || "",
-      })),
-      total:
-        orderAmount ||
-        Math.round(
-          extractingItems.reduce(
-            (sum: number, item: any) =>
-              sum + (item.price_data.unit_amount || 0) * (item.quantity || 1),
-            0
-          ) / 100
-        ),
-      shippingAddress,
-      status: ORDER_STATUSES.PENDING,
-      paymentStatus: PAYMENT_STATUSES.PENDING,
-      paymentMethod: PAYMENT_METHODS.ONLINE,
-      userEmail: email,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      statusHistory: [
-        {
-          status: ORDER_STATUSES.PENDING,
-          timestamp: new Date().toISOString(),
-          updatedBy: email,
-          userRole: "user",
-          notes: "Order placed via online payment",
-        },
-      ],
-      paymentHistory: [
-        {
-          status: PAYMENT_STATUSES.PENDING,
-          timestamp: new Date().toISOString(),
-          updatedBy: email,
-          userRole: "user",
-          method: PAYMENT_METHODS.ONLINE,
-          notes: "Stripe checkout session created",
-        },
-      ],
-    });
+    // Only create order if it's a new order (no orderId provided or order doesn't exist)
+    if (!existingOrder) {
+      // Generate orderId if not provided
+      const finalOrderId = orderId || `ORD-${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)
+        .toUpperCase()}`;
+
+      // Create the order in the database
+      const orderRef = doc(db, "orders", finalOrderId);
+      await setDoc(orderRef, {
+        id: finalOrderId,
+        orderId: finalOrderId,
+        email,
+        items: extractingItems.map((item: any) => ({
+          productId: item.price_data.product_data.metadata.productId,
+          title: item.price_data.product_data.name,
+          quantity: item.quantity,
+          price: item.price_data.unit_amount / 100, // Convert back to original price
+          image: item.price_data.product_data.images?.[0] || "",
+        })),
+        total:
+          orderAmount ||
+          Math.round(
+            extractingItems.reduce(
+              (sum: number, item: any) =>
+                sum + (item.price_data.unit_amount || 0) * (item.quantity || 1),
+              0
+            ) / 100
+          ),
+        shippingAddress,
+        status: ORDER_STATUSES.PENDING,
+        paymentStatus: PAYMENT_STATUSES.PENDING,
+        paymentMethod: PAYMENT_METHODS.ONLINE,
+        userEmail: email,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        statusHistory: [
+          {
+            status: ORDER_STATUSES.PENDING,
+            timestamp: new Date().toISOString(),
+            updatedBy: email,
+            userRole: "user",
+            notes: "Order placed via online payment",
+          },
+        ],
+        paymentHistory: [
+          {
+            status: PAYMENT_STATUSES.PENDING,
+            timestamp: new Date().toISOString(),
+            updatedBy: email,
+            userRole: "user",
+            method: PAYMENT_METHODS.ONLINE,
+            notes: "Stripe checkout session created",
+          },
+        ],
+      });
+    }
 
     return NextResponse.json({
       message: "Checkout session created successfully!",

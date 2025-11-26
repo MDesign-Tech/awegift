@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
 import { collection, getDocs, writeBatch, doc } from "firebase/firestore";
-import { hasPermission } from "@/lib/rbac/roles";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
 export async function DELETE(request: NextRequest) {
@@ -12,8 +12,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userRole = token.role as any;
-    if (!hasPermission(userRole, "canCreateProducts")) { // Categories are related to products
+    const userRole = token.role as UserRole;
+    if (!hasPermission(userRole, "canDeleteProducts")) { // Categories are related to products
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasPermission } from "@/lib/rbac/roles";
+import { getToken } from "next-auth/jwt";
 import { db } from "@/lib/firebase/config";
 import {
   collection,
@@ -8,28 +9,21 @@ import {
   updateDoc,
   deleteDoc,
   getDoc,
+  query,
+  orderBy,
+  where,
 } from "firebase/firestore";
 import { getVisibleOrderStatuses } from "@/lib/orderStatus";
-import { auth } from "../../auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.email) {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role || !token.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch user from Firestore using the new function
-    const user = await fetchUserFromFirestore(session.user.id);
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const userRole = user.role as any;
-
-    // Check if user has permission to view orders
+    const userRole = token.role as any;
     if (!hasPermission(userRole, "canViewOrders")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
@@ -66,7 +60,7 @@ export async function GET(request: NextRequest) {
     // Filter based on role
     if (userRole === "user") {
       // Regular users can only see their own orders
-      orders = orders.filter((order) => order.customerEmail === session.user.email);
+      orders = orders.filter((order) => order.customerEmail === token.email);
     } else if (userRole !== "admin" && userRole !== "accountant") {
       // Role-based filtering for staff (packer, deliveryman)
       const visibleStatuses = getVisibleOrderStatuses(userRole);
@@ -86,19 +80,13 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.email) {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch user from Firestore using the new function
-    const user = await fetchUserFromFirestore(session.user.id);
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const userRole = user.role as any;
+    const userRole = token.role as any;
     if (!hasPermission(userRole, "canUpdateOrders")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
@@ -192,19 +180,13 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.email) {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch user from Firestore using the new function
-    const user = await fetchUserFromFirestore(session.user.id);
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const userRole = user.role as any;
+    const userRole = token.role as any;
     if (!hasPermission(userRole, "canDeleteOrders")) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }

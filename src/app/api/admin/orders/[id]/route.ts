@@ -13,9 +13,10 @@ import {
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Check authentication and permissions
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.role) {
@@ -27,7 +28,7 @@ export async function PUT(
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const orderId = params.id;
+    const orderId = id;
     const body = await request.json();
     const { userId, updates } = body;
 
@@ -96,9 +97,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Check authentication and permissions
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.role) {
@@ -110,7 +112,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const orderId = params.id;
+    const orderId = id;
 
     if (!orderId) {
       return NextResponse.json({ error: "Order ID required" }, { status: 400 });
@@ -179,9 +181,10 @@ export async function DELETE(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Check authentication and permissions
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.role) {
@@ -193,7 +196,7 @@ export async function GET(
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const orderId = params.id;
+    const orderId = id;
 
     if (!orderId) {
       return NextResponse.json({ error: "Order ID required" }, { status: 400 });

@@ -18,6 +18,7 @@ import {
   FiRefreshCw,
   FiSave,
   FiX,
+  FiLoader,
 } from "react-icons/fi";
 import CategoryForm from './CategoryForm';
 import Sidebar from '../account/Sidebar';
@@ -329,7 +330,7 @@ export default function DashboardCategoriesClient() {
             Categories Management ({filteredCategories.length})
           </h2>
           <div className="grid grid-cols-2 items-center sm:flex sm:grid-cols-none gap-2">
-            {hasPermission(userRole as any, "canDeleteProducts") && (
+            {userRole && hasPermission(userRole as any, "canDeleteProducts") && (
               <>
                 <button
                   onClick={handleDeleteSelected}
@@ -353,7 +354,7 @@ export default function DashboardCategoriesClient() {
             >
               Refresh
             </button>
-            {hasPermission(userRole as any, "canCreateProducts") && (
+            {userRole && hasPermission(userRole as any, "canCreateProducts") && (
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="flex items-center px-3 py-2 bg-theme-color text-white rounded-lg hover:bg-theme-color/80 transition-colors text-sm"
@@ -483,7 +484,7 @@ export default function DashboardCategoriesClient() {
                     >
                       <FiEye className="h-4 w-4" />
                     </button>
-                    {hasPermission(userRole as any, "canUpdateProducts") && (
+                    {userRole && hasPermission(userRole as any, "canUpdateProducts") && (
                       <button
                         onClick={() => setEditingCategory(category)}
                         className="p-1 text-indigo-600 hover:text-indigo-900 transition-colors"
@@ -492,7 +493,7 @@ export default function DashboardCategoriesClient() {
                         <FiEdit2 className="h-4 w-4" />
                       </button>
                     )}
-                    {hasPermission(userRole as any, "canDeleteProducts") && (
+                    {userRole && hasPermission(userRole as any, "canDeleteProducts") && (
                       <button
                         onClick={() => handleDeleteCategory(category)}
                         className="p-1 text-red-600 hover:text-red-900 transition-colors"
@@ -559,7 +560,7 @@ export default function DashboardCategoriesClient() {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title="Add New Category"
-        width="w-96"
+        width="w-[500px]"
       >
         <CategoryForm
           onSubmit={handleAddCategory}
@@ -573,7 +574,7 @@ export default function DashboardCategoriesClient() {
         isOpen={!!editingCategory}
         onClose={() => setEditingCategory(null)}
         title="Edit Category"
-        width="w-96"
+        width="w-[500px]"
       >
         {editingCategory && (
           <CategoryForm
@@ -754,7 +755,7 @@ export default function DashboardCategoriesClient() {
               >
                 {isDeleting ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <FiLoader className="animate-spin mr-2 h-4 w-4" />
                     Deleting...
                   </>
                 ) : (
@@ -792,10 +793,15 @@ export default function DashboardCategoriesClient() {
               </button>
               <button
                 onClick={handleDeleteAllCategories}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center"
                 disabled={isDeleting}
               >
-                {isDeleting ? "Deleting..." : "Delete All"}
+                {isDeleting ? (
+                  <>
+                    <FiLoader className="animate-spin mr-2 h-4 w-4" />
+                    Deleting...
+                  </>
+                ) : "Delete All"}
               </button>
             </div>
           </div>
@@ -839,7 +845,7 @@ export default function DashboardCategoriesClient() {
               >
                 {isDeleting ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <FiLoader className="animate-spin mr-2 h-4 w-4" />
                     Deleting...
                   </>
                 ) : (

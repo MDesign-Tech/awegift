@@ -6,11 +6,11 @@ import { db } from "@/lib/firebase/config";
 
 // Define protected routes and their required roles
 // Using array to ensure proper order (more specific routes first)
-const PROTECTED_ROUTES: Array<{ route: string; roles: UserRole[] }> = [
-  { route: "/admin", roles: ["admin"] },
-  { route: "/delivery", roles: ["admin", "deliveryman"] },
-  { route: "/packer", roles: ["admin", "packer"] },
-  { route: "/accountant", roles: ["admin", "accountant"] },
+export const PROTECTED_ROUTES: Array<{ route: string; roles: UserRole[] }> = [
+  { route: "/dashboard/admin", roles: ["admin"] },
+  { route: "/dashboard/delivery", roles: ["admin", "deliveryman"] },
+  { route: "/dashboard/packer", roles: ["admin", "packer"] },
+  { route: "/dashboard/accountant", roles: ["admin", "accountant"] },
   {
     route: "/account",
     roles: ["admin", "deliveryman", "packer", "accountant", "user"],
