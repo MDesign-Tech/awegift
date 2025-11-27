@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const productData: ProductType = await request.json();
+    const productData: Omit<ProductType, 'id' | 'meta'> = await request.json();
 
     // Validate required fields
     if (!productData.title || !productData.price || !productData.category) {
@@ -35,12 +35,11 @@ export async function POST(request: NextRequest) {
       meta: {
         createdAt: now,
         updatedAt: now,
-        barcode: productData.meta?.barcode || "",
-        qrCode: productData.meta?.qrCode || "",
+        barcode: "",
+        qrCode: "",
       },
     };
 
-    const { addDoc } = await import("firebase/firestore");
     const docRef = await addDoc(collection(db, "products"), productWithMeta);
 
     return NextResponse.json({

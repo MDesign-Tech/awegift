@@ -24,7 +24,7 @@ interface ProductFormProps {
 export default function ProductForm({ product, onCancel, onSuccess, refetchProducts }: ProductFormProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<ProductType>({
-    id: 0,
+    id: "",
     title: "M Design",
     description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Rem dolores, quo soluta sit ea ratione eligendi neque suscipit sequi, veniam id, nostrum amet? Officia dolorem, adipisci velit error natus maxime sed, provident eum assumenda eaque perspiciatis. Sit culpa quaerat vero minus. Necessitatibus sapiente, sed dolor cumque magnam quam perferendis dolorem.",
     category: "",
@@ -141,19 +141,20 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
         : `/api/admin/products/add`;
       const method = product ? "PUT" : "POST";
 
+      // Exclude id and meta fields as they are handled by the backend
+      const { id, meta, ...dataToSend } = formData;
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSend),
       });
 
       if (response.ok) {
         await refetchProducts();
         toast.success(product ? "Product updated successfully!" : "Product added successfully!");
-        // Close modal after success message is shown
-        setTimeout(() => {
-          onSuccess();
-        }, 1500);
+        onSuccess();
+        
       } else {
         const errorData = await response.json();
         if (response.status === 404 && errorData.error === "Product not found") {
