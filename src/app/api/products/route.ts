@@ -1,60 +1,78 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
-import { collection, getDocs, query, where, orderBy, limit, Query } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { ProductType } from "../../../../type";
 
 export async function GET(request: NextRequest) {
   try {
+    // Allow public browsing (no auth needed for GET)
     const { searchParams } = new URL(request.url);
-    const searchQuery = searchParams.get("q");
-    const limitParam = searchParams.get("limit");
-    const category = searchParams.get("category");
 
-    let productsQuery: Query;
+    const limitParam = parseInt(searchParams.get("limit") || "20");
+    const offsetParam = parseInt(searchParams.get("offset") || "0");
+    const searchQuery = searchParams.get("q")?.trim();
+    const categoryFilter = searchParams.get("category")?.trim();
 
-    // Apply search filter if query provided
+    // Fetch products ordered by creation date
+    const productsRef = collection(db, "products");
+    const productsQuery = query(productsRef, orderBy("meta.createdAt", "desc"));
+    const snapshot = await getDocs(productsQuery);
+
+    let allDocs = snapshot.docs;
+
+    // Search filter
     if (searchQuery) {
-      // For Firestore, we need to use where clauses for filtering
-      // This is a simplified version - in production you'd want more sophisticated search
-      productsQuery = query(
-        collection(db, "products"),
-        where("title", ">=", searchQuery),
-        where("title", "<=", searchQuery + "\uf8ff"),
-        limit(limitParam ? parseInt(limitParam) : 20)
-      );
-    } else {
-      // Get all products with optional category filter
-      if (category) {
-        productsQuery = query(
-          collection(db, "products"),
-          where("category", "==", category),
-          orderBy("createdAt", "desc"),
-          limit(limitParam ? parseInt(limitParam) : 20)
+      allDocs = allDocs.filter((doc) => {
+        const data = doc.data() as ProductType;
+        return (
+          data.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          data.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          data.description.toLowerCase().includes(searchQuery.toLowerCase())
         );
-      } else {
-        productsQuery = query(
-          collection(db, "products"),
-          orderBy("createdAt", "desc"),
-          limit(limitParam ? parseInt(limitParam) : 20)
-        );
-      }
+      });
     }
 
-    const querySnapshot = await getDocs(productsQuery);
-    const products = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    // Category filter
+    if (categoryFilter) {
+      allDocs = allDocs.filter((doc) => {
+        const data = doc.data() as ProductType;
+        return data.category === categoryFilter;
+      });
+    }
+
+    // Total number of matched products
+    const totalCount = allDocs.length;
+
+    let products: ProductType[];
+
+    // ✔ limit=0 → return ALL products
+    if (limitParam === 0) {
+      products = allDocs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as ProductType[];
+    } else {
+      // Normal pagination
+      const paginatedDocs = allDocs.slice(
+        offsetParam,
+        offsetParam + limitParam
+      );
+
+      products = paginatedDocs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as ProductType[];
+    }
 
     return NextResponse.json({
       products,
-      total: products.length,
-      skip: 0,
-      limit: limitParam ? parseInt(limitParam) : 20
+      total: totalCount,
+      hasMore: limitParam === 0 ? false : totalCount > offsetParam + limitParam,
     });
   } catch (error) {
     console.error("Error fetching products:", error);
     return NextResponse.json(
-      { error: "Failed to fetch products" },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }

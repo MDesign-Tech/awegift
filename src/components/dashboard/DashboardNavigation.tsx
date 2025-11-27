@@ -50,7 +50,7 @@ export default function DashboardNavigation() {
         label: "Overview",
         icon: "📊",
         path: `/dashboard/${role}`,
-        permission: "canViewOrders", // Base permission for dashboard access
+        permission: "canViewOverview",
       },
       {
         id: "products",
@@ -89,7 +89,7 @@ export default function DashboardNavigation() {
       },
     ];
 
-    return allTabs.filter(tab => hasPermission(userRole as UserRole, tab.permission as keyof typeof hasPermission));
+    return allTabs.filter(tab => hasPermission(userRole as UserRole, tab.permission as any));
   };
 
   const tabs = getDashboardTabs(userRole);

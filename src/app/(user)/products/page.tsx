@@ -26,17 +26,24 @@ interface Props {
   }>;
 }
 
+export const absoluteUrl = (path: string) => {
+  const base = "http://localhost:3000";
+  return `${base}${path}`;
+};
+
+
 const ProductsPage = async ({ searchParams }: Props) => {
   // Await searchParams for Next.js 15 compatibility
   const params = await searchParams;
 
-  // Fetch all products and categories
+
+  // Fetch all products and categories from local API
   const [productsData, categoriesData] = await Promise.all([
-    getData(`https://dummyjson.com/products?limit=0`),
-    getData(`https://dummyjson.com/products/categories`),
+    getData(absoluteUrl(`/api/products?limit=0`)), // Get all products
+    getData(absoluteUrl(`/api/admin/categories`)), // Get categories from admin API
   ]);
 
-  let { products } = productsData;
+  let products = productsData.products || [];
   const allProducts = [...products]; // Keep original for filters
 
   // Extract unique brands from all products
@@ -183,3 +190,4 @@ const ProductsPage = async ({ searchParams }: Props) => {
 };
 
 export default ProductsPage;
+

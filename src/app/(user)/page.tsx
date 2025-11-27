@@ -9,9 +9,10 @@ import {
   getNewArrivals,
   getOffers,
 } from "./helpers/productHelpers";
+import { absoluteUrl } from "./products/page";
 
 export default async function Home() {
-  const endpoint = `https://dummyjson.com/products?limit=0`; // Fetch all products
+  const endpoint = absoluteUrl(`/api/products?limit=0`);
   const productData = await getData(endpoint);
   const allProducts = productData?.products || [];
 

@@ -31,8 +31,23 @@ export async function GET(request: NextRequest) {
     // Fetch all orders and filter based on role
     const ordersQuery = collection(db, "orders");
     const ordersSnapshot = await getDocs(ordersQuery);
+
+    // Fetch all users for name/email lookup
+    const usersQuery = collection(db, "users");
+    const usersSnapshot = await getDocs(usersQuery);
+    const usersMap = new Map();
+    usersSnapshot.docs.forEach((doc) => {
+      const userData = doc.data();
+      usersMap.set(doc.id, {
+        name: userData.name || userData.displayName || "Unknown User",
+        email: userData.email || "No Email",
+      });
+    });
+
     let orders = ordersSnapshot.docs.map((doc) => {
       const data = doc.data();
+      const userInfo = usersMap.get(data.userId) || { name: "Unknown User", email: "No Email" };
+
       return {
         id: doc.id,
         orderId: data.orderId,
@@ -47,8 +62,8 @@ export async function GET(request: NextRequest) {
           data.updatedAt?.toDate?.()?.toISOString() ||
           new Date().toISOString(),
         items: data.items || [],
-        customerEmail: data.userEmail || data.email,
-        customerName: data.customerName || (data.userEmail?.split('@')[0]) || "Customer",
+        customerEmail: userInfo.email,
+        customerName: userInfo.name,
         userId: data.userId,
         totalAmount: data.totalAmount || 0,
         paymentMethod: data.paymentMethod,

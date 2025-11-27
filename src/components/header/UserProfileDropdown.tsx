@@ -110,13 +110,13 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
     },
   ];
 
-  // Add admin dashboard link for admin users
+  // Add dashboard link for admin users
   const adminMenuItems = isAdminUser
     ? [
         {
           href: getDefaultDashboardRoute(currentUser.role as any || "user"),
           icon: FaShieldAlt,
-          label: "Admin Dashboard",
+          label: `${getRoleDisplayName(currentUser.role as any)} Dashboard`,
         },
       ]
     : [];
@@ -166,6 +166,11 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
                 {user?.name}
               </p>
               <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+              {currentUser?.role && (
+                <p className="text-xs text-blue-600 font-medium mt-1">
+                  {getRoleDisplayName(currentUser.role as any)}
+                </p>
+              )}
             </div>
 
             {/* Menu Items */}
@@ -176,7 +181,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
                   href={`${item.href}`}
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors duration-200 ${
-                    item.label === "Admin Dashboard"
+                    item.label.includes("Dashboard")
                       ? "text-red-600 hover:bg-red-50 hover:text-red-700 border-t border-gray-100 mt-1 pt-3"
                       : "text-gray-700 hover:bg-gray-50 hover:text-sky-color"
                   }`}

@@ -36,9 +36,16 @@ export const useProductSearch = ({
     const endpoint = API_BASE_URL;
     try {
       const data = await getData(endpoint);
-      setProducts(data || []);
-      // Set first 10 products as suggested/trending products
-      setSuggestedProducts((data || []).slice(0, 10));
+      if (data && Array.isArray(data.products)) {
+        setProducts(data.products);
+        // Set first 10 products as suggested/trending products
+        setSuggestedProducts(data.products.slice(0, 10));
+      } else {
+        // Handle non-array responses (e.g., error objects)
+        console.error("Unexpected data format:", data);
+        setProducts([]);
+        setSuggestedProducts([]);
+      }
     } catch (error) {
       console.error("Error fetching products", error);
       setProducts([]);
@@ -70,8 +77,8 @@ export const useProductSearch = ({
       )}&limit=10`;
       const searchData = await getData(searchEndpoint);
 
-      if (Array.isArray(searchData)) {
-        setFilteredProducts(searchData);
+      if (searchData && Array.isArray(searchData.products)) {
+        setFilteredProducts(searchData.products);
       } else {
         // Fallback to local filtering if API search fails
         const filtered = products

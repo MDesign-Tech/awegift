@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { StatsSkeleton, DashboardCardSkeleton } from "./Skeletons";
 import { UserRole, hasPermission, getRoleBadgeColor, getRoleDisplayName } from "@/lib/rbac/roles";
 import { useUserSync } from "@/hooks/useUserSync";
+import AccessDenied from "./AccessDenied";
 import {
   FiTrendingUp,
   FiTrendingDown,
@@ -91,15 +92,7 @@ export default function DashboardAnalyticsClient() {
 
   // Handle access denied after all hooks
   if (!canViewAnalytics) {
-    return (
-      <div className="text-center py-12">
-        <FiBarChart className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">Access Denied</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          You don't have permission to view analytics data.
-        </p>
-      </div>
-    );
+    return <AccessDenied message="You don't have permission to view analytics data." />;
   }
 
   if (loading) {

@@ -8,6 +8,9 @@ export type UserRole =
   | "accountant";
 
 export interface RolePermissions {
+  // Dashboard access
+  canViewOverview: boolean;
+
   // Order management
   canViewOrders: boolean;
   canCreateOrders: boolean;
@@ -42,6 +45,7 @@ export interface RolePermissions {
 
 export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
   admin: {
+    canViewOverview: true,
     canViewOrders: true,
     canCreateOrders: true,
     canUpdateOrders: true,
@@ -67,6 +71,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canViewTransactions: true,
   },
   deliveryman: {
+    canViewOverview: false,
     canViewOrders: true,
     canCreateOrders: false,
     canUpdateOrders: true,
@@ -92,6 +97,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canViewTransactions: false,
   },
   packer: {
+    canViewOverview: false,
     canViewOrders: true,
     canCreateOrders: false,
     canUpdateOrders: true,
@@ -117,6 +123,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canViewTransactions: false,
   },
   user: {
+    canViewOverview: false,
     canViewOrders: true,
     canCreateOrders: true,
     canUpdateOrders: false,
@@ -142,9 +149,10 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canViewTransactions: false,
   },
   accountant: {
+    canViewOverview: true,
     canViewOrders: true,
     canCreateOrders: false,
-    canUpdateOrders: false,
+    canUpdateOrders: true,
     canDeleteOrders: false,
     canChangeOrderStatus: false,
     canViewProducts: true,
@@ -184,7 +192,7 @@ export function hasPermission(
 export function getRoleDisplayName(role: UserRole): string {
   const displayNames: Record<UserRole, string> = {
     admin: "Administrator",
-    deliveryman: "Delivery Person",
+    deliveryman: "Delivery Agent",
     packer: "Packer",
     user: "Customer",
     accountant: "Accountant",
@@ -204,6 +212,19 @@ export function getRoleBadgeColor(role: UserRole): string {
   };
 
   return colors[role];
+}
+
+// Get a description for a role
+export function getRoleDescription(role: UserRole): string {
+  const descriptions: Record<UserRole, string> = {
+    admin: "Full system access and management",
+    deliveryman: "Shipping and delivery management",
+    packer: "Order fulfillment and packaging",
+    user: "Basic customer access",
+    accountant: "Financial management and reporting",
+  };
+
+  return descriptions[role];
 }
 
 // Get default route for a role (redirect after login)

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { TableSkeleton } from "./Skeletons";
 import { toast } from "react-hot-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -24,6 +25,7 @@ import PriceFormat from "@/components/PriceFormat";
 import { ProductType } from '../../../type';
 
 export default function DashboardProductsClient() {
+  const router = useRouter();
   const { user, isAdmin, userRole } = useCurrentUser();
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -97,6 +99,13 @@ export default function DashboardProductsClient() {
         const res = await fetch("/api/admin/categories");
         if (res.ok) {
           const data = await res.json();
+
+          // Check for unauthorized error
+          if (data.error === "Unauthorized") {
+            router.push("/auth/signin");
+            return;
+          }
+
           const categoryNames = data.map((cat: any) => cat.name);
           setAllCategories(categoryNames);
         }

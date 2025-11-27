@@ -30,6 +30,8 @@ export interface ProductType {
   thumbnail: string;
   tags: string[];
   returnPolicy: string;
+  reviews: Review[];
+  rating: number;
   warrantyInformation: string;
   shippingInformation: string;
   quantity?: number;
@@ -86,6 +88,8 @@ export interface UserData {
 export interface OrderData {
   id: string;
   userId: string;
+  customerName: string;
+  customerEmail: string;
   status: OrderStatus;
   items: OrderItem[];
   totalAmount: number;

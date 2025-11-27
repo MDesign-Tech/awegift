@@ -511,10 +511,10 @@ export default function DashboardOrdersClient() {
                 <td className="px-3 py-4 whitespace-nowrap">
                   <div className="min-w-0">
                     <div className="text-sm font-medium text-gray-900 truncate">
-                      {order.userId}
+                      {order.customerName}
                     </div>
                     <div className="text-xs text-gray-500 truncate">
-                      {order.userId}
+                      {order.customerEmail}
                     </div>
                   </div>
                 </td>
@@ -727,13 +727,13 @@ export default function DashboardOrdersClient() {
                       Customer
                     </dt>
                     <dd className="text-sm text-gray-900">
-                      {viewOrderModal.userId}
+                      {viewOrderModal.customerName}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Email</dt>
                     <dd className="text-sm text-gray-900">
-                      {viewOrderModal.userId}
+                      {viewOrderModal.customerEmail}
                     </dd>
                   </div>
                   <div>
@@ -866,7 +866,7 @@ export default function DashboardOrdersClient() {
               <div className="mt-3 bg-gray-50 rounded-lg p-3">
                 <div className="text-sm text-gray-700">
                   <div>
-                    <strong>Customer:</strong> {deleteOrderModal.userId}
+                    <strong>Customer:</strong> {deleteOrderModal.customerName}
                   </div>
                   <div>
                     <strong>Amount:</strong>{" "}

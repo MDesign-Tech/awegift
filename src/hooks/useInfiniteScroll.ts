@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { ProductType } from "../../type";
 
 interface UseInfiniteProductsReturn {
@@ -20,6 +21,7 @@ export const useInfiniteProducts = (
   searchQuery?: string,
   categoryFilter?: string
 ): UseInfiniteProductsReturn => {
+  const router = useRouter();
   const [products, setProducts] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -55,6 +57,13 @@ export const useInfiniteProducts = (
       }
 
       const data = await response.json();
+
+      // Check for unauthorized error
+      if (data.error === "Unauthorized") {
+        router.push("/auth/signin");
+        return;
+      }
+
       const newProducts = data.products || [];
 
       if (isLoadMore) {

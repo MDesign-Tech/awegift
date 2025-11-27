@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   FiUsers,
@@ -15,6 +16,7 @@ import { StatsSkeleton, DashboardCardSkeleton } from "./Skeletons";
 import { hasPermission, getDefaultDashboardRoute } from "@/lib/rbac/roles";
 import { useUserSync } from "@/hooks/useUserSync";
 import PriceFormat from "@/components/PriceFormat";
+import AccessDenied from "./AccessDenied";
 
 interface Stats {
   totalUsers: number;
@@ -27,6 +29,7 @@ interface Stats {
 
 export default function DashboardOverviewClient() {
   const { data: session } = useSession();
+  const router = useRouter();
   const { user, isLoading: userLoading } = useUserSync();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,6 +48,13 @@ export default function DashboardOverviewClient() {
       const response = await fetch("/api/admin/stats");
       if (response.ok) {
         const data = await response.json();
+
+        // Check for unauthorized error
+        if (data.error === "Unauthorized") {
+          router.push("/auth/signin");
+          return;
+        }
+
         // Ensure numeric values are properly converted
         // Example normalization
         const normalizedStats = {
@@ -67,6 +77,9 @@ export default function DashboardOverviewClient() {
     }
   };
 
+  // Check if user has permission to view overview data
+  const canViewOverview = userRole && hasPermission(userRole as any, "canViewOverview");
+
   if (loading) {
     return (
       <div className="space-y-8">
@@ -77,6 +90,11 @@ export default function DashboardOverviewClient() {
         </div>
       </div>
     );
+  }
+
+  // Show access denied message for roles without overview permissions
+  if (!canViewOverview) {
+    return <AccessDenied />;
   }
 
   return (
