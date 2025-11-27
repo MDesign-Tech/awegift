@@ -1,44 +1,46 @@
-import { UserRole, OrderStatus } from "@/lib/rbac/roles";
+import { UserRole } from "@/lib/rbac/roles";
+import { OrderStatus, PaymentStatus, PaymentMethod } from "@/lib/orderStatus";
 
-type Review = {
+export type Review = {
   reviewerName: string;
   rating: number;
   comment: string;
   reviewerEmail: string;
 };
+
 export interface ProductType {
-  availabilityStatus: string;
-  brand: string;
-  category: string;
+  id: string;
+  title: string;
   description: string;
-  dimensions: {
-    depth: number;
-    height: number;
-    width: number;
-  };
+  brand: string;
+  sku: string,
+  category: string;
+  price: number;
+  stock: number;
+  minimumOrderQuantity: number;
+  availabilityStatus: string;
   discountPercentage: number;
-  id: number;
+  weight: number;
+  dimensions: {
+    width: number;
+    height: number;
+    depth: number;
+  };
   images: string[];
+  thumbnail: string;
+  tags: string[];
+  returnPolicy: string;
+  reviews: Review[];
+  rating: number;
+  warrantyInformation: string;
+  shippingInformation: string;
+  quantity?: number;
   meta: {
     createdAt: string;
     updatedAt: string;
     barcode: string;
     qrCode: string;
   };
-  minimumOrderQuantity: number;
-  price: number;
-  rating: number;
-  returnPolicy: string;
-  reviews: Review[];
-  shippingInformation: string;
-  sku: string;
-  stock: number;
-  tags: string[];
-  thumbnail: string;
-  title: string;
-  warrantyInformation: string;
-  weight: number;
-  quantity?: number;
 }
 
 export interface StateType {
@@ -81,18 +83,19 @@ export interface UserData {
   };
   cart: ProductType[];
   wishlist: ProductType[];
-  orders: OrderData[];
 }
 
 export interface OrderData {
   id: string;
   userId: string;
+  customerName: string;
+  customerEmail: string;
   status: OrderStatus;
   items: OrderItem[];
   totalAmount: number;
   shippingAddress: Address;
-  paymentMethod: string;
-  paymentStatus: "pending" | "paid" | "failed" | "refunded";
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
   trackingNumber?: string;
   assignedDeliveryman?: string;
   assignedPacker?: string;
@@ -107,7 +110,7 @@ export interface OrderData {
 }
 
 export interface OrderItem {
-  productId: number;
+  productId: string;
   title: string;
   price: number;
   quantity: number;
@@ -121,4 +124,17 @@ export interface OrderStatusHistory {
   changedByRole: UserRole;
   timestamp: string;
   notes?: string;
+}
+
+
+export interface CategoryType {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  image: string;
+  meta?: {
+    createdAt: string;
+    updatedAt: string;
+  };
 }

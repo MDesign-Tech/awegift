@@ -15,6 +15,7 @@ interface UseProductSearchReturn {
   isLoading: boolean;
   hasSearched: boolean;
   clearSearch: () => void;
+  refetchProducts: () => Promise<void>;
 }
 
 export const useProductSearch = ({
@@ -28,23 +29,33 @@ export const useProductSearch = ({
   const [hasSearched, setHasSearched] = useState(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "https://dummyjson.com";
+  const API_BASE_URL = "/api/admin/products";
+
+  // Function to fetch products
+  const fetchProducts = async () => {
+    const endpoint = API_BASE_URL;
+    try {
+      const data = await getData(endpoint);
+      if (data && Array.isArray(data.products)) {
+        setProducts(data.products);
+        // Set first 10 products as suggested/trending products
+        setSuggestedProducts(data.products.slice(0, 10));
+      } else {
+        // Handle non-array responses (e.g., error objects)
+        console.error("Unexpected data format:", data);
+        setProducts([]);
+        setSuggestedProducts([]);
+      }
+    } catch (error) {
+      console.error("Error fetching products", error);
+      setProducts([]);
+      setSuggestedProducts([]);
+    }
+  };
 
   // Fetch all products on hook initialization (fallback)
   useEffect(() => {
-    const getProducts = async () => {
-      const endpoint = `${API_BASE_URL}/products`;
-      try {
-        const data = await getData(endpoint);
-        setProducts(data?.products || []);
-        // Set first 10 products as suggested/trending products
-        setSuggestedProducts((data?.products || []).slice(0, 10));
-      } catch (error) {
-        console.error("Error fetching products", error);
-      }
-    };
-    getProducts();
+    fetchProducts();
   }, [API_BASE_URL]);
 
   // Search function using API endpoint
@@ -61,12 +72,12 @@ export const useProductSearch = ({
 
     try {
       // Use API search endpoint for better results
-      const searchEndpoint = `${API_BASE_URL}/products/search?q=${encodeURIComponent(
+      const searchEndpoint = `/api/admin/products/search?q=${encodeURIComponent(
         searchTerm
       )}&limit=10`;
       const searchData = await getData(searchEndpoint);
 
-      if (searchData?.products) {
+      if (searchData && Array.isArray(searchData.products)) {
         setFilteredProducts(searchData.products);
       } else {
         // Fallback to local filtering if API search fails
@@ -126,5 +137,6 @@ export const useProductSearch = ({
     isLoading,
     hasSearched,
     clearSearch,
+    refetchProducts: fetchProducts,
   };
 };

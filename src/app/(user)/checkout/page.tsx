@@ -7,6 +7,7 @@ import Container from "@/components/Container";
 import PriceFormat from "@/components/PriceFormat";
 import { loadStripe } from "@stripe/stripe-js";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { OrderData } from "../../../../type";
 import {
   FiPackage,
   FiMapPin,
@@ -16,6 +17,7 @@ import {
   FiTruck,
 } from "react-icons/fi";
 import Link from "next/link";
+import { PAYMENT_METHODS, PAYMENT_STATUSES } from "@/lib/orderStatus";
 
 const CheckoutPage = () => {
   const { data: session } = useSession();
@@ -23,7 +25,7 @@ const CheckoutPage = () => {
   const searchParams = useSearchParams();
 
   const [loading, setLoading] = useState(true);
-  const [existingOrder, setExistingOrder] = useState<any>(null);
+  const [existingOrder, setExistingOrder] = useState<OrderData | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"stripe" | "cod" | null>(
     null
   );
@@ -60,25 +62,15 @@ const CheckoutPage = () => {
   const fetchExistingOrder = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/user/profile?email=${encodeURIComponent(
-          session?.user?.email || ""
-        )}`
-      );
-      const data = await response.json();
+      const response = await fetch(`/api/orders/${existingOrderId}`);
 
-      if (data.orders) {
-        const order = data.orders.find((o: any) => o.id === existingOrderId);
-        if (order) {
-          setExistingOrder(order);
-        } else {
-          // Order not found, redirect to orders page
-          router.push("/account/orders");
-        }
-      } else {
-        // No orders found, redirect to orders page
-        router.push("/account/orders");
+      if (!response.ok) {
+        throw new Error("Order not found");
       }
+
+      const data = await response.json();
+      setExistingOrder(data.order);
+
     } catch (error) {
       console.error("Error fetching order:", error);
       // On error, redirect to orders page
@@ -92,6 +84,8 @@ const CheckoutPage = () => {
     try {
       setPaymentProcessing(true);
 
+      if (!existingOrder) return;
+
       // Update order payment status to completed for COD
       const response = await fetch("/api/orders/update-payment", {
         method: "POST",
@@ -100,8 +94,8 @@ const CheckoutPage = () => {
         },
         body: JSON.stringify({
           orderId: existingOrder.id,
-          paymentStatus: "cash_on_delivery",
-          status: "confirmed",
+          paymentStatus: PAYMENT_STATUSES.CASH_ON_DELIVERY,
+          paymentMethod: PAYMENT_METHODS.CASH,
         }),
       });
 
@@ -120,6 +114,8 @@ const CheckoutPage = () => {
   };
 
   const handleStripePayment = async () => {
+    if (!existingOrder) return;
+
     try {
       setPaymentProcessing(true);
       const stripe = await loadStripe(
@@ -136,7 +132,7 @@ const CheckoutPage = () => {
           email: session?.user?.email,
           shippingAddress: existingOrder.shippingAddress,
           orderId: existingOrder.id,
-          orderAmount: existingOrder.amount,
+          orderAmount: existingOrder.totalAmount,
         }),
       });
 
@@ -163,8 +159,7 @@ const CheckoutPage = () => {
     } catch (error) {
       console.error("Error processing payment:", error);
       alert(
-        `Payment processing failed: ${
-          error instanceof Error ? error.message : "Please try again."
+        `Payment processing failed: ${error instanceof Error ? error.message : "Please try again."
         }`
       );
     } finally {
@@ -239,9 +234,11 @@ const CheckoutPage = () => {
             </Link>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                Order #{existingOrder?.orderId || existingOrderId}
+                Order #{existingOrder?.id}
               </h1>
-              <p className="text-gray-600">Choose your payment method</p>
+              <p className="text-gray-600">
+                Choose your payment method
+              </p>
             </div>
           </div>
         </div>
@@ -294,18 +291,16 @@ const CheckoutPage = () => {
                     className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg"
                   >
                     <div className="flex-shrink-0">
-                      {item.images && item.images[0] ? (
+                      {item.thumbnail ? (
                         <img
-                          src={item.images[0]}
-                          alt={item.name || item.title}
+                          src={item.thumbnail}
+                          alt={item.title}
                           className="w-20 h-20 rounded-lg object-cover"
                         />
                       ) : (
                         <div className="w-20 h-20 bg-gray-300 rounded-lg flex items-center justify-center">
                           <span className="text-lg font-medium text-gray-600">
-                            {(item.name || item.title)
-                              ?.charAt(0)
-                              ?.toUpperCase() || "P"}
+                            {item.title?.charAt(0)?.toUpperCase() || "P"}
                           </span>
                         </div>
                       )}
@@ -313,7 +308,7 @@ const CheckoutPage = () => {
 
                     <div className="flex-1">
                       <h4 className="font-medium text-gray-900 mb-1">
-                        {item.name || item.title}
+                        {item.title}
                       </h4>
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
                         <span>Qty: {item.quantity}</span>
@@ -325,7 +320,7 @@ const CheckoutPage = () => {
 
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">
-                        <PriceFormat amount={item.total} />
+                        <PriceFormat amount={item.price * item.quantity} />
                       </p>
                     </div>
                   </div>
@@ -342,10 +337,10 @@ const CheckoutPage = () => {
 
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="font-medium text-gray-900">
-                  {existingOrder?.shippingAddress?.name}
+                  {session?.user?.name || "Customer"}
                 </p>
                 <p className="text-sm text-gray-600 mt-1">
-                  {existingOrder?.shippingAddress?.address}
+                  {existingOrder?.shippingAddress?.street}
                 </p>
                 <p className="text-sm text-gray-600">
                   {existingOrder?.shippingAddress?.city},{" "}
@@ -372,14 +367,14 @@ const CheckoutPage = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total Amount</span>
                   <PriceFormat
-                    amount={parseFloat(existingOrder?.amount || "0")}
+                    amount={existingOrder?.totalAmount || 0}
                     className="font-semibold text-theme-color"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Payment Method Selection */}
+            {/* Payment Method Selection or Order Confirmation */}
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Choose Payment Method
@@ -388,11 +383,10 @@ const CheckoutPage = () => {
               <div className="space-y-3">
                 {/* Cash on Delivery */}
                 <div
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
-                    paymentMethod === "cod"
+                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${paymentMethod === "cod"
                       ? "border-theme-color bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
-                  }`}
+                    }`}
                   onClick={() => setPaymentMethod("cod")}
                 >
                   <div className="flex items-center">
@@ -406,11 +400,10 @@ const CheckoutPage = () => {
                       </p>
                     </div>
                     <div
-                      className={`w-4 h-4 rounded-full border-2 ${
-                        paymentMethod === "cod"
+                      className={`w-4 h-4 rounded-full border-2 ${paymentMethod === "cod"
                           ? "border-theme-color bg-theme-color"
                           : "border-gray-300"
-                      }`}
+                        }`}
                     >
                       {paymentMethod === "cod" && (
                         <div className="w-full h-full rounded-full bg-white scale-50"></div>
@@ -421,11 +414,10 @@ const CheckoutPage = () => {
 
                 {/* Stripe Payment */}
                 <div
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
-                    paymentMethod === "stripe"
+                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${paymentMethod === "stripe"
                       ? "border-theme-color bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
-                  }`}
+                    }`}
                   onClick={() => setPaymentMethod("stripe")}
                 >
                   <div className="flex items-center">
@@ -439,11 +431,10 @@ const CheckoutPage = () => {
                       </p>
                     </div>
                     <div
-                      className={`w-4 h-4 rounded-full border-2 ${
-                        paymentMethod === "stripe"
+                      className={`w-4 h-4 rounded-full border-2 ${paymentMethod === "stripe"
                           ? "border-theme-color bg-theme-color"
                           : "border-gray-300"
-                      }`}
+                        }`}
                     >
                       {paymentMethod === "stripe" && (
                         <div className="w-full h-full rounded-full bg-white scale-50"></div>
@@ -503,3 +494,4 @@ const CheckoutPage = () => {
 };
 
 export default CheckoutPage;
+

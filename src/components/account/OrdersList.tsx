@@ -12,32 +12,12 @@ import {
   FiTrash2,
 } from "react-icons/fi";
 import Link from "next/link";
-
-interface OrderItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  images: string[];
-  total: number;
-}
-
-interface Order {
-  id: string;
-  orderId: string;
-  amount: string;
-  currency: string;
-  status: string;
-  paymentStatus: string;
-  createdAt: string;
-  items: OrderItem[];
-  customerEmail: string;
-  customerName: string;
-}
+import { OrderData, OrderItem } from "../../../type";
+import { getStatusDisplayInfo } from "@/lib/orderStatus";
 
 interface OrdersListProps {
   showHeader?: boolean;
-  onOrdersChange?: (orders: Order[]) => void;
+  onOrdersChange?: (orders: OrderData[]) => void;
 }
 
 export default function OrdersList({
@@ -45,10 +25,10 @@ export default function OrdersList({
   onOrdersChange,
 }: OrdersListProps) {
   const { data: session } = useSession();
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -63,16 +43,17 @@ export default function OrdersList({
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/user/profile?email=${encodeURIComponent(
-          session?.user?.email || ""
-        )}`
-      );
-      const data = await response.json();
+      const response = await fetch("/api/orders");
 
+      if (!response.ok) {
+        throw new Error("Failed to fetch orders");
+      }
+
+      const data = await response.json();
+      console.log("Fetched orders:", data);
       if (data.orders && Array.isArray(data.orders)) {
         const sortedOrders = data.orders.sort(
-          (a: Order, b: Order) =>
+          (a: OrderData, b: OrderData) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         setOrders(sortedOrders);
@@ -94,23 +75,7 @@ export default function OrdersList({
     });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "confirmed":
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      case "processing":
-        return "bg-blue-100 text-blue-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const openOrderModal = (order: Order) => {
+  const openOrderModal = (order: OrderData) => {
     setSelectedOrder(order);
     setIsModalOpen(true);
   };
@@ -177,7 +142,7 @@ export default function OrdersList({
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
-                Order Details - {selectedOrder.orderId}
+                Order Details - {selectedOrder.id}
               </h3>
               <p className="text-sm text-gray-600">
                 Placed on {formatDate(selectedOrder.createdAt)}
@@ -202,9 +167,7 @@ export default function OrdersList({
                 <div>
                   <p className="text-sm text-gray-600">Status</p>
                   <span
-                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${getStatusColor(
-                      selectedOrder.status
-                    )}`}
+                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${getStatusDisplayInfo(selectedOrder.status).color}`}
                   >
                     {selectedOrder.status}
                   </span>
@@ -218,7 +181,7 @@ export default function OrdersList({
                 <div>
                   <p className="text-sm text-gray-600">Total Amount</p>
                   <p className="font-semibold text-gray-900">
-                    <PriceFormat amount={parseFloat(selectedOrder.amount)} />
+                    <PriceFormat amount={selectedOrder.totalAmount} />
                   </p>
                 </div>
               </div>
@@ -244,27 +207,27 @@ export default function OrdersList({
               <div className="space-y-4">
                 {selectedOrder.items.map((item, index) => (
                   <div
-                    key={`${item.id}-${index}`}
+                    key={`${item.productId}-${index}`}
                     className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
                   >
                     <div className="flex-shrink-0">
-                      {item.images && item.images[0] ? (
+                      {item.thumbnail ? (
                         <img
-                          src={item.images[0]}
-                          alt={item.name}
+                          src={item.thumbnail}
+                          alt={item.title}
                           className="w-20 h-20 rounded-lg object-cover"
                         />
                       ) : (
                         <div className="w-20 h-20 bg-gray-300 rounded-lg flex items-center justify-center">
                           <span className="text-lg font-medium text-gray-600">
-                            {item.name?.charAt(0)?.toUpperCase() || "P"}
+                            {item.title?.charAt(0)?.toUpperCase() || "P"}
                           </span>
                         </div>
                       )}
                     </div>
                     <div className="flex-1">
                       <h5 className="font-medium text-gray-900 mb-1">
-                        {item.name}
+                        {item.title}
                       </h5>
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
                         <span>Quantity: {item.quantity}</span>
@@ -275,7 +238,7 @@ export default function OrdersList({
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">
-                        <PriceFormat amount={item.total} />
+                        <PriceFormat amount={item.price * item.quantity} />
                       </p>
                     </div>
                   </div>
@@ -293,15 +256,19 @@ export default function OrdersList({
               >
                 Close
               </button>
-              {selectedOrder.status.toLowerCase() === "confirmed" &&
-                selectedOrder.paymentStatus.toLowerCase() === "paid" && (
-                  <Link
-                    href={`/account/orders/${selectedOrder.id}`}
-                    className="px-4 py-2 text-sm font-medium text-white bg-theme-color rounded-md hover:bg-theme-color/90 transition-colors"
-                  >
-                    Track Order
-                  </Link>
-                )}
+              {((selectedOrder.status.toLowerCase() === "confirmed" &&
+                selectedOrder.paymentStatus.toLowerCase() === "paid") ||
+              (selectedOrder.paymentMethod?.toLowerCase() === "online" &&
+               selectedOrder.paymentStatus.toLowerCase() !== "pending") ||
+              (selectedOrder.paymentMethod?.toLowerCase() === "cash" &&
+               selectedOrder.paymentStatus.toLowerCase() !== "pending")) && (
+                <Link
+                  href={`/account/orders/${selectedOrder.id}`}
+                  className="px-4 py-2 text-sm font-medium text-white bg-theme-color rounded-md hover:bg-theme-color/90 transition-colors"
+                >
+                  Track Order
+                </Link>
+              )}
               {selectedOrder.paymentStatus.toLowerCase() === "pending" && (
                 <Link
                   href={`/checkout?orderId=${selectedOrder.id}`}
@@ -476,10 +443,10 @@ export default function OrdersList({
                   <td className="px-3 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900 truncate">
-                        #{order.orderId}
+                        #{order.id}
                       </div>
                       <div className="text-xs text-gray-500 truncate">
-                        {order.customerEmail}
+                        User ID: {order.userId}
                       </div>
                     </div>
                   </td>
@@ -496,16 +463,16 @@ export default function OrdersList({
                             key={index}
                             className="inline-block h-6 w-6 rounded-full ring-2 ring-white overflow-hidden flex-shrink-0"
                           >
-                            {item.images && item.images[0] ? (
+                            {item.thumbnail ? (
                               <img
-                                src={item.images[0]}
-                                alt={item.name}
+                                src={item.thumbnail}
+                                alt={item.title}
                                 className="h-6 w-6 rounded-full object-cover"
                               />
                             ) : (
                               <div className="h-6 w-6 bg-gray-300 rounded-full flex items-center justify-center">
                                 <span className="text-xs font-medium text-gray-600">
-                                  {item.name?.charAt(0)?.toUpperCase() || "P"}
+                                  {item.title?.charAt(0)?.toUpperCase() || "P"}
                                 </span>
                               </div>
                             )}
@@ -519,9 +486,7 @@ export default function OrdersList({
                   </td>
                   <td className="px-3 py-4 whitespace-nowrap">
                     <span
-                      className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${getStatusColor(
-                        order.status
-                      )}`}
+                      className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${getStatusDisplayInfo(order.status).color}`}
                     >
                       {order.status}
                     </span>
@@ -531,7 +496,7 @@ export default function OrdersList({
                   </td>
                   <td className="px-3 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      <PriceFormat amount={parseFloat(order.amount)} />
+                      <PriceFormat amount={order.totalAmount} />
                     </div>
                   </td>
                   <td className="px-3 py-4">
@@ -543,16 +508,20 @@ export default function OrdersList({
                       >
                         <FiEye className="w-3 h-3" />
                       </button>
-                      {order.status.toLowerCase() === "confirmed" &&
-                        order.paymentStatus.toLowerCase() === "paid" && (
-                          <Link
-                            href={`/account/orders/${order.id}`}
-                            className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-                            title="Track Order"
-                          >
-                            Track
-                          </Link>
-                        )}
+                      {(order.status.toLowerCase() === "confirmed" &&
+                        order.paymentStatus.toLowerCase() === "paid") ||
+                      (order.paymentMethod?.toLowerCase() === "online" &&
+                       order.paymentStatus.toLowerCase() !== "pending") ||
+                      (order.paymentMethod?.toLowerCase() === "cash" &&
+                       order.paymentStatus.toLowerCase() !== "pending") ? (
+                        <Link
+                          href={`/account/orders/${order.id}`}
+                          className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                          title="Track Order"
+                        >
+                          Track
+                        </Link>
+                      ) : null}
                       {order.paymentStatus.toLowerCase() === "pending" && (
                         <Link
                           href={`/checkout?orderId=${order.id}`}
@@ -592,7 +561,7 @@ export default function OrdersList({
                 />
                 <div>
                   <h3 className="text-sm font-medium text-gray-900">
-                    #{order.orderId}
+                    #{order.id}
                   </h3>
                   <p className="text-xs text-gray-500">
                     {formatDate(order.createdAt)}
@@ -600,9 +569,7 @@ export default function OrdersList({
                 </div>
               </div>
               <span
-                className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${getStatusColor(
-                  order.status
-                )}`}
+                className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${getStatusDisplayInfo(order.status).color}`}
               >
                 {order.status}
               </span>
@@ -616,16 +583,16 @@ export default function OrdersList({
                       key={index}
                       className="inline-block h-6 w-6 rounded-full ring-1 ring-white overflow-hidden"
                     >
-                      {item.images && item.images[0] ? (
+                      {item.thumbnail ? (
                         <img
-                          src={item.images[0]}
-                          alt={item.name}
+                          src={item.thumbnail}
+                          alt={item.title}
                           className="h-6 w-6 rounded-full object-cover"
                         />
                       ) : (
                         <div className="h-6 w-6 bg-gray-300 rounded-full flex items-center justify-center">
                           <span className="text-xs font-medium text-gray-600">
-                            {item.name?.charAt(0)?.toUpperCase() || "P"}
+                            {item.title?.charAt(0)?.toUpperCase() || "P"}
                           </span>
                         </div>
                       )}
@@ -638,7 +605,7 @@ export default function OrdersList({
               </div>
               <div className="text-right">
                 <div className="text-sm font-medium text-gray-900">
-                  <PriceFormat amount={parseFloat(order.amount)} />
+                  <PriceFormat amount={order.totalAmount} />
                 </div>
               </div>
             </div>
@@ -655,15 +622,19 @@ export default function OrdersList({
                   <FiEye className="w-3 h-3 mr-1" />
                   View
                 </button>
-                {order.status.toLowerCase() === "confirmed" &&
-                  order.paymentStatus.toLowerCase() === "paid" && (
-                    <Link
-                      href={`/account/orders/${order.id}`}
-                      className="flex items-center justify-center px-3 py-1 text-xs bg-theme-color text-white rounded hover:bg-theme-color/90 transition-colors whitespace-nowrap"
-                    >
-                      Track
-                    </Link>
-                  )}
+                {(order.status.toLowerCase() === "confirmed" &&
+                  order.paymentStatus.toLowerCase() === "paid") ||
+                (order.paymentMethod?.toLowerCase() === "online" &&
+                 order.paymentStatus.toLowerCase() !== "pending") ||
+                (order.paymentMethod?.toLowerCase() === "cash" &&
+                 order.paymentStatus.toLowerCase() !== "pending") ? (
+                  <Link
+                    href={`/account/orders/${order.id}`}
+                    className="flex items-center justify-center px-3 py-1 text-xs bg-theme-color text-white rounded hover:bg-theme-color/90 transition-colors whitespace-nowrap"
+                  >
+                    Track
+                  </Link>
+                ) : null}
                 {order.paymentStatus.toLowerCase() === "pending" && (
                   <Link
                     href={`/checkout?orderId=${order.id}`}

@@ -1,3 +1,5 @@
+
+
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
 import {
@@ -7,15 +9,26 @@ import {
   getDocs,
   updateDoc,
   doc,
+  getDoc,
+  serverTimestamp,
 } from "firebase/firestore";
+import { OrderData } from "../../../../../type";
+import { PaymentStatus, canUpdatePaymentStatus } from "@/lib/orderStatus";
+import { auth } from "../../../../../auth";
+import { fetchUserFromFirestore } from "@/lib/firebase/userService";
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const {
       orderId,
-      email,
-      paymentStatus = "paid",
-      status,
+      paymentStatus,
+      paymentMethod,
     } = await request.json();
 
     if (!orderId) {
@@ -25,80 +38,56 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let userDoc;
-    let userData;
-
-    if (email) {
-      // Find the user by email (for existing flow)
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("email", "==", email));
-      const snapshot = await getDocs(q);
-
-      if (snapshot.empty) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
-      }
-
-      userDoc = snapshot.docs[0];
-      userData = userDoc.data();
-    } else {
-      // Find user by searching through all users' orders
-      const usersRef = collection(db, "users");
-      const usersSnapshot = await getDocs(usersRef);
-
-      let found = false;
-      for (const doc of usersSnapshot.docs) {
-        const data = doc.data();
-        if (data.orders && Array.isArray(data.orders)) {
-          const orderExists = data.orders.some(
-            (order: any) => order.id === orderId || order.orderId === orderId
-          );
-          if (orderExists) {
-            userDoc = doc;
-            userData = data;
-            found = true;
-            break;
-          }
-        }
-      }
-
-      if (!found) {
-        return NextResponse.json({ error: "Order not found" }, { status: 404 });
-      }
+    // Fetch user from Firestore
+    const user = await fetchUserFromFirestore(session.user.id);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (!userDoc || !userData) {
+    // Users can only update their own orders
+    const orderRef = doc(db, "orders", orderId);
+    const orderDoc = await getDoc(orderRef);
+
+    if (!orderDoc.exists()) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    // Find and update the specific order in the orders array
-    if (userData.orders && Array.isArray(userData.orders)) {
-      const updatedOrders = userData.orders.map((order: any) => {
-        if (order.id === orderId || order.orderId === orderId) {
-          return {
-            ...order,
-            paymentStatus: paymentStatus,
-            ...(status && { status }),
-            updatedAt: new Date().toISOString(),
-          };
-        }
-        return order;
-      });
+    const currentOrder = orderDoc.data() as OrderData;
 
-      // Update the user document with the modified orders array
-      await updateDoc(doc(db, "users", userDoc.id), {
-        orders: updatedOrders,
-      });
-
-      return NextResponse.json({
-        message: "Order updated successfully",
-        success: true,
-      });
-    } else {
-      return NextResponse.json(
-        { error: "No orders found for this user" },
-        { status: 404 }
-      );
+    if (currentOrder.userId !== user.id) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
+
+    const currentPaymentStatus = currentOrder.paymentStatus;
+
+    // Check if user has permission to update payment status
+    const userRole = user.role || "user";
+    if (!canUpdatePaymentStatus(userRole, currentOrder.paymentMethod as any, currentPaymentStatus, paymentStatus, paymentMethod)) {
+      return NextResponse.json({ error: "Insufficient permissions to update payment status" }, { status: 403 });
+    }
+
+    const updateData: any = {
+      updatedAt: serverTimestamp(),
+      updatedBy: session.user.email,
+    };
+
+    // Handle payment status update
+    if (paymentStatus && paymentStatus !== currentPaymentStatus) {
+      updateData.paymentStatus = paymentStatus;
+    }
+
+    // Handle payment method update
+    if (paymentMethod && paymentMethod !== currentOrder.paymentMethod) {
+      updateData.paymentMethod = paymentMethod;
+    }
+
+    // Update the order
+    await updateDoc(orderRef, updateData);
+
+    return NextResponse.json({
+      message: "Order updated successfully",
+      success: true,
+    });
   } catch (error) {
     console.error("Error updating order:", error);
     return NextResponse.json(

@@ -7,11 +7,11 @@ import Container from "@/components/Container";
 import PriceFormat from "@/components/PriceFormat";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Link from "next/link";
+import { OrderData } from "../../../../../../type";
+import { getStatusDisplayInfo } from "@/lib/orderStatus";
 import {
   FiPackage,
   FiTruck,
-  FiCheckCircle,
-  FiClock,
   FiMapPin,
   FiCalendar,
   FiCreditCard,
@@ -19,45 +19,15 @@ import {
   FiDownload,
   FiPhone,
   FiMail,
+  FiCheckCircle,
 } from "react-icons/fi";
 
-interface OrderItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  images: string[];
-  total: number;
-}
-
-interface Order {
-  id: string;
-  orderId: string;
-  amount: string;
-  currency: string;
-  status: string;
-  paymentStatus: string;
-  createdAt: string;
-  items: OrderItem[];
-  customerEmail: string;
-  customerName: string;
-  shippingAddress?: {
-    name: string;
-    address: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
-  trackingNumber?: string;
-  estimatedDelivery?: string;
-}
 
 const OrderTrackingPage = () => {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,41 +42,25 @@ const OrderTrackingPage = () => {
   const fetchOrderDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/user/profile?email=${encodeURIComponent(
-          session?.user?.email || ""
-        )}`
-      );
+      const response = await fetch(`/api/orders/${orderId}`);
 
       if (!response.ok) {
-        throw new Error("Failed to fetch user data");
+        if (response.status === 404) {
+          throw new Error(`Order ${orderId} not found. It may not exist or you may not have permission to view it.`);
+        }
+        throw new Error("Failed to fetch order details");
       }
 
       const data = await response.json();
 
-      // Find the specific order from the user's orders
-      if (data.orders && Array.isArray(data.orders)) {
-        const foundOrder = data.orders.find(
-          (order: Order) => order.id === orderId || order.orderId === orderId
-        );
-        if (foundOrder) {
-          setOrder(foundOrder);
-        } else {
-          // Check if user has any orders at all
-          if (data.orders.length === 0) {
-            throw new Error("You haven't placed any orders yet. Start shopping to create your first order!");
-          } else {
-            throw new Error(`Order ${orderId} not found. It may not exist or you may not have permission to view it.`);
-          }
-        }
+      if (data.order) {
+        setOrder(data.order);
       } else {
-        // Handle case where orders array doesn't exist in response
-        console.warn("Orders data not found in user profile response:", data);
-        throw new Error("Unable to load order details. Please check your internet connection and try again.");
+        throw new Error(`Order ${orderId} not found. It may not exist or you may not have permission to view it.`);
       }
     } catch (err) {
       console.error("Error fetching order:", err);
-      setError("Failed to load order details");
+      setError(err instanceof Error ? err.message : "Failed to load order details");
     } finally {
       setLoading(false);
     }
@@ -120,43 +74,6 @@ const OrderTrackingPage = () => {
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "confirmed":
-        return "text-blue-600 bg-blue-50 border-blue-200";
-      case "processing":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200";
-      case "shipped":
-        return "text-purple-600 bg-purple-50 border-purple-200";
-      case "delivered":
-      case "completed":
-        return "text-green-600 bg-green-50 border-green-200";
-      case "cancelled":
-        return "text-red-600 bg-red-50 border-red-200";
-      default:
-        return "text-gray-600 bg-gray-50 border-gray-200";
-    }
-  };
-
-  const getTrackingSteps = () => {
-    const steps = [
-      { id: "confirmed", label: "Order Confirmed", icon: FiCheckCircle },
-      { id: "processing", label: "Processing", icon: FiClock },
-      { id: "shipped", label: "Shipped", icon: FiTruck },
-      { id: "delivered", label: "Delivered", icon: FiPackage },
-    ];
-
-    const currentStatus = order?.status.toLowerCase();
-    const statusOrder = ["confirmed", "processing", "shipped", "delivered"];
-    const currentIndex = statusOrder.indexOf(currentStatus || "");
-
-    return steps.map((step, index) => ({
-      ...step,
-      completed: index <= currentIndex,
-      active: index === currentIndex,
-    }));
   };
 
   if (loading) {
@@ -204,7 +121,14 @@ const OrderTrackingPage = () => {
     );
   }
 
-  const trackingSteps = getTrackingSteps();
+  // Simple tracking steps based on order status
+  const trackingSteps = [
+    { id: "pending", label: "Order Placed", completed: true, active: order.status === "pending", icon: FiPackage },
+    { id: "confirmed", label: "Order Confirmed", completed: ["confirmed", "packed", "out_for_delivery", "delivered"].includes(order.status), active: order.status === "confirmed", icon: FiCheckCircle },
+    { id: "packed", label: "Order Packed", completed: ["packed", "out_for_delivery", "delivered"].includes(order.status), active: order.status === "packed", icon: FiPackage },
+    { id: "shipped", label: "Out for Delivery", completed: ["out_for_delivery", "delivered"].includes(order.status), active: order.status === "out_for_delivery", icon: FiTruck },
+    { id: "delivered", label: "Delivered", completed: order.status === "delivered", active: false, icon: FiCheckCircle },
+  ];
 
   return (
     <ProtectedRoute loadingMessage="Loading order details...">
@@ -220,7 +144,7 @@ const OrderTrackingPage = () => {
             </Link>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                Order #{order.orderId}
+                Order #{order.id}
               </h1>
               <p className="text-gray-600">
                 Placed on {formatDate(order.createdAt)}
@@ -234,9 +158,7 @@ const OrderTrackingPage = () => {
               Download Receipt
             </button>
             <span
-              className={`px-4 py-2 text-sm font-medium rounded-lg border capitalize ${getStatusColor(
-                order.status
-              )}`}
+              className={`px-4 py-2 text-sm font-medium rounded-lg border capitalize ${getStatusDisplayInfo(order.status).color}`}
             >
               {order.status}
             </span>
@@ -321,13 +243,13 @@ const OrderTrackingPage = () => {
                 </div>
               )}
 
-              {order.estimatedDelivery && (
+              {order.deliveryDate && (
                 <div className="mt-4 p-4 bg-green-50 rounded-lg">
                   <h4 className="font-medium text-green-900 mb-2">
                     Estimated Delivery
                   </h4>
                   <p className="text-green-700 text-sm">
-                    {formatDate(order.estimatedDelivery)}
+                    {formatDate(order.deliveryDate)}
                   </p>
                 </div>
               )}
@@ -342,20 +264,20 @@ const OrderTrackingPage = () => {
               <div className="space-y-4">
                 {order.items.map((item, index) => (
                   <div
-                    key={`${item.id}-${index}`}
+                    key={`${item.productId}-${index}`}
                     className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg"
                   >
                     <div className="flex-shrink-0">
-                      {item.images && item.images[0] ? (
+                      {item.thumbnail ? (
                         <img
-                          src={item.images[0]}
-                          alt={item.name}
+                          src={item.thumbnail}
+                          alt={item.title}
                           className="w-20 h-20 rounded-lg object-cover"
                         />
                       ) : (
                         <div className="w-20 h-20 bg-gray-300 rounded-lg flex items-center justify-center">
                           <span className="text-lg font-medium text-gray-600">
-                            {item.name?.charAt(0)?.toUpperCase() || "P"}
+                            {item.title?.charAt(0)?.toUpperCase() || "P"}
                           </span>
                         </div>
                       )}
@@ -363,7 +285,7 @@ const OrderTrackingPage = () => {
 
                     <div className="flex-1">
                       <h4 className="font-medium text-gray-900 mb-1">
-                        {item.name}
+                        {item.title}
                       </h4>
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
                         <span>Qty: {item.quantity}</span>
@@ -375,7 +297,7 @@ const OrderTrackingPage = () => {
 
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">
-                        <PriceFormat amount={item.total} />
+                        <PriceFormat amount={item.price * item.quantity} />
                       </p>
                     </div>
                   </div>
@@ -398,7 +320,7 @@ const OrderTrackingPage = () => {
                   <div>
                     <p className="text-sm text-gray-600">Total Amount</p>
                     <p className="font-semibold">
-                      <PriceFormat amount={parseFloat(order.amount)} />
+                      <PriceFormat amount={order.totalAmount} />
                     </p>
                   </div>
                 </div>
@@ -436,10 +358,10 @@ const OrderTrackingPage = () => {
                   <FiMapPin className="w-5 h-5 text-gray-400 mt-1" />
                   <div>
                     <p className="font-medium text-gray-900">
-                      {order.shippingAddress.name}
+                      {session?.user?.name || "Customer"}
                     </p>
                     <p className="text-sm text-gray-600 mt-1">
-                      {order.shippingAddress.address}
+                      {order.shippingAddress.street}
                     </p>
                     <p className="text-sm text-gray-600">
                       {order.shippingAddress.city},{" "}

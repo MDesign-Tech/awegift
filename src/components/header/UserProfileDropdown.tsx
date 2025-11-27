@@ -11,7 +11,8 @@ import {
   FaShieldAlt,
 } from "react-icons/fa";
 import { signOut } from "next-auth/react";
-import { USER_ROLES } from "@/lib/rbac/permissions";
+import { getDefaultDashboardRoute, getRoleDisplayName } from "@/lib/rbac/roles";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface UserProfileDropdownProps {
   user: {
@@ -26,6 +27,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { user: currentUser } = useCurrentUser();
 
   const fallbackImage =
     "https://res.cloudinary.com/dlbqw7atu/image/upload/v1747734054/userImage_dhytay.png";
@@ -78,12 +80,12 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   };
 
   // Check if user has any admin role
-  const isAdminUser = user?.role && [
-    USER_ROLES.ADMIN,
-    USER_ROLES.ACCOUNT,
-    USER_ROLES.PACKER,
-    USER_ROLES.DELIVERYMAN
-  ].includes(user.role as any);
+  const isAdminUser = currentUser?.role && [
+    "admin",
+    "accountant",
+    "packer",
+    "deliveryman"
+  ].includes(currentUser.role as any);
 
   const menuItems = [
     {
@@ -108,13 +110,13 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
     },
   ];
 
-  // Add admin dashboard link for admin users
+  // Add dashboard link for admin users
   const adminMenuItems = isAdminUser
     ? [
         {
-          href: "/account/admin",
+          href: getDefaultDashboardRoute(currentUser.role as any || "user"),
           icon: FaShieldAlt,
-          label: "Admin Dashboard",
+          label: `${getRoleDisplayName(currentUser.role as any)} Dashboard`,
         },
       ]
     : [];
@@ -164,6 +166,11 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
                 {user?.name}
               </p>
               <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+              {currentUser?.role && (
+                <p className="text-xs text-blue-600 font-medium mt-1">
+                  {getRoleDisplayName(currentUser.role as any)}
+                </p>
+              )}
             </div>
 
             {/* Menu Items */}
@@ -171,10 +178,10 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
               {allMenuItems.map((item) => (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={`${item.href}`}
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors duration-200 ${
-                    item.label === "Admin Dashboard"
+                    item.label.includes("Dashboard")
                       ? "text-red-600 hover:bg-red-50 hover:text-red-700 border-t border-gray-100 mt-1 pt-3"
                       : "text-gray-700 hover:bg-gray-50 hover:text-sky-color"
                   }`}

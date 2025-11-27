@@ -33,11 +33,6 @@ export const getNewArrivals = (products: ProductType[]): ProductType[] => {
     return dateB.getTime() - dateA.getTime();
   });
 
-  // Fallback: if no dates available, get products with highest IDs (newer)
-  if (!newArrivals.some((p) => p.meta?.createdAt)) {
-    newArrivals = products.sort((a, b) => b.id - a.id);
-  }
-
   return newArrivals.slice(0, 8);
 };
 

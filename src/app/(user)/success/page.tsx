@@ -11,6 +11,7 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { useSession } from "next-auth/react";
+import { PAYMENT_STATUSES, PAYMENT_METHODS } from "@/lib/orderStatus";
 
 const SuccessPage = () => {
   const searchParams = useSearchParams();
@@ -42,7 +43,8 @@ const SuccessPage = () => {
           body: JSON.stringify({
             orderId,
             email: session?.user?.email,
-            paymentStatus: "paid",
+            paymentStatus: PAYMENT_STATUSES.PAID,
+            paymentMethod: PAYMENT_METHODS.ONLINE,
           }),
         });
 

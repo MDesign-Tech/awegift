@@ -4,7 +4,9 @@ import Title from "../Title";
 import Button from "../ui/Button";
 import PriceFormat from "../PriceFormat";
 import ShippingAddressSelector from "./ShippingAddressSelector";
-import { ProductType, Address } from "../../../type";
+import { ProductType, Address, OrderData } from "../../../type";
+import { ORDER_STATUSES } from "@/lib/orderStatus";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { CiDeliveryTruck } from "react-icons/ci";
@@ -28,6 +30,9 @@ const CartSummary = ({ cart }: Props) => {
   const { data: session } = useSession();
   const router = useRouter();
   const dispatch = useDispatch();
+
+  const userRole = session?.user?.role as UserRole;
+  const canPlaceOrder = hasPermission(userRole, "canCreateOrders");
 
   // Get free shipping threshold from environment
   const freeShippingThreshold =
@@ -64,6 +69,11 @@ const CartSummary = ({ cart }: Props) => {
       return;
     }
 
+    if (!canPlaceOrder) {
+      alert("You don't have permission to place orders.");
+      return;
+    }
+
     if (!selectedAddress) {
       alert("Please select a shipping address before placing your order.");
       return;
@@ -74,25 +84,37 @@ const CartSummary = ({ cart }: Props) => {
       // Calculate totals
       const finalTotal = totalAmt - discountAmt + shippingCost;
 
-      // Prepare order data
-      const orderData = {
+      // Generate order ID
+      const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+      // Prepare order data matching OrderData interface
+      const orderData: OrderData = {
+        id: orderId,
+        userId: "", // Will be set by API
+        status: ORDER_STATUSES.PENDING,
         items: cart.map((item: ProductType) => ({
-          id: item.id,
-          name: item.title,
+          productId: item.id,
+          title: item.title,
           price: item.price * (1 - item.discountPercentage / 100),
-          quantity: item.quantity,
-          images: item.images,
-          total:
-            item.price * (1 - item.discountPercentage / 100) * item.quantity!,
+          quantity: item.quantity!,
+          thumbnail: item.thumbnail || item.images?.[0] || "",
+          sku: item.sku || "",
         })),
-        amount: finalTotal.toString(),
-        currency: "USD",
-        status: "confirmed",
-        paymentStatus: "pending",
-        customerEmail: session?.user?.email,
-        customerName: session?.user?.name,
-        shippingAddress: selectedAddress,
+        totalAmount: finalTotal,
+        shippingAddress: selectedAddress!,
+        paymentMethod: "cash" as const, // Default to cash, will be updated in checkout
+        paymentStatus: "pending" as const,
+        statusHistory: [
+          {
+            status: ORDER_STATUSES.PENDING,
+            changedBy: session?.user?.email || "",
+            changedByRole: userRole,
+            timestamp: new Date().toISOString(),
+            notes: "Order placed from cart",
+          },
+        ],
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       // Place order
@@ -111,7 +133,7 @@ const CartSummary = ({ cart }: Props) => {
         dispatch(resetCart());
 
         // Navigate to checkout page with order ID for payment method selection
-        router.push(`/checkout?orderId=${result.orderId}`);
+        router.push(`/checkout?orderId=${result.id}`);
       } else {
         throw new Error("Failed to place order");
       }
@@ -123,7 +145,7 @@ const CartSummary = ({ cart }: Props) => {
     }
   };
 
-  const isCheckoutDisabled = session?.user && (!selectedAddress || placing);
+  const isCheckoutDisabled = session?.user && (!canPlaceOrder || !selectedAddress || placing);
 
   return (
     <section className="rounded-lg bg-gray-100 px-4 py-6 sm:p-10 lg:col-span-5 mt-16 lg:mt-0">
@@ -247,6 +269,8 @@ const CartSummary = ({ cart }: Props) => {
         >
           {!session?.user ? (
             "Sign in to Place Order"
+          ) : !canPlaceOrder ? (
+            "You don't have permission to place orders"
           ) : placing ? (
             <>
               <FiLoader className="animate-spin mr-2" />

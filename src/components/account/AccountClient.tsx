@@ -7,24 +7,8 @@ import ProfileEditForm from "@/components/account/ProfileEditForm";
 import Sidebar from "@/components/account/Sidebar";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useUserSync } from "@/hooks/useUserSync";
-import { USER_ROLES } from "@/lib/rbac/permissions";
-
-interface UserProfile {
-  firstName: string;
-  lastName: string;
-  phone: string;
-  addresses: Address[];
-}
-
-interface Address {
-  id?: string;
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  isDefault?: boolean;
-}
+import { UserRole, getDefaultDashboardRoute, getRoleDisplayName, getRoleBadgeColor } from "@/lib/rbac/roles";
+import { UserData } from "../../../type";
 
 export default function AccountClient() {
   const { data: session, update } = useSession();
@@ -33,7 +17,11 @@ export default function AccountClient() {
   useUserSync();
 
   const { user, isAdmin, isAuthenticated, userRole } = useCurrentUser();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  // Check if user has access to any dashboard (all roles except 'user' have dashboard access)
+  const hasDashboardAccess = userRole !== "user";
+
+  const [profile, setProfile] = useState<UserData['profile'] | null>(null);
   const [loading, setLoading] = useState(true);
   const [orderCount, setOrderCount] = useState(0);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -47,19 +35,24 @@ export default function AccountClient() {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch(
+      // Fetch profile
+      const profileResponse = await fetch(
         `/api/user/profile?email=${encodeURIComponent(
           session?.user?.email || ""
         )}`
       );
-      const data = await response.json();
+      const profileData = await profileResponse.json();
 
-      if (data.profile) {
-        setProfile(data.profile);
+      if (profileData.profile) {
+        setProfile(profileData.profile);
       }
 
-      if (data.orders && Array.isArray(data.orders)) {
-        setOrderCount(data.orders.length);
+      // Fetch orders count
+      const ordersResponse = await fetch("/api/orders");
+      const ordersData = await ordersResponse.json();
+
+      if (ordersData.orders && Array.isArray(ordersData.orders)) {
+        setOrderCount(ordersData.orders.length);
       }
 
       // User role is now available from the store via useCurrentUser hook
@@ -223,11 +216,7 @@ export default function AccountClient() {
               <p>
                 <span className="font-medium">Role:</span>{" "}
                 <span
-                  className={`px-2 py-1 rounded text-xs ${
-                    [USER_ROLES.ADMIN, USER_ROLES.ACCOUNT, USER_ROLES.PACKER, USER_ROLES.DELIVERYMAN].includes(userRole as any)
-                      ? "bg-red-100 text-red-800"
-                      : "bg-green-100 text-green-800"
-                  }`}
+                  className={`px-2 py-1 rounded text-xs ${getRoleBadgeColor(userRole as UserRole)}`}
                 >
                   {userRole}
                 </span>
@@ -288,19 +277,19 @@ export default function AccountClient() {
           </h3>
           <div
             className={`grid grid-cols-1 md:grid-cols-2 ${
-              [USER_ROLES.ADMIN, USER_ROLES.ACCOUNT, USER_ROLES.PACKER, USER_ROLES.DELIVERYMAN].includes(userRole as any) ? "lg:grid-cols-3" : "lg:grid-cols-4"
+              hasDashboardAccess ? "lg:grid-cols-3" : "lg:grid-cols-4"
             } gap-4`}
           >
-            {/* Admin Dashboard Button - Only show for admin users */}
-            {[USER_ROLES.ADMIN, USER_ROLES.ACCOUNT, USER_ROLES.PACKER, USER_ROLES.DELIVERYMAN].includes(userRole as any) && (
+            {/* Dashboard Button - Only show for users with dashboard access */}
+            {hasDashboardAccess && (
               <Link
-                href="/account/admin"
+                href={getDefaultDashboardRoute(userRole as UserRole)}
                 className="flex items-center p-4 border-2 border-red-200 bg-red-50 rounded-lg hover:border-red-400 hover:bg-red-100 transition-colors group"
               >
                 <div className="mr-3 text-2xl">👑</div>
                 <div>
                   <div className="font-medium text-red-800 group-hover:text-red-900">
-                    Admin Dashboard
+                    {getRoleDisplayName(userRole as UserRole)} Dashboard
                   </div>
                   <div className="text-sm text-red-600">Super user access</div>
                 </div>

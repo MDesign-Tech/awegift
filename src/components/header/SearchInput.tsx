@@ -101,9 +101,9 @@ const SearchInput = () => {
               </div>
             ) : filteredProducts?.length > 0 ? (
               <div className="flex flex-col">
-                {filteredProducts?.map((item: ProductType) => (
+                {filteredProducts?.map((item: ProductType, index: number) => (
                   <Link
-                    key={item?.id}
+                    key={`${item?.id}-${index}`}
                     href={{
                       pathname: `/products/${item?.id}`,
                       query: { id: item?.id },
@@ -153,9 +153,9 @@ const SearchInput = () => {
                     Trending Products
                   </p>
                 </div>
-                {suggestedProducts?.map((item: ProductType) => (
+                {suggestedProducts?.map((item: ProductType, index: number) => (
                   <Link
-                    key={item?.id}
+                    key={`${item?.id}-${index}`}
                     href={{
                       pathname: `/products/${item?.id}`,
                       query: { id: item?.id },

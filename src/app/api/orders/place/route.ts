@@ -1,62 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
 import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
   doc,
-  arrayUnion,
+  setDoc,
 } from "firebase/firestore";
+import { auth } from "../../../../../auth";
+import { OrderData } from "../../../../../type";
+
 
 export async function POST(request: NextRequest) {
   try {
-    const orderData = await request.json();
-    const { customerEmail } = orderData;
+    const session = await auth();
 
-    if (!customerEmail) {
-      return NextResponse.json(
-        { error: "Customer email required" },
-        { status: 400 }
-      );
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Find the user by email
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", customerEmail));
-    const snapshot = await getDocs(q);
+    const orderData: OrderData = await request.json();
+    const userId = session.user.id;
+    orderData.userId = userId;
 
-    if (snapshot.empty) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const userDoc = snapshot.docs[0];
-
-    // Generate a unique order ID
-    const orderId = `ORD-${Date.now()}-${Math.random()
-      .toString(36)
-      .substr(2, 9)
-      .toUpperCase()}`;
-
-    // Create the order object
-    const order = {
-      id: orderId,
-      orderId: orderId,
-      ...orderData,
-      createdAt: new Date().toISOString(),
-    };
-
-    // Add the order to the user's orders array
-    await updateDoc(doc(db, "users", userDoc.id), {
-      orders: arrayUnion(order),
-    });
+    // Save the order to the orders collection with custom ID
+    await setDoc(doc(db, "orders", orderData.id), orderData);
 
     return NextResponse.json({
       message: "Order placed successfully",
       success: true,
-      orderId: orderId,
-      order: order,
+      id: orderData.id,
     });
   } catch (error) {
     console.error("Error placing order:", error);

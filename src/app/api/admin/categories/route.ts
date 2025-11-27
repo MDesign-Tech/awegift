@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
 import { collection, getDocs, addDoc, query, orderBy, getCountFromServer, where } from "firebase/firestore";
-import { CategoryType } from "@/components/admin/CategoryForm";
+import { CategoryType } from "../../../../../type";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
+import { getToken } from "next-auth/jwt";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Allow unauthenticated access for public product browsing
+    // Authentication is only required for admin operations (POST, PUT, DELETE)
+
     const categoriesRef = collection(db, "categories");
     const q = query(categoriesRef, orderBy("name"));
     const snapshot = await getDocs(q);
@@ -20,7 +25,7 @@ export async function GET() {
       categories.map(async (category) => {
         try {
           const productsRef = collection(db, "products");
-          const productsQuery = query(productsRef, where("basicInformation.category", "==", category.name));
+          const productsQuery = query(productsRef, where("category", "==", category.name));
           const productsSnapshot = await getCountFromServer(productsQuery);
           const productCount = productsSnapshot.data().count;
 
@@ -48,8 +53,19 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as UserRole;
+    if (!hasPermission(userRole, "canCreateProducts")) { // Categories are related to products
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
     const categoryData: Omit<CategoryType, 'id' | 'meta'> = await request.json();
 
     // Validate required fields

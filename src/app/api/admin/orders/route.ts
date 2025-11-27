@@ -11,13 +11,15 @@ import {
   getDoc,
   query,
   orderBy,
+  where,
 } from "firebase/firestore";
+import { getVisibleOrderStatuses } from "@/lib/orderStatus";
 
 export async function GET(request: NextRequest) {
   try {
     // Check authentication and permissions
-    const token = await getToken({ req: request });
-    if (!token || !token.role) {
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role || !token.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -26,61 +28,62 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    // Fetch all orders from orders collection
-    const ordersRef = collection(db, "orders");
-    const ordersSnapshot = await getDocs(ordersRef);
+    // Fetch all orders and filter based on role
+    const ordersQuery = collection(db, "orders");
+    const ordersSnapshot = await getDocs(ordersQuery);
 
-    const orders: any[] = ordersSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    // Fetch all users to populate user data
-    const usersRef = collection(db, "users");
-    const usersSnapshot = await getDocs(usersRef);
-
+    // Fetch all users for name/email lookup
+    const usersQuery = collection(db, "users");
+    const usersSnapshot = await getDocs(usersQuery);
     const usersMap = new Map();
     usersSnapshot.docs.forEach((doc) => {
       const userData = doc.data();
       usersMap.set(doc.id, {
-        id: doc.id,
         name: userData.name || userData.displayName || "Unknown User",
-        email: userData.email || "",
-        role: userData.role || "user",
-        createdAt: userData.createdAt || new Date().toISOString(),
-        orders: [],
+        email: userData.email || "No Email",
       });
     });
 
-    // Group orders by userId
-    const standaloneOrders: any[] = [];
-    orders.forEach((order) => {
-      if (order.userId && usersMap.has(order.userId)) {
-        usersMap.get(order.userId).orders.push(order);
-      } else {
-        standaloneOrders.push(order);
-      }
+    let orders = ordersSnapshot.docs.map((doc) => {
+      const data = doc.data();
+      const userInfo = usersMap.get(data.userId) || { name: "Unknown User", email: "No Email" };
+
+      return {
+        id: doc.id,
+        orderId: data.orderId,
+        amount: data.total || "0",
+        currency: "USD",
+        status: data.status,
+        paymentStatus: data.paymentStatus,
+        createdAt:
+          data.createdAt?.toDate?.()?.toISOString() ||
+          new Date().toISOString(),
+        updatedAt:
+          data.updatedAt?.toDate?.()?.toISOString() ||
+          new Date().toISOString(),
+        items: data.items || [],
+        customerEmail: userInfo.email,
+        customerName: userInfo.name,
+        userId: data.userId,
+        totalAmount: data.totalAmount || 0,
+        paymentMethod: data.paymentMethod,
+        shippingAddress: data.shippingAddress,
+        trackingNumber: data.trackingNumber,
+      };
     });
 
-    const users = Array.from(usersMap.values());
+    // Filter based on role
+    if (userRole === "user") {
+      // Regular users can only see their own orders
+      orders = orders.filter((order) => order.customerEmail === token.email);
+    } else if (userRole !== "admin" && userRole !== "accountant") {
+      // Role-based filtering for staff (packer, deliveryman)
+      const visibleStatuses = getVisibleOrderStatuses(userRole);
+      orders = orders.filter((order) => visibleStatuses.includes(order.status));
+    }
+    // Admin and accountant see all orders (no filter)
 
-    // Sort users by creation date
-    users.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-
-    return NextResponse.json(
-      {
-        users,
-        standaloneOrders,
-        totalUsers: users.length,
-        totalOrders:
-          users.reduce((sum, user) => sum + user.orders.length, 0) +
-          standaloneOrders.length,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ orders });
   } catch (error) {
     console.error("Error fetching orders:", error);
     return NextResponse.json(
@@ -93,7 +96,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     // Check authentication and permissions
-    const token = await getToken({ req: request });
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.role) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -193,7 +196,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Check authentication and permissions
-    const token = await getToken({ req: request });
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.role) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

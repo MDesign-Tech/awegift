@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasPermission } from "@/lib/rbac/roles";
+import { getToken } from "next-auth/jwt";
 import { db } from "@/lib/firebase/config";
 import {
   doc,
@@ -12,12 +13,22 @@ import {
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // TODO: Add proper authentication and permission checks
+    const { id } = await params;
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    const orderId = params.id;
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canUpdateOrders")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
+    const orderId = id;
     const body = await request.json();
     const { userId, updates } = body;
 
@@ -86,12 +97,22 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // TODO: Add proper authentication and permission checks
+    const { id } = await params;
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    const orderId = params.id;
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canDeleteOrders")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
+    const orderId = id;
 
     if (!orderId) {
       return NextResponse.json({ error: "Order ID required" }, { status: 400 });
@@ -160,12 +181,22 @@ export async function DELETE(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // TODO: Add proper authentication and permission checks
+    const { id } = await params;
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    const orderId = params.id;
+    const userRole = token.role as any;
+    if (!hasPermission(userRole, "canViewOrders")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
+    const orderId = id;
 
     if (!orderId) {
       return NextResponse.json({ error: "Order ID required" }, { status: 400 });

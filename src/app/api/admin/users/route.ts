@@ -1,16 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
-import { USER_ROLES } from "@/lib/rbac/permissions";
 import {
   collection,
   getDocs,
   doc,
   updateDoc,
   deleteDoc,
+  getDoc,
 } from "firebase/firestore";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
+import { getToken } from "next-auth/jwt";
 
 export async function GET(request: NextRequest) {
   try {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as UserRole;
+    if (!hasPermission(userRole, "canViewUsers")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
     // Fetch real users from Firebase
     const usersSnapshot = await getDocs(collection(db, "users"));
     const users = usersSnapshot.docs.map((doc) => ({
@@ -29,11 +42,10 @@ export async function GET(request: NextRequest) {
     const usersWithOrderCount = users.map((user) => ({
       ...user,
       role: user.role || "user", // Default to 'user' role if not set
-      orders: orders.filter((order) => order.customerEmail === user.email)
-        .length,
+      orders: orders.filter((order) => order.userId === user.id).length,
       totalSpent: orders
-        .filter((order) => order.customerEmail === user.email)
-        .reduce((sum, order) => sum + (order.total || 0), 0),
+        .filter((order) => order.userId === user.id)
+        .reduce((sum, order) => sum + (order.totalAmount || order.total || 0), 0),
     }));
 
     return NextResponse.json(usersWithOrderCount);
@@ -48,6 +60,17 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as UserRole;
+    if (!hasPermission(userRole, "canUpdateUsers")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
     const { userId, name, email, role } = await request.json();
 
     if (!userId) {
@@ -57,10 +80,10 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Validate role if provided
+    // Validate role if provided (admin role is set separately via setup API)
     if (role !== undefined) {
-      const validRoles = Object.values(USER_ROLES);
-      if (!validRoles.includes(role)) {
+      const validRoles: UserRole[] = ["user", "deliveryman", "packer", "accountant"];
+      if (!validRoles.includes(role as UserRole)) {
         return NextResponse.json(
           { error: `Invalid role. Valid roles are: ${validRoles.join(", ")}` },
           { status: 400 }
@@ -95,10 +118,32 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as UserRole;
+    if (!hasPermission(userRole, "canDeleteUsers")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
     const { userId } = await request.json();
 
     if (!userId) {
       return NextResponse.json({ error: "User ID required" }, { status: 400 });
+    }
+
+    // Prevent deletion of admin users
+    const userRef = doc(db, "users", userId);
+    const userSnapshot = await getDoc(userRef);
+
+    if (userSnapshot.exists()) {
+      const userData = userSnapshot.data();
+      if (userData.role === "admin") {
+        return NextResponse.json({ error: "Cannot delete admin users" }, { status: 403 });
+      }
     }
 
     // Delete user from Firebase
