@@ -65,7 +65,7 @@ export const useInfiniteProducts = (
         offsetRef.current = initialLimit;
       }
 
-      setHasMore(data.hasMore !== false && newProducts.length === initialLimit);
+      setHasMore(data.hasMore === true);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -77,21 +77,21 @@ export const useInfiniteProducts = (
   }, [apiEndpoint, initialLimit, searchQuery, categoryFilter]);
 
   const loadMore = useCallback(() => {
-    if (!loadingMore && hasMore) {
+    if (!loadingMore && hasMore && !loading) {
       fetchProducts(true);
     }
-  }, [fetchProducts, loadingMore, hasMore]);
+  }, [fetchProducts, loadingMore, hasMore, loading]);
 
-  const reset = useCallback(() => {
+  const reset = useCallback(async () => {
     setProducts([]);
     offsetRef.current = 0;
     setHasMore(true);
     setError(null);
-    fetchProducts(false);
+    await fetchProducts(false);
   }, [fetchProducts]);
 
   const refetch = useCallback(async () => {
-    reset();
+    await reset();
   }, [reset]);
 
   // Initial load
@@ -130,8 +130,8 @@ export const useInfiniteScroll = (
       const element = containerRef?.current || document.documentElement;
       const { scrollTop, scrollHeight, clientHeight } = element;
 
-      // Trigger when user is 100px from bottom
-      if (scrollTop + clientHeight >= scrollHeight - 100) {
+      // Trigger when user is 200px from bottom
+      if (scrollTop + clientHeight >= scrollHeight - 200) {
         callback();
       }
     };

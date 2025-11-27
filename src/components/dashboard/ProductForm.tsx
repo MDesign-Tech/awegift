@@ -14,6 +14,16 @@ const generateSKU = (product: { category: string; brand: string; title: string; 
   return `${catCode}-${brandCode}-${productCode}-${uniqueId}`;
 };
 
+// Function to generate slug from name
+const generateSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+};
+
 interface ProductFormProps {
   product?: ProductType | null;
   onCancel: () => void;
@@ -47,8 +57,17 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
   });
 
   const [categories, setCategories] = useState<Array<{ id: string; name: string; slug: string }>>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [customCategory, setCustomCategory] = useState("");
   const [showCustomCategory, setShowCustomCategory] = useState(false);
+  const [showAddCategoryForm, setShowAddCategoryForm] = useState(false);
+  const [categoryFormData, setCategoryFormData] = useState({
+    name: "",
+    slug: "",
+    description: "",
+    image: "",
+  });
+  const [addingCategory, setAddingCategory] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [tagInput, setTagInput] = useState("");
   const [imageInput, setImageInput] = useState("");
@@ -66,6 +85,8 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
         }
       } catch (err) {
         console.error("Error fetching categories:", err);
+      } finally {
+        setCategoriesLoading(false);
       }
     };
     fetchCategories();
@@ -128,6 +149,59 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
 
   const handleDimensionChange = (dim: keyof ProductType['dimensions'], value: number) => {
     handleInputChange(`dimensions.${dim}`, value);
+  };
+
+  const handleCategoryFormChange = (field: string, value: string) => {
+    setCategoryFormData(prev => ({
+      ...prev,
+      [field]: value,
+      // Auto-generate slug when name changes
+      ...(field === "name" && { slug: generateSlug(value) }),
+    }));
+  };
+
+  const handleAddCategory = async () => {
+    if (!categoryFormData.name.trim() || !categoryFormData.description.trim()) {
+      toast.error("Category name and description are required");
+      return;
+    }
+
+    setAddingCategory(true);
+    try {
+      const response = await fetch("/api/admin/categories/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(categoryFormData),
+      });
+
+      if (response.ok) {
+        const newCategory = await response.json();
+        toast.success("Category added successfully!");
+
+        // Refresh categories list
+        const categoriesRes = await fetch("/api/admin/categories");
+        if (categoriesRes.ok) {
+          const updatedCategories = await categoriesRes.json();
+          setCategories(updatedCategories);
+          setCategoriesLoading(false);
+        }
+
+        // Auto-select the new category
+        handleInputChange("category", newCategory.name);
+
+        // Hide the form and reset
+        setShowAddCategoryForm(false);
+        setCategoryFormData({ name: "", slug: "", description: "", image: "" });
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to add category");
+      }
+    } catch (error) {
+      console.error("Error adding category:", error);
+      toast.error("Error adding category");
+    } finally {
+      setAddingCategory(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -214,33 +288,97 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
           value={formData.category}
           onChange={(e) => {
             const value = e.target.value;
-            if (value === "other") {
-              setShowCustomCategory(true);
-              setCustomCategory("");
+            if (value === "add-new") {
+              setShowAddCategoryForm(true);
+              setShowCustomCategory(false);
             } else {
               setShowCustomCategory(false);
+              setShowAddCategoryForm(false);
               handleInputChange("category", value);
             }
           }}
-          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color ${errors.category ? "border-red-500" : "border-gray-300"}`}
+          disabled={categoriesLoading}
+          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color ${errors.category ? "border-red-500" : "border-gray-300"} ${categoriesLoading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
-          <option value="">Select category</option>
+          <option value="">
+            {categoriesLoading ? "Loading categories..." : "Select category"}
+          </option>
           {categories.map(cat => (
             <option key={cat.id} value={cat.name}>{cat.name}</option>
           ))}
-          <option value="other">Other</option>
+          <option value="add-new">➕ Add New Category</option>
         </select>
-        {showCustomCategory && (
-          <input
-            type="text"
-            value={customCategory}
-            onChange={(e) => {
-              setCustomCategory(e.target.value);
-              handleInputChange("category", e.target.value);
-            }}
-            className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color mt-2"
-            placeholder="Enter custom category"
-          />
+
+        {showAddCategoryForm && (
+          <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <h4 className="text-md font-medium text-gray-900 mb-3">Add New Category</h4>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  value={categoryFormData.name}
+                  onChange={(e) => handleCategoryFormChange("name", e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color border-gray-300"
+                  placeholder="Category name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description *
+                </label>
+                <textarea
+                  value={categoryFormData.description}
+                  onChange={(e) => handleCategoryFormChange("description", e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color border-gray-300"
+                  placeholder="Category description"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Image URL
+                </label>
+                <input
+                  type="url"
+                  value={categoryFormData.image}
+                  onChange={(e) => handleCategoryFormChange("image", e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color border-gray-300"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleAddCategory}
+                  disabled={addingCategory}
+                  className="px-4 py-2 bg-theme-color text-white rounded-md hover:bg-theme-color/90 disabled:opacity-50 flex items-center"
+                >
+                  {addingCategory ? (
+                    <>
+                      <FiLoader className="animate-spin mr-2 h-4 w-4" />
+                      Adding...
+                    </>
+                  ) : (
+                    "Add Category"
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddCategoryForm(false);
+                    setCategoryFormData({ name: "", slug: "", description: "", image: "" });
+                  }}
+                  disabled={!product}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         )}
         {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
       </div>
@@ -502,13 +640,14 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
         <button
           type="button"
           onClick={onCancel}
-          className="px-6 py-2 border rounded-md hover:bg-gray-50"
+          disabled={addingCategory || !product}
+          className="px-6 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Cancel
         </button>
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || addingCategory}
           className="px-6 py-2 bg-theme-color text-white rounded-md disabled:opacity-50 flex items-center"
         >
           {loading ? (

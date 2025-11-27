@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       categories.map(async (category) => {
         try {
           const productsRef = collection(db, "products");
-          const productsQuery = query(productsRef, where("basicInformation.category", "==", category.name));
+          const productsQuery = query(productsRef, where("category", "==", category.name));
           const productsSnapshot = await getCountFromServer(productsQuery);
           const productCount = productsSnapshot.data().count;
 

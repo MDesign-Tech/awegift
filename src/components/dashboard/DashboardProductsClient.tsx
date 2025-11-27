@@ -71,6 +71,9 @@ export default function DashboardProductsClient() {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
 
+  // All categories state
+  const [allCategories, setAllCategories] = useState<string[]>([]);
+
   // Ref for scrollable container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -86,6 +89,23 @@ export default function DashboardProductsClient() {
       setIsRefreshing(false);
     }
   };
+
+  // Fetch all categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("/api/admin/categories");
+        if (res.ok) {
+          const data = await res.json();
+          const categoryNames = data.map((cat: any) => cat.name);
+          setAllCategories(categoryNames);
+        }
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   // Set initial loading to false when products are loaded
   useEffect(() => {
@@ -233,16 +253,16 @@ export default function DashboardProductsClient() {
   // Infinite scroll setup
   useInfiniteScroll(loadMore, hasMore, loadingMore || initialLoading, scrollContainerRef);
 
-  const categories = [...new Set(allProducts.map(p => p.category))];
+  const categories = allCategories;
 
-  // Show loading skeleton for initial load
-  if (loading) {
+  // Show loading skeleton for initial load and refresh
+  if (loading || isRefreshing) {
     return (
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">
-              Loading Products...
+              {isRefreshing ? "Refreshing Products..." : "Loading Products..."}
             </h2>
           </div>
         </div>
@@ -343,16 +363,6 @@ export default function DashboardProductsClient() {
 
       {/* Products Table */}
       <div ref={scrollContainerRef} className="overflow-x-auto relative max-h-[600px] overflow-y-auto">
-        {/* Show refreshing overlay */}
-        {isRefreshing && (
-          <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-10">
-            <div className="text-center">
-              <FiRefreshCw className="animate-spin mx-auto h-8 w-8 text-indigo-600 mb-2" />
-              <p className="text-sm text-gray-600">Refreshing products...</p>
-            </div>
-          </div>
-        )}
-        
         <table className="w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -378,7 +388,7 @@ export default function DashboardProductsClient() {
                 Stock
               </th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                Rating
+                Status
               </th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                 Actions
@@ -447,7 +457,7 @@ export default function DashboardProductsClient() {
                   </span>
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${product.price}
+                  <PriceFormat amount={product.price} />
                   {product.discountPercentage > 0 && (
                     <span className="text-green-600 ml-1">
                       (-{product.discountPercentage}%)
@@ -465,8 +475,18 @@ export default function DashboardProductsClient() {
                     {product.stock}
                   </span>
                 </td>
-                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ⭐ 0.0
+                <td className="px-3 py-4 whitespace-nowrap">
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    product.availabilityStatus === 'In Stock'
+                      ? 'bg-green-100 text-green-800'
+                      : product.availabilityStatus === 'Out of Stock'
+                      ? 'bg-red-100 text-red-800'
+                      : product.availabilityStatus === 'Low Stock'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {product.availabilityStatus}
+                  </span>
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex items-center space-x-1">

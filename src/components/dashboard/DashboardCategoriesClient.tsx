@@ -230,14 +230,14 @@ export default function DashboardCategoriesClient() {
   };
 
 
-  // Show loading skeleton for initial load
-  if (loading) {
+  // Show loading skeleton for initial load and refresh
+  if (loading || isRefreshing) {
     return (
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">
-              Loading Categories...
+              {isRefreshing ? "Refreshing Categories..." : "Loading Categories..."}
             </h2>
           </div>
         </div>
@@ -325,16 +325,6 @@ export default function DashboardCategoriesClient() {
 
       {/* Categories Table */}
       <div className="overflow-x-auto relative">
-        {/* Show refreshing overlay */}
-        {isRefreshing && (
-          <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-10">
-            <div className="text-center">
-              <FiRefreshCw className="animate-spin mx-auto h-8 w-8 text-indigo-600 mb-2" />
-              <p className="text-sm text-gray-600">Refreshing categories...</p>
-            </div>
-          </div>
-        )}
-
         <table className="w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -467,13 +457,8 @@ export default function DashboardCategoriesClient() {
       {/* Empty State */}
       {displayCategories.length === 0 && !searchLoading && !isRefreshing && (
         <div className="px-6 py-12 text-center">
-          <FiSearch className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No categories found</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            {searchTerm || hasSearched
-              ? "Try adjusting your search criteria."
-              : "Get started by adding your first category."}
-          </p>
+          <FiLoader className="mx-auto h-8 w-8 text-gray-400 animate-spin" />
+          <p className="mt-2 text-sm text-gray-500">Loading categories...</p>
         </div>
       )}
 
