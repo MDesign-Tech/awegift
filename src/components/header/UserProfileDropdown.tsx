@@ -137,11 +137,19 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
       >
         <Link href="/account" className="flex items-center">
           <div className="border border-gray-500 w-10 h-10 rounded-full text-xl overflow-hidden">
-            <img
-              src={!user?.image ? fallbackImage : user.image}
-              alt={user?.name || "User"}
-              className="w-full h-full rounded-full object-cover"
-            />
+            {user?.image ? (
+              <img
+                src={user.image}
+                alt={user?.name || "User"}
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full rounded-full bg-gray-300 flex items-center justify-center">
+                <span className="text-lg font-semibold text-gray-600">
+                  {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                </span>
+              </div>
+            )}
           </div>
         </Link>
         <div

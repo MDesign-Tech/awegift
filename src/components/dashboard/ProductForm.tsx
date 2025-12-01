@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FiLoader } from "react-icons/fi";
+import { FiLoader, FiX, FiUpload, FiTrash2 } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import { ProductType } from "../../../type";
+import { CldUploadWidget, CldImage } from 'next-cloudinary';
 
 const generateSKU = (product: { category: string; brand: string; title: string; id: string | number }) => {
   const { category, brand, title, id } = product;
@@ -12,16 +13,6 @@ const generateSKU = (product: { category: string; brand: string; title: string; 
   const productCode = title.substring(0, 3).toUpperCase();
   const uniqueId = id.toString().padStart(3, '0');
   return `${catCode}-${brandCode}-${productCode}-${uniqueId}`;
-};
-
-// Function to generate slug from name
-const generateSlug = (name: string): string => {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '') // Remove special characters
-    .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 };
 
 interface ProductFormProps {
@@ -51,6 +42,8 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
     returnPolicy: "30 days return policy",
     minimumOrderQuantity: 3,
     tags: [],
+    reviews: [],
+    rating: 1,
     images: [],
     thumbnail: "",
     meta: { createdAt: "", updatedAt: "", barcode: "", qrCode: "" },
@@ -70,7 +63,8 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
   const [addingCategory, setAddingCategory] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [tagInput, setTagInput] = useState("");
-  const [imageInput, setImageInput] = useState("");
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
 
 
 
@@ -156,7 +150,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
       ...prev,
       [field]: value,
       // Auto-generate slug when name changes
-      ...(field === "name" && { slug: generateSlug(value) }),
+      ...(field === "name" && { slug: value.toLowerCase().replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') }),
     }));
   };
 
@@ -339,15 +333,48 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Image URL
+                  Category Image
                 </label>
-                <input
-                  type="url"
-                  value={categoryFormData.image}
-                  onChange={(e) => handleCategoryFormChange("image", e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color border-gray-300"
-                  placeholder="https://example.com/image.jpg"
-                />
+                <CldUploadWidget
+                  uploadPreset="default_unsigned"
+                  onSuccess={(result: any) => {
+                    if (result?.info?.secure_url) {
+                      setCategoryFormData(prev => ({ ...prev, image: result.info.secure_url }));
+                      toast.success("Category image uploaded!");
+                    }
+                  }}
+                  onError={(error) => {
+                    console.error("Upload error:", error);
+                    toast.error("Failed to upload category image");
+                  }}
+                  options={{
+                    maxFiles: 1,
+                    resourceType: "image",
+                    folder: "categories"
+                  }}
+                >
+                  {({ open }) => (
+                    <button
+                      type="button"
+                      onClick={() => open()}
+                      className="flex items-center px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-theme-color text-sm"
+                    >
+                      <FiUpload className="mr-2 h-4 w-4" />
+                      Upload Image
+                    </button>
+                  )}
+                </CldUploadWidget>
+                {categoryFormData.image && (
+                  <div className="mt-2">
+                    <CldImage
+                      src={categoryFormData.image}
+                      alt="Category preview"
+                      width={80}
+                      height={80}
+                      className="w-20 h-20 object-cover border rounded-md"
+                    />
+                  </div>
+                )}
               </div>
               <div className="flex gap-2">
                 <button
@@ -526,79 +553,184 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
 
       {/* Media */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">Thumbnail URL</label>
-        <input
-          type="url"
-          value={formData.thumbnail}
-          onChange={(e) => handleInputChange("thumbnail", e.target.value)}
-          className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color"
-          placeholder="https://example.com/image.jpg"
-        />
+        <label className="block text-sm font-medium text-gray-700 mb-2">Thumbnail Image</label>
+
+        {/* Thumbnail Upload */}
+        <div className="mb-4">
+          <CldUploadWidget
+            uploadPreset="default_unsigned"
+            onSuccess={(result: any) => {
+              if (result?.info?.secure_url) {
+                handleInputChange("thumbnail", result.info.secure_url);
+                toast.success("Thumbnail uploaded successfully!");
+              }
+            }}
+            onError={(error) => {
+              console.error("Upload error:", error);
+              const errorMessage = "Failed to upload thumbnail";
+              toast.error(`Upload failed: ${errorMessage}`);
+            }}
+            options={{
+              maxFiles: 1,
+              resourceType: "image",
+              folder: "products/thumbnails"
+            }}
+          >
+            {({ open }) => (
+              <button
+                type="button"
+                onClick={() => open()}
+                disabled={uploadingThumbnail}
+                className="flex items-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-theme-color disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {uploadingThumbnail ? (
+                  <>
+                    <FiLoader className="animate-spin mr-2 h-4 w-4" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <FiUpload className="mr-2 h-4 w-4" />
+                    Upload Thumbnail
+                  </>
+                )}
+              </button>
+            )}
+          </CldUploadWidget>
+        </div>
+
+        {/* Thumbnail Preview */}
         {formData.thumbnail && (
-          <div className="mt-3">
-            <p className="text-xs text-gray-500 mb-1">Preview:</p>
-            <img
-              src={formData.thumbnail}
-              alt="Thumbnail Preview"
-              className="w-32 h-32 object-cover border rounded-md shadow-sm"
-            />
+          <div className="mb-4">
+            <p className="text-xs text-gray-500 mb-2">Thumbnail Preview:</p>
+            <div className="relative inline-block">
+              <CldImage
+                src={formData.thumbnail}
+                alt="Thumbnail Preview"
+                width={120}
+                height={120}
+                className="w-32 h-32 object-cover border rounded-md shadow-sm"
+              />
+              <button
+                type="button"
+                onClick={() => handleInputChange("thumbnail", "")}
+                className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700"
+                title="Remove thumbnail"
+              >
+                <FiX className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* IMAGES UPLOAD */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Product Images</label>
+
+        {/* Images Upload */}
+        <div className="mb-4">
+          <CldUploadWidget
+            uploadPreset="default_unsigned"
+            onSuccess={(result: any) => {
+              if (result?.info?.secure_url) {
+                const newImages = [...formData.images, result.info.secure_url];
+                handleInputChange("images", newImages);
+                toast.success("Image uploaded successfully!");
+              }
+              setUploadingImages(false);
+            }}
+            onError={(error) => {
+              console.error("Upload error:", error);
+              let errorMessage = "Failed to upload image";
+              if (typeof error === 'object' && error !== null) {
+                errorMessage = (error as any).message || (error as any).statusText || errorMessage;
+              } else if (typeof error === 'string') {
+                errorMessage = error;
+              }
+              toast.error(`Upload failed: ${errorMessage}`);
+              setUploadingImages(false);
+            }}
+            options={{
+              maxFiles: 10,
+              resourceType: "image",
+              folder: "products/gallery"
+            }}
+          >
+            {({ open }) => (
+              <button
+                type="button"
+                onClick={() => {
+                  setUploadingImages(true);
+                  open();
+                }}
+                disabled={uploadingImages}
+                className="flex items-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-theme-color disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {uploadingImages ? (
+                  <>
+                    <FiLoader className="animate-spin mr-2 h-4 w-4" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <FiUpload className="mr-2 h-4 w-4" />
+                    Upload Images
+                  </>
+                )}
+              </button>
+            )}
+          </CldUploadWidget>
+        </div>
+
+        {/* Images Preview Grid */}
+        {formData.images.length > 0 && (
+          <div className="mt-4">
+            <p className="text-sm font-medium text-gray-700 mb-3">
+              Product Images ({formData.images.length})
+              {uploadingImages && (
+                <span className="ml-2 text-blue-600 text-xs">(Uploading...)</span>
+              )}
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {formData.images.map((img, i) => (
+                <div key={`${img}-${i}`} className="relative group border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <CldImage
+                    src={img}
+                    alt={`Product image ${i + 1}`}
+                    width={200}
+                    height={200}
+                    className="w-full h-32 object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const filtered = formData.images.filter((_, index) => index !== i);
+                      handleInputChange("images", filtered);
+                      toast.success("Image removed");
+                    }}
+                    className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-700 hover:scale-110"
+                    title="Remove image"
+                  >
+                    <FiX className="h-3 w-3" />
+                  </button>
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Image {i + 1}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-      </div>
-
-      {/* IMAGES INPUT */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Images</label>
-
-        <textarea
-          value={imageInput}
-          onChange={(e) => setImageInput(e.target.value)}
-          rows={3}
-          className="w-full px-3 py-2 border rounded-md"
-          placeholder="Paste image URLs separated by commas"
-        />
-
-        <button
-          type="button"
-          onClick={() => {
-            if (!imageInput.trim()) return;
-
-            const urls = imageInput
-              .split(",")
-              .map(u => u.trim())
-              .filter(u => u.startsWith("http") && u.length > 5);
-
-            const merged = [...formData.images, ...urls];
-            const unique = [...new Set(merged)];
-
-            handleInputChange("images", unique);
-            setImageInput("");
-          }}
-          className="mt-2 px-4 py-2 bg-theme-color text-white rounded-md"
-        >
-          Add Images
-        </button>
-
-        {/* Preview Grid */}
-        {formData.images.length > 0 && (
-          <div className="grid grid-cols-3 gap-4 mt-4">
-            {formData.images.map((img, i) => (
-              <div key={i} className="relative">
-                <img src={img} className="w-full h-24 object-cover rounded-md border" />
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    const filtered = formData.images.filter((_, index) => index !== i);
-                    handleInputChange("images", filtered);
-                  }}
-                  className="absolute top-1 right-1 bg-red-600 text-white text-xs px-2 py-1 rounded"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+        {formData.images.length === 0 && (
+          <div className="mt-4">
+            <img
+              src="/placeholder-product.svg"
+              alt="No product images"
+              className="w-32 h-32 object-cover border rounded-md shadow-sm opacity-50"
+            />
+            <p className="text-sm text-gray-500 mt-2">No images uploaded yet. Click "Upload Images" to add product photos.</p>
           </div>
         )}
       </div>

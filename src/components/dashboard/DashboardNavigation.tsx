@@ -81,6 +81,20 @@ export default function DashboardNavigation() {
         permission: "canViewOrders",
       },
       {
+        id: "quotes",
+        label: "Quotes",
+        icon: "💬",
+        path: `/dashboard/${role}/quotes`,
+        permission: "canViewQuotes",
+      },
+      {
+        id: "notifications",
+        label: "Notifications",
+        icon: "🔔",
+        path: `/dashboard/${role}/notifications`,
+        permission: "canManageQuotes", // Only admins can manage notifications
+      },
+      {
         id: "analytics",
         label: "Analytics",
         icon: "📈",

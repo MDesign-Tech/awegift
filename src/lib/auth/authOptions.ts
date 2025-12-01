@@ -45,35 +45,44 @@ export const authConfig: NextAuthConfig = {
         }
 
         try {
-          // Query user from Firestore
-          const usersRef = collection(db, "users");
-          const q = query(usersRef, where("email", "==", credentials.email));
-          const querySnapshot = await getDocs(q);
+          // Add timeout to prevent hanging on Firestore connection issues
+          const authOperation = async () => {
+            // Query user from Firestore
+            const usersRef = collection(db, "users");
+            const q = query(usersRef, where("email", "==", credentials.email));
+            const querySnapshot = await getDocs(q);
 
-          if (querySnapshot.empty) {
-            return null;
-          }
+            if (querySnapshot.empty) {
+              return null;
+            }
 
-          const userDoc = querySnapshot.docs[0];
-          const userData = userDoc.data();
+            const userDoc = querySnapshot.docs[0];
+            const userData = userDoc.data();
 
-          // Verify password
-          const isPasswordValid = await bcrypt.compare(
-            credentials.password as string,
-            userData.password || ""
+            // Verify password
+            const isPasswordValid = await bcrypt.compare(
+              credentials.password as string,
+              userData.password || ""
+            );
+
+            if (!isPasswordValid) {
+              return null;
+            }
+
+            return {
+              id: userDoc.id,
+              email: userData.email,
+              name: userData.name,
+              image: userData.image || null,
+              role: userData.role || "user",
+            };
+          };
+
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Firestore timeout")), 5000)
           );
 
-          if (!isPasswordValid) {
-            return null;
-          }
-
-          return {
-            id: userDoc.id,
-            email: userData.email,
-            name: userData.name,
-            image: userData.image || null,
-            role: userData.role || "user",
-          };
+          return await Promise.race([authOperation(), timeoutPromise]) as any;
         } catch (error) {
           console.error("Auth error:", error);
           return null;
@@ -94,43 +103,54 @@ export const authConfig: NextAuthConfig = {
       // Handle OAuth providers (Google, GitHub)
       if (account?.provider === "google" || account?.provider === "github") {
         try {
-          // Check if user already exists in Firestore
-          const usersRef = collection(db, "users");
-          const q = query(usersRef, where("email", "==", user.email));
-          const querySnapshot = await getDocs(q);
+          // Add timeout to prevent hanging on Firestore connection issues
+          const firestoreOperation = async () => {
+            // Check if user already exists in Firestore
+            const usersRef = collection(db, "users");
+            const q = query(usersRef, where("email", "==", user.email));
+            const querySnapshot = await getDocs(q);
 
-          let userId = null;
+            let userId = null;
 
-          // If user doesn't exist, create them in Firestore
-          if (querySnapshot.empty && user.email) {
-            const docRef = await addDoc(usersRef, {
-              name: user.name || "",
-              email: user.email,
-              image: user.image || "",
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              emailVerified: true, // OAuth emails are verified by the provider
-              role: "user",
-              provider: account.provider,
-              profile: {
-                firstName: user.name?.split(" ")[0] || "",
-                lastName: user.name?.split(" ").slice(1).join(" ") || "",
-                phone: "",
-                addresses: [],
-              },
-              preferences: {
-                newsletter: false,
-                notifications: true,
-              },
-              cart: [],
-              wishlist: [],
-              orders: [],
-            });
-            userId = docRef.id;
-          } else {
-            // User exists, get their ID
-            userId = querySnapshot.docs[0].id;
-          }
+            // If user doesn't exist, create them in Firestore
+            if (querySnapshot.empty && user.email) {
+              const docRef = await addDoc(usersRef, {
+                name: user.name || "",
+                email: user.email,
+                image: user.image || "",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                emailVerified: true, // OAuth emails are verified by the provider
+                role: "user",
+                provider: account.provider,
+                profile: {
+                  firstName: user.name?.split(" ")[0] || "",
+                  lastName: user.name?.split(" ").slice(1).join(" ") || "",
+                  phone: "",
+                  addresses: [],
+                },
+                preferences: {
+                  newsletter: false,
+                  notifications: true,
+                },
+                cart: [],
+                wishlist: [],
+                orders: [],
+              });
+              userId = docRef.id;
+            } else {
+              // User exists, get their ID
+              userId = querySnapshot.docs[0].id;
+            }
+
+            return userId;
+          };
+
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Firestore timeout")), 5000)
+          );
+
+          const userId = await Promise.race([firestoreOperation(), timeoutPromise]) as string;
 
           // Store the Firestore document ID for later use
           user.id = userId;
@@ -138,6 +158,8 @@ export const authConfig: NextAuthConfig = {
           console.error("Error handling OAuth user:", error);
           // Don't prevent sign-in, just log the error
           // OAuth should still work even if Firestore write fails
+          // Generate a fallback ID for the user
+          user.id = user.email ? `oauth_${user.email.replace(/[^a-zA-Z0-9]/g, "_")}` : `oauth_${Date.now()}`;
         }
       }
       return true;
@@ -165,14 +187,20 @@ export const authConfig: NextAuthConfig = {
       // Always fetch the latest role from database to keep token up to date
       if (token.id) {
         try {
-          const userDoc = await getDoc(doc(db, "users", token.id as string));
+          // Add timeout to prevent hanging on Firestore connection issues
+          const userDocPromise = getDoc(doc(db, "users", token.id as string));
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Firestore timeout")), 5000)
+          );
+
+          const userDoc = await Promise.race([userDocPromise, timeoutPromise]) as any;
           if (userDoc.exists()) {
             const userData = userDoc.data();
             token.role = (userData.role as UserRole) || "user";
           }
         } catch (error) {
           console.error("Error fetching user role for token:", error);
-          // Keep existing role or default
+          // Keep existing role or default - don't fail authentication
           if (!token.role) {
             token.role = "user";
           }
@@ -193,7 +221,13 @@ export const authConfig: NextAuthConfig = {
 
         // Fetch the latest user data from Firestore to get the correct role
         try {
-          const userDoc = await getDoc(doc(db, "users", session.user.id));
+          // Add timeout to prevent hanging on Firestore connection issues
+          const userDocPromise = getDoc(doc(db, "users", session.user.id));
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Firestore timeout")), 5000)
+          );
+
+          const userDoc = await Promise.race([userDocPromise, timeoutPromise]) as any;
           if (userDoc.exists()) {
             const userData = userDoc.data();
             session.user.role = (userData.role as UserRole) || "user";
@@ -204,6 +238,7 @@ export const authConfig: NextAuthConfig = {
           }
         } catch (error) {
           console.error("Error fetching user data from Firestore:", error);
+          // Don't fail session creation, use token data as fallback
           session.user.role = (token.role as UserRole) || "user";
         }
 

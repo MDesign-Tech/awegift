@@ -25,6 +25,7 @@ import {
 } from "firebase/firestore";
 import { auth } from "../../../../auth";
 import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { sendOrderStatusNotification } from "@/lib/notifications/orderNotifications";
 
 // GET - Fetch orders based on user role
 export async function GET(request: NextRequest) {
@@ -118,6 +119,26 @@ export async function POST(request: NextRequest) {
     const docRef = await addDoc(collection(db, "orders"), newOrder);
 
     await updateDoc(docRef, { id: docRef.id });
+
+    // Send notification for order creation
+    try {
+      await sendOrderStatusNotification({
+        orderId: docRef.id,
+        userId: user.id,
+        userEmail: session.user.email,
+        userPhone: undefined, // Phone not available in order data
+        oldStatus: "",
+        newStatus: ORDER_STATUSES.PENDING,
+        orderDetails: {
+          totalAmount: orderData.totalAmount || 0,
+          items: orderData.items || [],
+          orderId: docRef.id,
+        },
+      });
+    } catch (notificationError) {
+      console.error("Failed to send order creation notification:", notificationError);
+      // Don't fail the order creation if notification fails
+    }
 
     return NextResponse.json({
       success: true,

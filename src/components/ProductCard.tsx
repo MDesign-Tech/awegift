@@ -57,19 +57,19 @@ const ProductCard = ({ product }: Props) => {
           }}
         >
           <img
-            src={product?.images[0]}
+            src={product?.thumbnail || "/placeholder-product.svg"}
             alt={product?.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
         </Link>
 
-        {product?.discountPercentage > 0 && (
+        {/* {product?.discountPercentage > 0 && (
           <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg z-10 animate-pulse">
             -{Math.round(product.discountPercentage)}% OFF
           </div>
-        )}
+        )} */}
 
-        {/* Stock Badge */}
+        {/* Stock Badge
         {product?.stock <= 5 && product?.stock > 0 && (
           <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
             Only {product.stock} left!
@@ -82,7 +82,7 @@ const ProductCard = ({ product }: Props) => {
               OUT OF STOCK
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Quick Actions */}
         <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
@@ -127,11 +127,11 @@ const ProductCard = ({ product }: Props) => {
           }}
         >
           <h3 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors line-clamp-1 mb-3 leading-tight">
-            {product?.title}
+            {product?.title}kkkkkkkkkkkk kkkkkkkk kkkkkkkk
           </h3>
         </Link>
 
-        {/* Rating */}
+        {/* Rating
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1">
             <div className="flex items-center">
@@ -156,7 +156,7 @@ const ProductCard = ({ product }: Props) => {
               In Stock
             </span>
           )}
-        </div>
+        </div> */}
 
         {/* Price */}
         <div className="mb-4">

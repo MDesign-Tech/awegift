@@ -14,6 +14,7 @@ import {
   where,
 } from "firebase/firestore";
 import { getVisibleOrderStatuses } from "@/lib/orderStatus";
+import { sendOrderStatusNotification } from "@/lib/notifications/orderNotifications";
 
 export async function GET(request: NextRequest) {
   try {
@@ -124,10 +125,37 @@ export async function PUT(request: NextRequest) {
       const orderDoc = await getDoc(orderRef);
 
       if (orderDoc.exists()) {
+        const currentOrderData = orderDoc.data();
+        const oldStatus = currentOrderData.status;
+        const newStatus = updateFields.status;
+
         await updateDoc(orderRef, {
           ...updateFields,
           updatedAt: new Date().toISOString(),
         });
+
+        // Send notification if status changed
+        if (newStatus && oldStatus !== newStatus) {
+          try {
+            await sendOrderStatusNotification({
+              orderId,
+              userId: currentOrderData.userId,
+              userEmail: currentOrderData.shippingAddress?.email || currentOrderData.customerEmail,
+              userPhone: currentOrderData.shippingAddress?.phone,
+              oldStatus,
+              newStatus,
+              orderDetails: {
+                totalAmount: currentOrderData.totalAmount || currentOrderData.amount || 0,
+                items: currentOrderData.items || [],
+                orderId: currentOrderData.orderId || orderId,
+              },
+            });
+          } catch (notificationError) {
+            console.error("Failed to send order notification:", notificationError);
+            // Don't fail the order update if notification fails
+          }
+        }
+
         return NextResponse.json({
           success: true,
           updated: "orders_collection",

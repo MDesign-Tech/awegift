@@ -4,7 +4,7 @@ import PriceFormat from "./PriceFormat";
 import { useSelector } from "react-redux";
 import { ProductType, StateType } from "../../type";
 
-const ProductPrice = ({ regularPrice, discountedPrice, product }: any) => {
+const ProductPrice = ({ regularPrice, product }: any) => {
   const [existingProduct, setExistingProduct] = useState<ProductType | null>(
     null
   );
@@ -19,14 +19,6 @@ const ProductPrice = ({ regularPrice, discountedPrice, product }: any) => {
     <div className="flex items-center gap-2">
       <PriceFormat
         className="font-semibold text-sky-color"
-        amount={
-          existingProduct
-            ? discountedPrice * existingProduct?.quantity!
-            : discountedPrice
-        }
-      />
-      <PriceFormat
-        className="text-gray-500 line-through font-normal"
         amount={
           existingProduct
             ? regularPrice * existingProduct?.quantity!
