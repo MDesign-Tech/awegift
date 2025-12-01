@@ -130,20 +130,15 @@ const ProductsPage = async ({ searchParams }: Props) => {
   };
 
   return (
-    <Container className="py-10">
+    <Container className="py-8">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
           {getPageTitle()}
         </h1>
-        <p className="text-gray-600 text-lg">
-          {params.category || params.search
-            ? `Found ${products.length} products`
-            : `Discover our complete collection of ${products.length} products`}
-        </p>
 
         {/* Breadcrumb */}
-        <nav className="mt-4 text-sm">
+        <nav className=" text-sm">
           <ol className="flex items-center space-x-2 text-gray-500">
             <li>
               <Link href="/" className="hover:text-gray-700">

@@ -1,9 +1,9 @@
 "use client";
 import { CiDeliveryTruck } from "react-icons/ci";
 import { useState } from "react";
+import Link from "next/link";
 import Container from "../Container";
 import ShippingModal from "../ShippingModal";
-import LanguageDropdown from "./LanguageDropdown";
 import CurrencyDropdown from "./CurrencyDropdown";
 import SettingsDropdown from "./SettingsDropdown";
 
@@ -33,7 +33,12 @@ const TopHeader = ({
            On Orders {freeShippingThreshold} RWF+
         </p>
         <div className="hidden md:inline-flex items-center text-sm text-white gap-1">
-          <LanguageDropdown />
+          <Link
+            href="/quote"
+            className="headerTopMenu cursor-pointer hover:text-orange-300 transition-colors"
+          >
+            Request Free Quote
+          </Link>
           <CurrencyDropdown />
           <SettingsDropdown />
         </div>

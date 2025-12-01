@@ -23,7 +23,6 @@ const InfiniteProductList = ({
   const [hasMore, setHasMore] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const observer = useRef<IntersectionObserver | null>(null);
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   // Reset when products change
@@ -63,7 +62,6 @@ const InfiniteProductList = ({
     } else {
       params.set("sort", sortValue);
     }
-    router.push(`/products?${params.toString()}`);
   };
 
   // Load more products

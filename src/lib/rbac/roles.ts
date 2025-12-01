@@ -31,6 +31,10 @@ export interface RolePermissions {
   canDeleteUsers: boolean;
   canChangeUserRoles: boolean; // can change roles, not dashboard access
 
+  // Quote management
+  canViewQuotes: boolean;
+  canManageQuotes: boolean;
+
   // Specific actions
   canManageInventory: boolean;
   canViewAnalytics: boolean;
@@ -60,6 +64,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canUpdateUsers: true,
     canDeleteUsers: true,
     canChangeUserRoles: true,
+    canViewQuotes: true,
+    canManageQuotes: true,
     canManageInventory: true,
     canViewAnalytics: true,
     canManageSettings: true,
@@ -86,6 +92,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canUpdateUsers: false,
     canDeleteUsers: false,
     canChangeUserRoles: false,
+    canViewQuotes: false,
+    canManageQuotes: false,
     canManageInventory: false,
     canViewAnalytics: false,
     canManageSettings: false,
@@ -112,6 +120,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canUpdateUsers: false,
     canDeleteUsers: false,
     canChangeUserRoles: false,
+    canViewQuotes: false,
+    canManageQuotes: false,
     canManageInventory: true,
     canViewAnalytics: false,
     canManageSettings: false,
@@ -138,6 +148,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canUpdateUsers: true, // Can update own profile
     canDeleteUsers: false,
     canChangeUserRoles: false,
+    canViewQuotes: false,
+    canManageQuotes: false,
     canManageInventory: false,
     canViewAnalytics: false,
     canManageSettings: false,
@@ -164,6 +176,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
     canUpdateUsers: false,
     canDeleteUsers: false,
     canChangeUserRoles: false,
+    canViewQuotes: true,
+    canManageQuotes: false,
     canManageInventory: false,
     canViewAnalytics: true,
     canManageSettings: false,

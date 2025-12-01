@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FiLoader } from "react-icons/fi";
+import { FiLoader, FiUpload, FiX } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import { CategoryType } from "../../../type";
+import { CldUploadWidget, CldImage } from 'next-cloudinary';
 
 // Function to generate slug from name
 const generateSlug = (name: string): string => {
@@ -76,9 +77,7 @@ export default function CategoryForm({ category, onCancel, onSuccess, refetchCat
         await refetchCategories();
         toast.success(category ? "Category updated successfully!" : "Category added successfully!");
         // Close modal after success message is shown
-        setTimeout(() => {
           onSuccess();
-        }, 1500);
       } else {
         const errorData = await response.json();
         toast.error(errorData.error || `Failed to ${category ? 'update' : 'add'} category`);
@@ -148,24 +147,77 @@ export default function CategoryForm({ category, onCancel, onSuccess, refetchCat
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Image URL</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Category Image</label>
 
-            <input
-              type="url"
-              value={formData.image}
-              onChange={(e) => handleInputChange("image", e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color"
-              placeholder="https://example.com/image.jpg"
-            />
+            {/* Image Upload */}
+            <CldUploadWidget
+              uploadPreset="default_unsigned"
+              onSuccess={(result: any) => {
+                if (result?.info?.secure_url) {
+                  handleInputChange("image", result.info.secure_url);
+                  toast.success("Category image uploaded successfully!");
+                }
+              }}
+              onError={(error) => {
+                console.error("Upload error:", error);
+                let errorMessage = "Failed to upload category image";
+                if (typeof error === 'object' && error !== null) {
+                  errorMessage = (error as any).message || (error as any).statusText || errorMessage;
+                } else if (typeof error === 'string') {
+                  errorMessage = error;
+                }
+                toast.error(`Upload failed: ${errorMessage}`);
+              }}
+              options={{
+                maxFiles: 1,
+                resourceType: "image",
+                folder: "categories"
+              }}
+            >
+              {({ open }) => (
+                <button
+                  type="button"
+                  onClick={() => open()}
+                  className="flex items-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-theme-color"
+                >
+                  <FiUpload className="mr-2 h-4 w-4" />
+                  Upload Image
+                </button>
+              )}
+            </CldUploadWidget>
 
+            {/* Image Preview */}
             {formData.image && (
               <div className="mt-3">
-                <p className="text-xs text-gray-500 mb-1">Preview:</p>
+                <p className="text-xs text-gray-500 mb-2">Preview:</p>
+                <div className="relative inline-block">
+                  <CldImage
+                    src={formData.image}
+                    alt="Category Preview"
+                    width={120}
+                    height={120}
+                    className="w-32 h-32 object-cover border rounded-md shadow-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange("image", "")}
+                    className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700"
+                    title="Remove image"
+                  >
+                    <FiX className="h-3 w-3" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!formData.image && (
+              <div className="mt-3">
                 <img
-                  src={formData.image}
-                  alt="Thumbnail Preview"
-                  className="w-32 h-32 object-cover border rounded-md shadow-sm"
+                  src="/category-placeholder.svg"
+                  alt="No category image"
+                  className="w-32 h-32 object-cover border rounded-md shadow-sm opacity-50"
                 />
+                <p className="text-sm text-gray-500 mt-2">No image uploaded yet. Click "Upload Image" to add a category image.</p>
               </div>
             )}
           </div>

@@ -2,6 +2,8 @@
 
 import React, { useState, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { CldUploadWidget, CldImage } from 'next-cloudinary';
+import { toast } from "react-hot-toast";
 
 interface ProfileEditFormProps {
   profile: {
@@ -31,7 +33,6 @@ export default function ProfileEditForm({
   const [imageUploading, setImageUploading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPasswordSection, setShowPasswordSection] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Check if user is using OAuth (no password needed) - can be detected by checking if they have an image from provider
   const isOAuthUser =
@@ -52,36 +53,6 @@ export default function ProfileEditForm({
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImageUploading(true);
-    try {
-      const formDataUpload = new FormData();
-      formDataUpload.append("image", file);
-      formDataUpload.append("email", formData.email);
-
-      const res = await fetch("/api/user/upload-image", {
-        method: "POST",
-        body: formDataUpload,
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setFormData((prev) => ({ ...prev, image: data.imageUrl }));
-      } else {
-        setErrors((prev) => ({
-          ...prev,
-          image: data.error || "Failed to upload image",
-        }));
-      }
-    } catch (err) {
-      setErrors((prev) => ({ ...prev, image: "Failed to upload image" }));
-    } finally {
-      setImageUploading(false);
-    }
-  };
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -141,9 +112,11 @@ export default function ProfileEditForm({
       <div className="text-center">
         <div className="relative inline-block">
           {formData.image ? (
-            <img
+            <CldImage
               src={formData.image}
               alt="Profile"
+              width={120}
+              height={120}
               className="w-[120px] h-[120px] rounded-full object-cover border-4 border-gray-200"
             />
           ) : (
@@ -177,21 +150,41 @@ export default function ProfileEditForm({
         </div>
 
         <div className="mt-4">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageUpload}
-            accept="image/*"
-            className="hidden"
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={imageUploading}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 transition-colors"
+          <CldUploadWidget
+            uploadPreset="profiles"
+            onSuccess={(result: any) => {
+              if (result?.info?.secure_url) {
+                setFormData((prev) => ({ ...prev, image: result.info.secure_url }));
+                toast.success("Profile image uploaded successfully!");
+              }
+            }}
+            onError={(error) => {
+              console.error("Upload error:", error);
+              let errorMessage = "Failed to upload profile image";
+              if (typeof error === 'object' && error !== null) {
+                errorMessage = (error as any).message || (error as any).statusText || errorMessage;
+              } else if (typeof error === 'string') {
+                errorMessage = error;
+              }
+              toast.error(`Upload failed: ${errorMessage}`);
+            }}
+            options={{
+              maxFiles: 1,
+              resourceType: "image",
+              folder: "profiles"
+            }}
           >
-            {imageUploading ? "Uploading..." : "Change Picture"}
-          </button>
+            {({ open }) => (
+              <button
+                type="button"
+                onClick={() => open()}
+                disabled={imageUploading}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 transition-colors"
+              >
+                {imageUploading ? "Uploading..." : "Change Picture"}
+              </button>
+            )}
+          </CldUploadWidget>
           <p className="text-sm text-gray-500 mt-2">
             JPG, GIF or PNG. Max size 5MB.
           </p>

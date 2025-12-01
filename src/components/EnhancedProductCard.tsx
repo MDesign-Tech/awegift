@@ -12,8 +12,8 @@ interface Props {
 
 const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
   const regularPrice = product?.price;
-  const discountedPrice =
-    product?.price - (product?.price * product?.discountPercentage) / 100;
+  // const discountedPrice =
+  //   product?.price - (product?.price * product?.discountPercentage) / 100;
 
   if (view === "list") {
     return (
@@ -28,13 +28,13 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
               }}
             >
               <img
-                src={product?.images[0]}
+                src={product?.thumbnail || "/placeholder-product.svg"}
                 alt={product?.title}
                 className="w-full h-full object-cover group-hover/image:scale-105 transition-transform duration-300"
               />
             </Link>
 
-            {product?.discountPercentage > 0 && (
+            {/* {product?.discountPercentage > 0 && (
               <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
                 -{Math.round(product.discountPercentage)}% OFF
               </div>
@@ -46,7 +46,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
                   OUT OF STOCK
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* Quick Actions */}
             <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover/image:opacity-100 transition-opacity">
@@ -89,7 +89,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
                   {product?.description}
                 </p>
 
-                <div className="flex items-center gap-3 mb-4">
+                {/* <div className="flex items-center gap-3 mb-4">
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
                       <FaStar
@@ -106,17 +106,16 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
                     ({product?.rating}) • {product?.reviews?.length || 0}{" "}
                     reviews
                   </span>
-                </div>
+                </div> */}
 
                 <ProductPrice
                   regularPrice={regularPrice}
-                  discountedPrice={discountedPrice}
                   product={product}
                 />
               </div>
 
               <div className="flex flex-col justify-between items-end ml-6 min-w-[140px]">
-                <div className="text-right">
+                {/* <div className="text-right">
                   <p className="text-sm text-gray-500 mb-1">Availability</p>
                   <div className="flex items-center gap-2">
                     <div
@@ -142,7 +141,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
                         : "Out of stock"}
                     </p>
                   </div>
-                </div>
+                </div> */}
 
                 <AddToCartButton
                   product={product}
@@ -170,24 +169,25 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
           }}
         >
           <img
-            src={product?.images[0]}
+            src={product?.thumbnail || "/placeholder-product.svg"}
             alt={product?.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
         </Link>
 
-        {product?.discountPercentage > 0 && (
+        {/* {product?.discountPercentage > 0 && (
           <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg z-10 animate-pulse">
             -{Math.round(product.discountPercentage)}% OFF
           </div>
         )}
 
         {/* Stock Badge */}
-        {product?.stock <= 5 && product?.stock > 0 && (
+        {/* {product?.stock <= 5 && product?.stock > 0 && (
           <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
             Only {product.stock} left!
           </div>
-        )}
+        )} 
+         */}
 
         {product?.stock === 0 && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -232,10 +232,10 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
           </h3>
         </Link>
 
-        {/* Rating and Stock in flex-col */}
+        {/* Rating and Stock in flex-col
         <div className="flex flex-col gap-2 mb-3">
           {/* Rating */}
-          <div className="flex items-center gap-1">
+          {/* <div className="flex items-center gap-1">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <FaStar
@@ -254,18 +254,17 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
           </div>
 
           {/* Stock Status */}
-          {product?.stock > 0 && (
+          {/* {product?.stock > 0 && (
             <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full font-medium w-fit">
               In Stock ({product.stock})
             </span>
           )}
-        </div>
+        </div> */} 
 
         {/* Price */}
         <div className="mb-4">
           <ProductPrice
             regularPrice={regularPrice}
-            discountedPrice={discountedPrice}
             product={product}
           />
         </div>

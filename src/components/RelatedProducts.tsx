@@ -3,7 +3,7 @@ import ProductCard from "./ProductCard";
 
 interface RelatedProductsProps {
   products: ProductType[];
-  currentProductId: number;
+  currentProductId: string;
   category: string;
 }
 

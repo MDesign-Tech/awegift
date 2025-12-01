@@ -28,9 +28,6 @@ export default async function Home() {
       {/* Featured Categories Section */}
       <DynamicFeaturedCategories />
 
-      {/* Special Offers Banner */}
-      <SpecialOffersBanner />
-
       <SectionDivider />
 
       {/* Best Sellers Section */}
