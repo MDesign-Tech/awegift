@@ -512,7 +512,6 @@ export default function DashboardCategoriesClient() {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title="Add New Category"
-        width="w-[500px]"
       >
         <CategoryForm
           onCancel={() => setShowCreateModal(false)}
@@ -526,7 +525,6 @@ export default function DashboardCategoriesClient() {
         isOpen={!!editingCategory}
         onClose={() => setEditingCategory(null)}
         title="Edit Category"
-        width="w-[500px]"
       >
         {editingCategory && (
           <CategoryForm

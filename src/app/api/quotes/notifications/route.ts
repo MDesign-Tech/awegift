@@ -9,29 +9,23 @@ interface NotificationRequest {
 
 // Placeholder functions for external services - replace with actual implementations
 async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
-  // TODO: Integrate with SendGrid, Mailgun, or similar service
+  if (!to) return false;
   console.log(`Sending email to ${to}:`, { subject, html });
   // Simulate API call
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(true), 1000);
-  });
+  return new Promise((resolve) => setTimeout(() => resolve(true), 500));
 }
 
 async function sendSMS(to: string, message: string): Promise<boolean> {
-  // TODO: Integrate with Twilio, AWS SNS, or similar service
+  if (!to) return false;
   console.log(`Sending SMS to ${to}:`, message);
   // Simulate API call
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(true), 1000);
-  });
+  return new Promise((resolve) => setTimeout(() => resolve(true), 500));
 }
 
-async function createInAppNotification(userId: string, title: string, message: string): Promise<void> {
-  // TODO: Create in-app notification in Firestore
+async function createInAppNotification(userId: string | null, title: string, message: string): Promise<void> {
   console.log(`Creating in-app notification for user ${userId}:`, { title, message });
-  // Simulate creating notification
   await addDoc(collection(db, "notifications"), {
-    userId,
+    userId: userId || "unknown",
     title,
     message,
     type: "quote_response",
@@ -45,10 +39,7 @@ export async function POST(request: NextRequest) {
     const { quoteId, channels = ["email", "sms", "inapp"] }: NotificationRequest = await request.json();
 
     if (!quoteId) {
-      return NextResponse.json(
-        { error: "Quote ID is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Quote ID is required" }, { status: 400 });
     }
 
     // Get quote details
@@ -56,133 +47,100 @@ export async function POST(request: NextRequest) {
     const quoteSnap = await getDoc(quoteRef);
 
     if (!quoteSnap.exists()) {
-      return NextResponse.json(
-        { error: "Quote not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Quote not found" }, { status: 404 });
     }
 
-    const quote = quoteSnap.data();
+    const quote = quoteSnap.data() as any;
 
     // Check if already notified
     if (quote.notified) {
-      return NextResponse.json(
-        { message: "Quote already notified" },
-        { status: 200 }
-      );
+      return NextResponse.json({ message: "Quote already notified" }, { status: 200 });
     }
 
     // Check if status is completed
     if (quote.status !== "completed") {
-      return NextResponse.json(
-        { error: "Quote status must be completed to send notifications" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Quote status must be completed to send notifications" }, { status: 400 });
     }
 
-    const results = {
-      email: false,
-      sms: false,
-      inapp: false,
-    };
+    const results = { email: false, sms: false, inapp: false };
+    const notificationPromises: Promise<any>[] = [];
 
-    const notificationPromises = [];
+    // Build a plain text summary of products and message
+    const productsHtml = Array.isArray(quote.products)
+      ? quote.products.map((p: any) => `<li>${String(p.name)} — Qty: ${String(p.quantity)}</li>`).join("")
+      : "";
 
-    // Send email notification
-    if (channels.includes("email")) {
-      notificationPromises.push(
-        sendEmail(
-          quote.email,
-          "Quote Response from AweGift",
-          `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>Quote Response</h2>
-            <p>Dear ${quote.fullName},</p>
-            <p>Thank you for your quote request. We have reviewed your requirements and prepared a response:</p>
-            <div style="background-color: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 5px;">
-              <p><strong>Your Request:</strong></p>
-              <p>${quote.reason}</p>
-              <p><strong>Our Response:</strong></p>
-              <p>${quote.adminResponse || "Please contact us for detailed response."}</p>
-            </div>
-            <p>If you have any questions, please don't hesitate to contact us.</p>
-            <p>Best regards,<br>The Shofy Team</p>
+    const requestSummary = `<div><p><strong>Products:</strong></p><ul>${productsHtml}</ul><p><strong>Message:</strong></p><p>${quote.message || ""}</p></div>`;
+
+    // Send email notification if email exists on the quote
+    if (channels.includes("email") && quote.email) {
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Quote Response</h2>
+          <p>Thank you for your quote request. We have prepared a response:</p>
+          <div style="background-color: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 5px;">
+            ${requestSummary}
+            <p><strong>Our Response:</strong></p>
+            <p>${quote.adminResponse || "Please contact us for a detailed response."}</p>
           </div>
-          `
-        ).then(success => {
+          <p>Best regards,<br/>The Team</p>
+        </div>
+      `;
+
+      notificationPromises.push(
+        sendEmail(quote.email, "Quote Response", emailHtml).then((success) => {
           results.email = success;
         })
       );
     }
 
-    // Send SMS notification
-    if (channels.includes("sms")) {
+    // Send SMS if phone exists
+    if (channels.includes("sms") && quote.phone) {
+      const smsMsg = `Your quote request (${quote.id || quoteId}) has been processed. Check your email or account for details.`;
       notificationPromises.push(
-        sendSMS(
-          quote.phone,
-          `Shofy: Your quote request has been processed. Please check your email for details or contact us at support@shofy.com`
-        ).then(success => {
+        sendSMS(quote.phone, smsMsg).then((success) => {
           results.sms = success;
         })
       );
     }
 
-    // Create in-app notification
+    // In-app notification: try to use a requester id or email, fall back to quoteId
     if (channels.includes("inapp")) {
+      const userId = quote.requesterId || quote.email || quoteId;
+      const productsSummary = Array.isArray(quote.products)
+        ? quote.products.map((p: any) => p.name).join(', ')
+        : 'N/A';
+      const shortMessage = quote.message ? (quote.message.length > 50 ? quote.message.substring(0, 50) + '...' : quote.message) : 'N/A';
+      const shortResponse = quote.adminResponse ? (quote.adminResponse.length > 100 ? quote.adminResponse.substring(0, 100) + '...' : quote.adminResponse) : 'Please check your account for details.';
+      const inAppMessage = `Quote ${quote.id || quoteId} for user ${userId}: status: Completed. Requested products: ${productsSummary}. Your message: ${shortMessage}. Response: ${shortResponse}`;
       notificationPromises.push(
-        createInAppNotification(
-          quote.email, // Using email as userId for now
-          "Quote Response Available",
-          `Your quote request has been processed. ${quote.adminResponse ? "Check your email for our detailed response." : "Please contact us for more information."}`
-        ).then(() => {
+        createInAppNotification(userId, "Quote Response Available", inAppMessage).then(() => {
           results.inapp = true;
         })
       );
     }
 
-    // Wait for all notifications to complete
     await Promise.all(notificationPromises);
 
     // Update quote to mark as notified
-    await updateDoc(quoteRef, {
-      notified: true,
-      updatedAt: serverTimestamp(),
-    });
+    await updateDoc(quoteRef, { notified: true, updatedAt: serverTimestamp() });
 
-    return NextResponse.json(
-      {
-        message: "Notifications sent successfully",
-        results,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Notifications sent successfully", results }, { status: 200 });
   } catch (error) {
     console.error("Error sending notifications:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
 // Handle unsupported methods
 export async function GET() {
-  return NextResponse.json(
-    { error: "Method not allowed" },
-    { status: 405 }
-  );
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
 }
 
 export async function PUT() {
-  return NextResponse.json(
-    { error: "Method not allowed" },
-    { status: 405 }
-  );
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
 }
 
 export async function DELETE() {
-  return NextResponse.json(
-    { error: "Method not allowed" },
-    { status: 405 }
-  );
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
 }

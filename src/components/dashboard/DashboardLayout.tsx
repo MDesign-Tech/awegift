@@ -48,13 +48,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const roleInfo = getRoleInfo(userRole);
 
   return (
-    <Container className="py-10">
+      <Container className="py-4 sm:py-8 md:py-10 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
             {roleInfo.title}
           </h1>
-          <p className="text-gray-600 mt-2">
+            <p className="text-gray-600 text-sm sm:text-base mt-2">
             {roleInfo.description}
           </p>
         </div>

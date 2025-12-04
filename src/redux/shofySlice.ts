@@ -14,8 +14,8 @@ const initialState: InitialState = {
   userInfo: null,
 };
 
-export const shofySlice = createSlice({
-  name: "shofy",
+export const aweGiftSlice = createSlice({
+  name: "AweGift",
   initialState,
   reducers: {
     addToCart: (state, action) => {
@@ -91,5 +91,5 @@ export const {
   resetCart,
   addToFavorite,
   resetFavorite,
-} = shofySlice.actions;
-export default shofySlice.reducer;
+} = aweGiftSlice.actions;
+export default aweGiftSlice.reducer;

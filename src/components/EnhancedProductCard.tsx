@@ -3,7 +3,8 @@ import { ProductType } from "../../type";
 import AddToCartButton from "./AddToCartButton";
 import Link from "next/link";
 import ProductPrice from "./ProductPrice";
-import { FaStar, FaHeart, FaEye } from "react-icons/fa";
+import { FaStar, FaHeart, FaWhatsapp } from "react-icons/fa";
+import ProductActionsClient from "./ProductActionsClient";
 
 interface Props {
   product: ProductType;
@@ -27,11 +28,29 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
                 query: { id: product?.id },
               }}
             >
-              <img
-                src={product?.thumbnail || "/placeholder-product.svg"}
-                alt={product?.title}
-                className="w-full h-full object-cover group-hover/image:scale-105 transition-transform duration-300"
-              />
+              {product?.thumbnail ? (
+                <img
+                  src={product.thumbnail}
+                  alt={product.title}
+                  className="w-full h-full object-cover group-hover/image:scale-105 transition-transform duration-300"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                  <svg
+                    className="h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+              )}
             </Link>
 
             {/* {product?.discountPercentage > 0 && (
@@ -50,12 +69,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
 
             {/* Quick Actions */}
             <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover/image:opacity-100 transition-opacity">
-              <button className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:bg-red-50 hover:text-red-500">
-                <FaHeart className="w-4 h-4" />
-              </button>
-              <button className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:bg-blue-50 hover:text-blue-500">
-                <FaEye className="w-4 h-4" />
-              </button>
+              <ProductActionsClient product={product} />
             </div>
           </div>
 
@@ -67,6 +81,15 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
                   <p className="text-sm text-gray-500 uppercase tracking-wide">
                     {product?.category}
                   </p>
+                  <a
+                    href="https://wa.me/250781990310"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-500 hover:text-green-700 transition-colors duration-200 text-lg"
+                    title="Contact us on WhatsApp"
+                  >
+                    <FaWhatsapp />
+                  </a>
                   {product?.brand && (
                     <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full font-medium">
                       {product.brand}
@@ -168,11 +191,29 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
             query: { id: product?.id },
           }}
         >
-          <img
-            src={product?.thumbnail || "/placeholder-product.svg"}
-            alt={product?.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          />
+          {product?.thumbnail ? (
+            <img
+              src={product.thumbnail}
+              alt={product.title}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+              <svg
+                className="h-12 w-12 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+          )}
         </Link>
 
         {/* {product?.discountPercentage > 0 && (
@@ -199,12 +240,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
 
         {/* Quick Actions */}
         <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-          <button className="p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-red-50 hover:text-red-500 transform hover:scale-110 transition-all duration-200">
-            <FaHeart className="w-4 h-4" />
-          </button>
-          <button className="p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-blue-50 hover:text-blue-500 transform hover:scale-110 transition-all duration-200">
-            <FaEye className="w-4 h-4" />
-          </button>
+          <ProductActionsClient product={product} />
         </div>
       </div>
 
@@ -214,11 +250,22 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
           <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">
             {product?.category}
           </p>
-          {product?.brand && (
-            <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full font-medium">
-              {product.brand}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            <a
+              href="https://wa.me/250781990310"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-green-500 hover:text-green-700 transition-colors duration-200 text-lg"
+              title="Contact us on WhatsApp"
+            >
+              <FaWhatsapp />
+            </a>
+            {product?.brand && (
+              <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full font-medium">
+                {product.brand}
+              </span>
+            )}
+          </div>
         </div>
 
         <Link

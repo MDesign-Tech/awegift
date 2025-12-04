@@ -9,7 +9,6 @@ import { MdClose } from "react-icons/md";
 const navigation = [
   { title: "Home", href: "/" },
   { title: "Products", href: "/products" },
-  { title: "Offers", href: "/offers" },
   { title: "Cart", href: "/cart" },
   { title: "Orders", href: "/order" },
 ];

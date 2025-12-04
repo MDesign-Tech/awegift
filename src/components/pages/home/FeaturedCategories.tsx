@@ -1,51 +1,77 @@
 import React from "react";
 import Link from "next/link";
 import { FiArrowRight } from "react-icons/fi";
+import type { CategoryType } from "../../../../type";
 
-interface FeaturedCategory {
-  name: string;
-  slug: string;
-  image: string;
-  itemCount: number;
-  description: string;
+const DEFAULT_IMAGE =
+  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop";
+
+async function fetchCategories(): Promise<CategoryType[]> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+    const res = await fetch(`${baseUrl}/api/categories`, {
+      // Add cache control if needed
+      next: { revalidate: 3600 }, // Revalidate every hour
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch categories: ${res.status}`);
+    }
+
+    const data = await res.json();
+    const sourceCategories: any[] = Array.isArray(data) ? data : data?.categories || [];
+
+    // Normalize to CategoryType
+    const normalized: CategoryType[] = sourceCategories.map((cat: any) => {
+      const slug = (cat.slug || String(cat.name || "")).toLowerCase();
+      const id = cat.id || slug;
+      const name = cat.name || slug;
+      const description = cat.description || `Discover amazing ${name} products`;
+      const image = cat.image || cat.url || DEFAULT_IMAGE;
+
+      const mapped: CategoryType = {
+        id,
+        name,
+        slug,
+        description,
+        image,
+        meta: cat.meta || undefined,
+      };
+
+      // Attach productCount for UI
+      (mapped as any).productCount = cat.productCount || 0;
+
+      return mapped;
+    });
+
+    return normalized;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return [];
+  }
 }
 
-const featuredCategories: FeaturedCategory[] = [
-  {
-    name: "Electronics",
-    slug: "smartphones",
-    image:
-      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop",
-    itemCount: 25,
-    description: "Latest smartphones and gadgets",
-  },
-  {
-    name: "Fashion",
-    slug: "mens-shirts",
-    image:
-      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&h=300&fit=crop",
-    itemCount: 40,
-    description: "Trendy clothing and accessories",
-  },
-  {
-    name: "Beauty",
-    slug: "beauty",
-    image:
-      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop",
-    itemCount: 30,
-    description: "Premium beauty products",
-  },
-  {
-    name: "Home & Living",
-    slug: "furniture",
-    image:
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop",
-    itemCount: 20,
-    description: "Furniture and home decor",
-  },
-];
+const FeaturedCategories: React.FC = async () => {
+  const categories = await fetchCategories();
 
-const FeaturedCategories: React.FC = () => {
+  // Take first 4 categories for featured section
+  const featuredCategories = categories.slice(0, 4);
+
+  if (featuredCategories.length === 0) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Shop by Category
+          </h2>
+          <p className="text-lg text-gray-600">
+            Unable to load categories at the moment. Please try again later.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
@@ -59,7 +85,7 @@ const FeaturedCategories: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {featuredCategories.map((category, index) => (
+          {featuredCategories.map((category) => (
             <Link
               key={category.slug}
               href={`/products?category=${category.slug}`}
@@ -70,10 +96,11 @@ const FeaturedCategories: React.FC = () => {
                     src={category.image}
                     alt={category.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute top-3 left-3 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                    {category.itemCount}+ items
+                    {(category as any).productCount || 0} items
                   </div>
                 </div>
                 <div className="p-4">

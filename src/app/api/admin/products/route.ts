@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch products with optional search and category filtering
     const productsRef = collection(db, "products");
-    let productsQuery = query(productsRef, orderBy("meta.createdAt", "desc"));
+    let productsQuery = query(productsRef, orderBy("title", "asc"));
 
     // First, get all documents to apply search/filtering
     const snapshot = await getDocs(productsQuery);

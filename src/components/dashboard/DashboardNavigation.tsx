@@ -130,7 +130,7 @@ export default function DashboardNavigation() {
   return (
     <div className="w-full mb-8">
       {/* Desktop Tabs */}
-      <div className="hidden md:block border-b border-gray-200">
+      <div className="hidden lg:block border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {tabs.map((tab) => (
             <Link
@@ -150,7 +150,7 @@ export default function DashboardNavigation() {
       </div>
 
       {/* Mobile Dropdown */}
-      <div className="md:hidden">
+      <div className="lg:hidden">
         <label htmlFor="tab-select" className="sr-only">
           Select a section
         </label>

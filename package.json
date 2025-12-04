@@ -1,5 +1,5 @@
 {
-  "name": "shofy",
+  "name": "AweGift",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "lint": "next lint",
     "postbuild": "next-sitemap",
     "deploy:check": "./deploy-check.sh",
-    "deploy:cf": "wrangler pages deploy .next --project-name=shofy-commerce --compatibility-date=2024-08-20",
+  "deploy:cf": "wrangler pages deploy .next --project-name=awegift-commerce --compatibility-date=2024-08-20",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -20,6 +20,7 @@
     "@types/bcryptjs": "^3.0.0",
     "bcryptjs": "^3.0.2",
     "chalk-ts": "^1.0.0",
+    "cloudinary": "^2.8.0",
     "firebase": "^12.1.0",
     "firebase-admin": "^12.7.0",
     "framer-motion": "^12.23.12",

@@ -9,10 +9,11 @@ interface UpdateQuoteRequest {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const quoteRef = doc(db, "quotes", params.id);
+    const { id } = await params;
+    const quoteRef = doc(db, "quotes", id);
     const quoteSnap = await getDoc(quoteRef);
 
     if (!quoteSnap.exists()) {
@@ -40,12 +41,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { adminResponse, status }: UpdateQuoteRequest = await request.json();
 
-    const quoteRef = doc(db, "quotes", params.id);
+    const quoteRef = doc(db, "quotes", id);
     const quoteSnap = await getDoc(quoteRef);
 
     if (!quoteSnap.exists()) {
@@ -79,7 +81,7 @@ export async function PUT(
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            quoteId: params.id,
+            quoteId: id,
           }),
         });
       } catch (notificationError) {
@@ -103,10 +105,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const quoteRef = doc(db, "quotes", params.id);
+    const { id } = await params;
+    const quoteRef = doc(db, "quotes", id);
     const quoteSnap = await getDoc(quoteRef);
 
     if (!quoteSnap.exists()) {

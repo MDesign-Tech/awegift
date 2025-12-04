@@ -32,7 +32,21 @@ export async function GET(request: NextRequest) {
       userData.profile.addresses = [];
     }
 
-    return NextResponse.json({ ...userData, id: userDoc.id });
+    // Filter out sensitive and private data
+    const {
+      password,
+      cart,
+      wishlist,
+      ...safeUserData
+    } = userData;
+
+    // Also filter addresses from profile if they exist
+    if (safeUserData.profile && safeUserData.profile.addresses) {
+      const { addresses, ...safeProfile } = safeUserData.profile;
+      safeUserData.profile = safeProfile;
+    }
+
+    return NextResponse.json({ ...safeUserData, id: userDoc.id });
   } catch (error) {
     console.error("Profile GET error:", error);
     return NextResponse.json(

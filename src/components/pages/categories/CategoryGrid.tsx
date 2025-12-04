@@ -1,99 +1,33 @@
 import React from "react";
 import Link from "next/link";
 import { FiArrowRight, FiPackage } from "react-icons/fi";
+import type { CategoryType } from "../../../../type";
 
-interface Category {
-  slug: string;
-  name: string;
-  url: string;
-  count?: number;
-}
+const ImageFallback = () => (
+  <svg
+    className="h-12 w-12 text-gray-400"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+    />
+  </svg>
+);
 
 interface CategoryGridProps {
-  categories: Category[];
+  categories: CategoryType[];
   totalProducts?: number;
 }
 
-// Category images mapping (you can replace with actual images later)
-const categoryImages: { [key: string]: string } = {
-  beauty:
-    "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop",
-  fragrances:
-    "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&h=300&fit=crop",
-  furniture:
-    "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop",
-  groceries:
-    "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop",
-  "home-decoration":
-    "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop",
-  "kitchen-accessories":
-    "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop",
-  laptops:
-    "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop",
-  "mens-shirts":
-    "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400&h=300&fit=crop",
-  "mens-shoes":
-    "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop",
-  "mens-watches":
-    "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=400&h=300&fit=crop",
-  "mobile-accessories":
-    "https://images.unsplash.com/photo-1512054502232-10a0a035d672?w=400&h=300&fit=crop",
-  motorcycle:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  "skin-care":
-    "https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?w=400&h=300&fit=crop",
-  smartphones:
-    "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop",
-  "sports-accessories":
-    "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop",
-  sunglasses:
-    "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=300&fit=crop",
-  tablets:
-    "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=400&h=300&fit=crop",
-  tops: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=300&fit=crop",
-  vehicle:
-    "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=300&fit=crop",
-  "womens-bags":
-    "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop",
-  "womens-dresses":
-    "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=300&fit=crop",
-  "womens-jewellery":
-    "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&h=300&fit=crop",
-  "womens-shoes":
-    "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=400&h=300&fit=crop",
-  "womens-watches":
-    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop",
-};
+const DEFAULT_IMAGE =
+  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop";
 
-// Category descriptions
-const categoryDescriptions: { [key: string]: string } = {
-  beauty: "Explore premium beauty products and cosmetics",
-  fragrances: "Discover luxurious fragrances and perfumes",
-  furniture: "Transform your space with stylish furniture",
-  groceries: "Fresh groceries and everyday essentials",
-  "home-decoration": "Beautiful decor items for your home",
-  "kitchen-accessories": "Essential tools for your kitchen",
-  laptops: "High-performance laptops and computers",
-  "mens-shirts": "Stylish shirts for the modern man",
-  "mens-shoes": "Comfortable and fashionable footwear",
-  "mens-watches": "Elegant timepieces for men",
-  "mobile-accessories": "Accessories for your mobile devices",
-  motorcycle: "Motorcycle gear and accessories",
-  "skin-care": "Premium skincare products",
-  smartphones: "Latest smartphones and devices",
-  "sports-accessories": "Gear up for your favorite sports",
-  sunglasses: "Stylish eyewear and sunglasses",
-  tablets: "Tablets and digital accessories",
-  tops: "Trendy tops and casual wear",
-  vehicle: "Automotive accessories and parts",
-  "womens-bags": "Fashionable bags and handbags",
-  "womens-dresses": "Elegant dresses for every occasion",
-  "womens-jewellery": "Beautiful jewelry and accessories",
-  "womens-shoes": "Stylish footwear for women",
-  "womens-watches": "Elegant watches for women",
-};
-
-const CategoryCard: React.FC<{ category: Category; index: number }> = ({
+const CategoryCard: React.FC<{ category: CategoryType; index: number }> = ({
   category,
   index,
 }) => {
@@ -101,25 +35,27 @@ const CategoryCard: React.FC<{ category: Category; index: number }> = ({
     .replace(/([A-Z])/g, " $1")
     .replace(/^./, (str) => str.toUpperCase());
   const categorySlug = category.slug;
-  const image =
-    categoryImages[categorySlug] ||
-    "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop";
-  const description =
-    categoryDescriptions[categorySlug] ||
-    "Discover amazing products in this category";
-  const productCount = category.count || 0;
+  const image = (category as any).image || category.image || DEFAULT_IMAGE;
+  const description = category.description || "Discover amazing products in this category";
+  const productCount = (category as any).productCount || (category as any).count || 0;
 
   return (
     <Link href={`/products?category=${categorySlug}`}>
       <div className="group relative bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden h-full">
         {/* Image Container */}
         <div className="relative h-32 lg:h-40 overflow-hidden">
-          <img
-            src={image}
-            alt={categoryName}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            loading="lazy"
-          />
+          {image ? (
+            <img
+              src={image}
+              alt={categoryName}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+              <ImageFallback />
+            </div>
+          )}
           {/* Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
