@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { doc, getDoc, updateDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
+import { QuoteType } from "../../../../../type";
 
 interface NotificationRequest {
   quoteId: string;
@@ -22,7 +23,7 @@ async function sendSMS(to: string, message: string): Promise<boolean> {
   return new Promise((resolve) => setTimeout(() => resolve(true), 500));
 }
 
-async function createInAppNotification(userId: string | null, title: string, message: string): Promise<void> {
+async function createInAppNotification(userId: string | null, title: string, message: string, quoteId: string): Promise<void> {
   console.log(`Creating in-app notification for user ${userId}:`, { title, message });
   await addDoc(collection(db, "notifications"), {
     userId: userId || "unknown",
@@ -30,6 +31,7 @@ async function createInAppNotification(userId: string | null, title: string, mes
     message,
     type: "quote_response",
     read: false,
+    quoteId,
     createdAt: serverTimestamp(),
   });
 }
@@ -50,7 +52,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Quote not found" }, { status: 404 });
     }
 
-    const quote = quoteSnap.data() as any;
+    const quote = quoteSnap.data() as QuoteType;
 
     // Check if already notified
     if (quote.notified) {
@@ -112,9 +114,9 @@ export async function POST(request: NextRequest) {
         : 'N/A';
       const shortMessage = quote.message ? (quote.message.length > 50 ? quote.message.substring(0, 50) + '...' : quote.message) : 'N/A';
       const shortResponse = quote.adminResponse ? (quote.adminResponse.length > 100 ? quote.adminResponse.substring(0, 100) + '...' : quote.adminResponse) : 'Please check your account for details.';
-      const inAppMessage = `Quote ${quote.id || quoteId} for user ${userId}: status: Completed. Requested products: ${productsSummary}. Your message: ${shortMessage}. Response: ${shortResponse}`;
+      const inAppMessage = `Quote response available. Click to view details.`;
       notificationPromises.push(
-        createInAppNotification(userId, "Quote Response Available", inAppMessage).then(() => {
+        createInAppNotification(userId, "Quote Response Available", inAppMessage, quoteId).then(() => {
           results.inapp = true;
         })
       );

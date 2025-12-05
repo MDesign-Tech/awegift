@@ -45,7 +45,7 @@ export async function sendOrderStatusNotification(data: OrderNotificationData) {
       : `Your order #${orderDetails.orderId} has been placed successfully and is now ${newStatus}.`;
 
     await addDoc(collection(db, "notifications"), {
-      userId: userEmail, // Using email as userId for consistency
+      userId: userId, // Using userId for consistency
       title,
       message,
       type: "order_update",

@@ -16,12 +16,14 @@ import {
   FiHelpCircle,
   FiStar,
 } from "react-icons/fi";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const SettingsDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { data: session } = useSession();
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { notifications } = useNotifications();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -51,6 +53,8 @@ const SettingsDropdown = () => {
   if (!session?.user) {
     return null;
   }
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const menuItems = [
     {
@@ -85,7 +89,7 @@ const SettingsDropdown = () => {
     },
     {
       icon: FiBell,
-      label: "Notifications",
+      label: unreadCount > 0 ? `Notifications (${unreadCount})` : "Notifications",
       path: "/account/notifications",
       description: "Email & push preferences",
     },

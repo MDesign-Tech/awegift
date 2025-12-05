@@ -9,10 +9,12 @@ import {
   FaCog,
   FaSignOutAlt,
   FaShieldAlt,
+  FaBell,
 } from "react-icons/fa";
 import { signOut } from "next-auth/react";
 import { getDefaultDashboardRoute, getRoleDisplayName } from "@/lib/rbac/roles";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface UserProfileDropdownProps {
   user: {
@@ -28,6 +30,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user: currentUser } = useCurrentUser();
+  const { notifications } = useNotifications();
 
   const fallbackImage =
     "https://res.cloudinary.com/dlbqw7atu/image/upload/v1747734054/userImage_dhytay.png";
@@ -87,7 +90,15 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
     "deliveryman"
   ].includes(currentUser.role as any);
 
-  const menuItems = [
+  const unreadCount = notifications.filter(n => !n.read).length;
+  const displayCount = unreadCount > 9 ? "9+" : unreadCount.toString();
+
+  const menuItems: Array<{
+    href: string;
+    icon: any;
+    label: string;
+    badge?: string | null;
+  }> = [
     {
       href: "/account",
       icon: FaUser,
@@ -97,6 +108,12 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
       href: "/account/orders",
       icon: FaBox,
       label: "My Orders",
+    },
+    {
+      href: "/account/notifications",
+      icon: FaBell,
+      label: "Notifications",
+      badge: unreadCount > 0 ? displayCount : null,
     },
     {
       href: "/favorite",
@@ -195,7 +212,12 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
                   }`}
                 >
                   <item.icon className="w-4 h-4" />
-                  {item.label}
+                  <span className="flex-1">{item.label}</span>
+                  {item.badge && (
+                    <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               ))}
             </div>
