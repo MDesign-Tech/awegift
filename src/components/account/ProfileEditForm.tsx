@@ -151,7 +151,7 @@ export default function ProfileEditForm({
 
         <div className="mt-4">
           <CldUploadWidget
-            uploadPreset="profiles"
+            uploadPreset="default_unsigned"
             onSuccess={(result: any) => {
               if (result?.info?.secure_url) {
                 setFormData((prev) => ({ ...prev, image: result.info.secure_url }));

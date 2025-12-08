@@ -4,13 +4,13 @@ import AddToCartButton from "@/components/AddToCartButton";
 import { getData } from "@/app/(user)/helpers";
 import ProductImages from "@/components/ProductImages";
 import PriceFormat from "@/components/PriceFormat";
-import { FaRegEye } from "react-icons/fa";
 import { paymentImage } from "@/assets";
 import { MdStar } from "react-icons/md";
 import ProductPrice from "@/components/ProductPrice";
 import ProductFeatures from "@/components/ProductFeatures";
 import ProductSpecifications from "@/components/ProductSpecifications";
 import RelatedProducts from "@/components/RelatedProducts";
+import ProductActionsClient from "@/components/ProductActionsClient";
 import { absoluteUrl } from "../page";
 import { notFound } from "next/navigation";
 
@@ -52,7 +52,8 @@ const SingleProductPage = async ({ params }: Props) => {
               regularPrice={regularPrice}
               product={product}
             />
-
+            {/* Client actions: favorite, copy link */}
+            <ProductActionsClient product={product} />
             
           </div>
           <div>

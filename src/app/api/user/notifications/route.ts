@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth();
 
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const notificationsRef = collection(db, "notifications");
     const q = query(
       notificationsRef,
-      where("userId", "==", session.user.email)
+      where("userId", "==", session.user.id)
     );
 
     const querySnapshot = await getDocs(q);
@@ -51,7 +51,7 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await auth();
 
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }

@@ -112,7 +112,7 @@ const SuccessPage = () => {
             </h1>
             <p className="text-lg text-gray-600 mb-2">
               Thank you for your purchase from{" "}
-              <span className="font-semibold text-theme-color">Shofy</span>
+              <span className="font-semibold text-theme-color">AweGift</span>
             </p>
             <p className="text-gray-500">
               Your order has been confirmed and will be processed shortly.

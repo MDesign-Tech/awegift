@@ -4,8 +4,8 @@ import Footer from "@/components/Footer";
 import Layout from "@/components/layout/Layout";
 
 export const metadata: Metadata = {
-  title: "Shofy - Multipurpose eCommerce website",
-  description: "Test application for education purpose",
+  title: "AweGift - Multipurpose eCommerce website",
+  description: "Best place to buy and sell products online.",
 };
 
 export default function RootLayout({

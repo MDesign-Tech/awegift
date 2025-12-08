@@ -7,7 +7,7 @@ const checkConfig = (server: string): Config | {} => {
   switch (server) {
     case "production":
       config = {
-        baseUrl: "https://shofy.reactbd.com",
+        baseUrl: "https://awegift.vercel.app",
       };
       break;
     case "local":

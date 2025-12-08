@@ -5,13 +5,13 @@ import { FiSearch, FiFilter, FiEye, FiEdit, FiSend, FiCheckCircle, FiClock, FiAl
 import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 import { toast } from "react-hot-toast";
 
+interface QuoteProduct { name: string; quantity: number }
+
 interface Quote {
   id: string;
   firestoreId: string;
-  fullName: string;
-  email: string;
-  phone: string;
-  reason: string;
+  products?: QuoteProduct[];
+  message?: string;
   status: "pending" | "in_review" | "completed";
   adminResponse: string | null;
   notified: boolean;
@@ -66,9 +66,10 @@ export default function QuotesManagementPage() {
   };
 
   const filteredQuotes = quotes.filter(quote => {
-    const matchesSearch = quote.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          quote.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          quote.phone.includes(searchTerm);
+    const term = searchTerm.toLowerCase();
+    const matchesMessage = (quote.message || "").toLowerCase().includes(term);
+    const matchesProduct = (quote.products || []).some(p => (p.name || "").toLowerCase().includes(term));
+    const matchesSearch = term ? (matchesMessage || matchesProduct) : true;
     const matchesStatus = statusFilter === "all" || quote.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -263,16 +264,20 @@ export default function QuotesManagementPage() {
                         <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10">
                           <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-indigo-100 flex items-center justify-center">
                             <span className="text-xs sm:text-sm font-medium text-indigo-800">
-                              {quote.fullName.charAt(0).toUpperCase()}
+                              {quote.products && quote.products.length && quote.products[0].name
+                                ? quote.products[0].name.charAt(0).toUpperCase()
+                                : (quote.id ? String(quote.id).charAt(0).toUpperCase() : "#")}
                             </span>
                           </div>
                         </div>
                         <div className="ml-3 sm:ml-4 min-w-0 flex-1">
                           <div className="text-sm font-medium text-gray-900 truncate">
-                            {quote.fullName}
+                            {quote.products && quote.products.length > 0
+                              ? quote.products.map(p => p.name).join(", ")
+                              : quote.id}
                           </div>
                           <div className="text-xs sm:text-sm text-gray-500 flex items-center truncate">
-                            <span className="truncate">{quote.email}</span>
+                            <span className="truncate">{(quote.message || "").slice(0, 80)}{(quote.message || "").length > 80 ? "..." : ""}</span>
                           </div>
                           {/* Mobile status display */}
                           <div className="sm:hidden mt-1">
@@ -425,59 +430,47 @@ export default function QuotesManagementPage() {
                 <div className="flex flex-col items-center">
                   <div className="h-20 w-20 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center shadow-lg">
                     <span className="text-2xl font-bold text-white">
-                      {selectedQuote.fullName.charAt(0).toUpperCase()}
+                      {selectedQuote.products && selectedQuote.products.length && selectedQuote.products[0].name
+                        ? selectedQuote.products[0].name.charAt(0).toUpperCase()
+                        : (selectedQuote.id ? String(selectedQuote.id).charAt(0).toUpperCase() : "#")}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Quote ID: {selectedQuote.id}
-                  </p>
+                  <p className="text-sm text-gray-500 mt-2">Quote ID: {selectedQuote.id}</p>
                 </div>
 
                 {/* Customer Information Section */}
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
                     <FiMessageSquare className="h-4 w-4 mr-2 text-gray-600" />
-                    Customer Information
+                    Request Details
                   </h4>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Full Name
-                      </label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        {selectedQuote.fullName}
-                      </p>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Products</label>
+                      <div className="text-sm text-gray-900 bg-white p-2 rounded border">
+                        {(selectedQuote.products || []).length === 0 ? (
+                          <span className="text-gray-500">No products listed</span>
+                        ) : (
+                          <ul className="list-disc pl-5">
+                            {(selectedQuote.products || []).map((p, i) => (
+                              <li key={i} className="text-sm">
+                                {p.name} — Qty: {p.quantity}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Email Address
-                      </label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        {selectedQuote.email}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone Number
-                      </label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        {selectedQuote.phone}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Status
-                      </label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                       <div className="flex items-center">
                         <span className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full ${statusColors[selectedQuote.status]}`}>
                           {statusIcons[selectedQuote.status]}
                           {selectedQuote.status.replace("_", " ").toUpperCase()}
                         </span>
                         {selectedQuote.notified && (
-                          <span className="ml-2 inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-                            Notified
-                          </span>
+                          <span className="ml-2 inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">Notified</span>
                         )}
                       </div>
                     </div>
@@ -491,9 +484,7 @@ export default function QuotesManagementPage() {
                     Quote Request
                   </h4>
                   <div className="bg-white p-4 rounded-lg border border-blue-100">
-                    <p className="whitespace-pre-wrap text-sm text-gray-900">
-                      {selectedQuote.reason}
-                    </p>
+                    <p className="whitespace-pre-wrap text-sm text-gray-900">{selectedQuote.message}</p>
                   </div>
                   <div className="mt-3 text-xs text-blue-600">
                     Submitted on {formatDate(selectedQuote.createdAt)}

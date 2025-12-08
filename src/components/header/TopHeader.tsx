@@ -37,7 +37,7 @@ const TopHeader = ({
             href="/quote"
             className="headerTopMenu cursor-pointer hover:text-orange-300 transition-colors"
           >
-            Request Free Quote
+            Request Quote
           </Link>
           <CurrencyDropdown />
           <SettingsDropdown />

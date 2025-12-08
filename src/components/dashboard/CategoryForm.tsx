@@ -121,7 +121,7 @@ export default function CategoryForm({ category, onCancel, onSuccess, refetchCat
               type="text"
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-theme-color ${errors.name ? "border-red-500" : "border-gray-300"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-theme-color text-sm sm:text-base ${errors.name ? "border-red-500" : "border-gray-300"
                 }`}
               placeholder="Category name"
             />
@@ -137,7 +137,7 @@ export default function CategoryForm({ category, onCancel, onSuccess, refetchCat
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
               rows={4}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-theme-color ${errors.description ? "border-red-500" : "border-gray-300"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-theme-color text-sm sm:text-base ${errors.description ? "border-red-500" : "border-gray-300"
                 }`}
               placeholder="Category description for SEO and UI"
             />
@@ -209,38 +209,27 @@ export default function CategoryForm({ category, onCancel, onSuccess, refetchCat
                 </div>
               </div>
             )}
-
-            {!formData.image && (
-              <div className="mt-3">
-                <img
-                  src="/category-placeholder.svg"
-                  alt="No category image"
-                  className="w-32 h-32 object-cover border rounded-md shadow-sm opacity-50"
-                />
-                <p className="text-sm text-gray-500 mt-2">No image uploaded yet. Click "Upload Image" to add a category image.</p>
-              </div>
-            )}
           </div>
 
         </div>
       </div>
 
       {/* Form Actions */}
-      <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6 border-t">
+      <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-6 border-t">
         <button
           type="button"
           onClick={onCancel}
-          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+          className="w-full sm:w-auto px-4 sm:px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm sm:text-base"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2 bg-theme-color text-white rounded-md hover:bg-theme-color/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-theme-color text-white rounded-md hover:bg-theme-color/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
         >
           {loading ? (
-            <span className="flex items-center">
+            <span className="flex items-center justify-center">
               <FiLoader className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" />
               {category ? "Updating..." : "Adding..."}
             </span>

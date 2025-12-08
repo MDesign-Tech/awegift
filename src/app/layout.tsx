@@ -3,11 +3,11 @@ import "./globals.css";
 import AuthProvider from "@/components/auth/AuthProvider";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { UserSyncProvider } from "@/components/UserSyncProvider";
-import PurchaseWidget from "@/components/PurchaseWidget";
 import StateProvider from "@/components/auth/StateProvider";
+import NotificationProvider from "@/components/NotificationProvider";
 
 export const metadata: Metadata = {
-  title: "Shofy - Multipurpose eCommerce website",
+  title: "AweGift - Multipurpose eCommerce website",
   description: "Test application for education purpose",
 };
 
@@ -27,8 +27,9 @@ export default function RootLayout({
         <StateProvider>
           <AuthProvider>
             <UserSyncProvider>
-              <CurrencyProvider>{children}</CurrencyProvider>
-              <PurchaseWidget />
+              <CurrencyProvider>
+                <NotificationProvider>{children}</NotificationProvider>
+              </CurrencyProvider>
             </UserSyncProvider>
           </AuthProvider>
         </StateProvider>

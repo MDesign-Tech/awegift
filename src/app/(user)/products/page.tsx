@@ -10,6 +10,7 @@ import {
   getProductsByCategory,
 } from "../helpers/productHelpers";
 import Link from "next/link";
+import { config } from "../../../../config";
 
 interface Props {
   searchParams: Promise<{
@@ -27,8 +28,8 @@ interface Props {
 }
 
 export const absoluteUrl = (path: string) => {
-  const base = "http://localhost:3000";
-  return `${base}${path}`;
+  // For server-side API calls, we need absolute URLs
+  return `${config.baseUrl}${path}`;
 };
 
 
@@ -130,15 +131,15 @@ const ProductsPage = async ({ searchParams }: Props) => {
   };
 
   return (
-    <Container className="py-8">
+    <Container className="py-4 sm:py-8 px-4 sm:px-6">
       {/* Page Header */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
           {getPageTitle()}
         </h1>
 
         {/* Breadcrumb */}
-        <nav className=" text-sm">
+        <nav className="text-xs sm:text-sm">
           <ol className="flex items-center space-x-2 text-gray-500">
             <li>
               <Link href="/" className="hover:text-gray-700">
@@ -162,9 +163,9 @@ const ProductsPage = async ({ searchParams }: Props) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
         {/* Sidebar Filters */}
-        <div className="w-full lg:w-1/5">
+        <div className="w-full lg:w-1/5 order-2 lg:order-1">
           <EnhancedProductsSideNav
             categories={categoriesData}
             brands={uniqueBrands}
@@ -173,7 +174,7 @@ const ProductsPage = async ({ searchParams }: Props) => {
         </div>
 
         {/* Products Section */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 order-1 lg:order-2">
           <InfiniteProductList
             products={products}
             currentSort={params.sort || "default"}

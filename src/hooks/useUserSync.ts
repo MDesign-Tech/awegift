@@ -8,7 +8,7 @@ import type { RootState } from "@/redux/store";
 export function useUserSync() {
   const { data: session, status, update: updateSession } = useSession();
   const dispatch = useDispatch();
-  const userInfo = useSelector((state: RootState) => state.shopy.userInfo);
+  const userInfo = useSelector((state: RootState) => state.aweGift.userInfo);
 
   const refreshUserData = async () => {
     if (session?.user?.id) {

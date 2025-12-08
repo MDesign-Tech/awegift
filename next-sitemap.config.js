@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 const config = {
-  siteUrl: "https://shofy.reactbd.com", // Your production domain
+  siteUrl: "https://awegift.vercel.app", // Your production domain
   generateRobotsTxt: true, // Generate robots.txt file
   sitemapSize: 7000, // Maximum number of URLs per sitemap file
   changefreq: "daily", // Default change frequency for pages

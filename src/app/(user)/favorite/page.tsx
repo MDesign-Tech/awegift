@@ -7,18 +7,18 @@ import { StateType } from "../../../../type";
 import { addToFavorite, addToCart, resetFavorite } from "@/redux/shofySlice";
 import Container from "@/components/Container";
 import Link from "next/link";
-import { FaHeart, FaShoppingCart, FaEye, FaTrash } from "react-icons/fa";
+import { FaHeart, FaShoppingCart, FaTrash } from "react-icons/fa";
 import { MdFavoriteBorder, MdFavorite } from "react-icons/md";
 import toast from "react-hot-toast";
 import PriceFormat from "@/components/PriceFormat";
 
 const FavoritePage = () => {
-  const { favorite } = useSelector((state: StateType) => state?.shopy);
+  const { favorite } = useSelector((state: StateType) => state?.aweGift);
   const { data: session } = useSession();
   const dispatch = useDispatch();
 
   const handleRemoveFromFavorite = (productId: number) => {
-    const product = favorite.find((item) => item.id === productId);
+    const product = favorite.find((item) => String(item.id) === String(productId));
     if (product) {
       dispatch(addToFavorite(product)); // This will remove it due to toggle logic
       toast.success("Removed from favorites");
@@ -123,30 +123,15 @@ const FavoritePage = () => {
                     />
                   </Link>
 
-                  {/* Discount Badge */}
-                  {product.discountPercentage &&
-                    product.discountPercentage > 0 && (
-                      <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-bold">
-                        -{Math.round(product.discountPercentage)}%
-                      </div>
-                    )}
-
                   {/* Action Buttons */}
                   <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <button
-                      onClick={() => handleRemoveFromFavorite(product.id)}
+                      onClick={() => handleRemoveFromFavorite(Number(product.id))}
                       className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-red-50 hover:text-red-500 transition-colors duration-200"
                       title="Remove from favorites"
                     >
                       <MdFavorite className="h-4 w-4 text-red-500" />
                     </button>
-                    <Link
-                      href={`/products/${product.id}`}
-                      className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-blue-50 hover:text-blue-500 transition-colors duration-200"
-                      title="View details"
-                    >
-                      <FaEye className="h-4 w-4" />
-                    </Link>
                   </div>
                 </div>
 
@@ -169,17 +154,6 @@ const FavoritePage = () => {
                         amount={product.price}
                         className="font-bold text-lg"
                       />
-                      {product.discountPercentage &&
-                        product.discountPercentage > 0 && (
-                          <span className="text-sm text-gray-400 line-through">
-                            <PriceFormat
-                              amount={
-                                product.price /
-                                (1 - product.discountPercentage / 100)
-                              }
-                            />
-                          </span>
-                        )}
                     </div>
                   </div>
 

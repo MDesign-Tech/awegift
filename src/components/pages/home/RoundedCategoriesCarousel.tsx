@@ -5,17 +5,26 @@ import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import Link from "next/link";
 import Container from "@/components/Container";
 
-interface Category {
-  slug: string;
-  name: string;
-  url: string;
-  image: string;
-  itemCount: number;
-  description: string;
-}
+import type { CategoryType } from "../../../../type";
+
+const ImageFallback = () => (
+  <svg
+    className="h-16 w-16 text-gray-400"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+    />
+  </svg>
+);
 
 interface RoundedCategoriesCarouselProps {
-  categories: Category[];
+  categories: CategoryType[];
 }
 
 const RoundedCategoriesCarousel: React.FC<RoundedCategoriesCarouselProps> = ({
@@ -214,12 +223,18 @@ const RoundedCategoriesCarousel: React.FC<RoundedCategoriesCarouselProps> = ({
                         <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/10 via-transparent to-white/20"></div>
 
                         <div className="overflow-hidden w-full h-full rounded-full">
-                          <img
-                            src={category.image}
-                            alt={category.name}
-                            className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
-                            loading="lazy"
-                          />
+                          {(category as any).image || category.image ? (
+                            <img
+                              src={(category as any).image || category.image}
+                              alt={category.name}
+                              className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                              <ImageFallback />
+                            </div>
+                          )}
                         </div>
 
                         {/* Overlay for better text readability */}
@@ -227,7 +242,7 @@ const RoundedCategoriesCarousel: React.FC<RoundedCategoriesCarouselProps> = ({
 
                         {/* Item count badge */}
                         <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full shadow-md">
-                          {category.itemCount}
+                          {(category as any).productCount || (category as any).itemCount || (category as any).count || 0}
                         </div>
                       </div>
 
@@ -279,7 +294,7 @@ const RoundedCategoriesCarousel: React.FC<RoundedCategoriesCarouselProps> = ({
           </Link>
         </div>
       </Container>
-    </section>
+    </section> 
   );
 };
 

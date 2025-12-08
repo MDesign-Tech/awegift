@@ -45,7 +45,7 @@ export async function sendOrderStatusNotification(data: OrderNotificationData) {
       : `Your order #${orderDetails.orderId} has been placed successfully and is now ${newStatus}.`;
 
     await addDoc(collection(db, "notifications"), {
-      userId: userEmail, // Using email as userId for consistency
+      userId: userId, // Using userId for consistency
       title,
       message,
       type: "order_update",
@@ -76,7 +76,7 @@ export async function sendOrderStatusNotification(data: OrderNotificationData) {
         </div>
         <p>You can track your order status in your account dashboard.</p>
         <p>Thank you for shopping with us!</p>
-        <p>Best regards,<br>The Shofy Team</p>
+  <p>Best regards,<br>The AweGift Team</p>
       </div>
     `;
 
@@ -88,7 +88,7 @@ export async function sendOrderStatusNotification(data: OrderNotificationData) {
 
     // Send SMS notification if phone number is available
     if (userPhone) {
-      const smsMessage = `Shofy: Your order ${orderDetails.orderId} status changed from ${oldStatus} to ${newStatus}. Track at your dashboard.`;
+  const smsMessage = `AweGift: Your order ${orderDetails.orderId} status changed from ${oldStatus} to ${newStatus}. Track at your dashboard.`;
       await sendSMS(userPhone, smsMessage);
     }
 

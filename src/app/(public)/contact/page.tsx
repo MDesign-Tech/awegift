@@ -6,9 +6,9 @@ import { GrLocation } from "react-icons/gr";
 import { FiClock, FiMail, FiMapPin, FiPhone } from "react-icons/fi";
 
 export const metadata: Metadata = {
-  title: "Contact Us - Shofy",
+  title: "Contact Us - AweGift",
   description:
-    "Get in touch with Shofy - We're here to help with any questions or concerns",
+    "Get in touch with AweGift - We're here to help with any questions or concerns",
 };
 
 export default function ContactPage() {
@@ -73,8 +73,8 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-1">Email</h3>
-                  <p className="text-light-text">support@shofy.com</p>
-                  <p className="text-light-text">sales@shofy.com</p>
+                  <p className="text-light-text">support@awegift.com</p>
+                  <p className="text-light-text">sales@awegift.com</p>
                 </div>
               </div>
 
@@ -221,7 +221,7 @@ export default function ContactPage() {
               Call Us Now
             </a>
             <a
-              href="mailto:support@shofy.com"
+              href="mailto:support@awegift.com"
               className="inline-flex items-center gap-2 bg-theme-white text-theme-color border-2 border-theme-color px-6 py-3 rounded-lg hover:bg-theme-color hover:text-theme-white transition-colors duration-200 font-medium"
             >
               <FiMail className="w-4 h-4" />

@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import shopyReducer from "./shofySlice";
+import aweGiftReducer from "./shofySlice";
 
 import {
   persistStore,
@@ -46,10 +46,10 @@ const persistConfig = {
   storage,
 };
 
-const persistedReducer = persistReducer(persistConfig, shopyReducer);
+const persistedReducer = persistReducer(persistConfig, aweGiftReducer);
 
 export const store = configureStore({
-  reducer: { shopy: persistedReducer },
+  reducer: { aweGift: persistedReducer },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {

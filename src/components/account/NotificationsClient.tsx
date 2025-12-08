@@ -9,6 +9,7 @@ interface Notification {
   message: string;
   type: string;
   read: boolean;
+  quoteId?: string;
   createdAt: Date;
 }
 
@@ -17,6 +18,8 @@ export default function NotificationsClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [markingRead, setMarkingRead] = useState<string | null>(null);
+  const [viewingQuote, setViewingQuote] = useState<any | null>(null);
+  const [quoteModalOpen, setQuoteModalOpen] = useState(false);
 
   useEffect(() => {
     fetchNotifications();
@@ -29,7 +32,6 @@ export default function NotificationsClient() {
       const response = await fetch("/api/user/notifications");
       if (response.ok) {
         const data = await response.json();
-        console.log("Fetched notifications:", data.notifications);
         setNotifications(data.notifications || []);
       } else {
         console.error("Failed to fetch notifications:", response.status, response.statusText);
@@ -67,6 +69,24 @@ export default function NotificationsClient() {
       console.error("Error marking notification as read:", error);
     } finally {
       setMarkingRead(null);
+    }
+  };
+
+  const viewQuote = async (notification: Notification) => {
+    if (notification.quoteId) {
+      // Mark as read first
+      await markAsRead(notification.id);
+      // Fetch quote details
+      try {
+        const response = await fetch(`/api/quotes/${notification.quoteId}`);
+        if (response.ok) {
+          const quote = await response.json();
+          setViewingQuote(quote);
+          setQuoteModalOpen(true);
+        }
+      } catch (error) {
+        console.error("Error fetching quote:", error);
+      }
     }
   };
 
@@ -193,7 +213,15 @@ export default function NotificationsClient() {
                       {notification.type.replace("_", " ").toUpperCase()}
                     </span>
                   </div>
-                  {!notification.read && (
+                  {notification.type === "quote_response" ? (
+                    <button
+                      onClick={() => viewQuote(notification)}
+                      disabled={markingRead === notification.id}
+                      className="ml-4 px-3 py-1 text-sm bg-theme-color text-white rounded hover:bg-theme-color/90 disabled:opacity-50"
+                    >
+                      {markingRead === notification.id ? "Loading..." : "View"}
+                    </button>
+                  ) : !notification.read ? (
                     <button
                       onClick={() => markAsRead(notification.id)}
                       disabled={markingRead === notification.id}
@@ -201,10 +229,57 @@ export default function NotificationsClient() {
                     >
                       {markingRead === notification.id ? "Marking..." : "Mark as Read"}
                     </button>
-                  )}
+                  ) : null}
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Quote Modal */}
+        {quoteModalOpen && viewingQuote && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Quote Details</h3>
+                <button
+                  onClick={() => setQuoteModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium text-gray-900">Your Request:</h4>
+                  <p className="text-gray-600 mt-1">{viewingQuote.message}</p>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-gray-900">Products Requested:</h4>
+                  <ul className="text-gray-600 mt-1 list-disc list-inside">
+                    {viewingQuote.products?.map((p: any, index: number) => (
+                      <li key={index}>{p.name} — Qty: {p.quantity}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-gray-900">Admin Response:</h4>
+                  <p className="text-gray-600 mt-1">{viewingQuote.adminResponse || "No response yet."}</p>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setQuoteModalOpen(false)}
+                    className="px-4 py-2 bg-theme-color text-white rounded hover:bg-theme-color/90"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

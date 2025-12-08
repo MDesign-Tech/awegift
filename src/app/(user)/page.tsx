@@ -38,25 +38,21 @@ export default async function Home() {
         viewMoreLink="/products?category=bestsellers"
       />
 
-      <SectionDivider />
-
-      {/* New Arrivals Section */}
+      {/* New Arrivals Section
       <ProductSection
         title="New Arrivals"
         subtitle="Latest products just added to our collection"
         products={newArrivals}
         viewMoreLink="/products?category=new"
-      />
+      /> */}
 
-      <SectionDivider />
-
-      {/* Special Offers Section */}
+      {/* Special Offers Section
       <ProductSection
         title="Special Offers"
         subtitle="Don't miss out on these amazing deals"
         products={offers}
         viewMoreLink="/offers"
-      />
+      /> */}
     </main>
   );
 }

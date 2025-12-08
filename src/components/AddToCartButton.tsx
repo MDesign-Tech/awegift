@@ -29,7 +29,7 @@ const AddToCartButton = ({
   showQuantity = true,
 }: PropsType) => {
   const dispatch = useDispatch();
-  const { cart } = useSelector((state: StateType) => state?.shopy);
+  const { cart } = useSelector((state: StateType) => state?.aweGift);
   const [existingProduct, setExistingProduct] = useState<ProductType | null>(
     null
   );

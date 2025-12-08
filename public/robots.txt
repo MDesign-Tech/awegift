@@ -5,7 +5,8 @@ Disallow: /admin/*
 Disallow: /dashboard/*
 
 # Host
-Host: https://shofy.reactbd.com
+Host: https://awegift.vercel.app
 
-# Sitemaps
-Sitemap: https://shofy.reactbd.com/sitemap.xml
+# Sitemap
+Sitemap: https://awegift.vercel.app/sitemap.xml
+

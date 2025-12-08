@@ -15,7 +15,7 @@ export default function Sidebar({
   onClose,
   title,
   children,
-  width = "w-[500px]",
+  width = "w-full sm:w-[500px]",
 }: SidebarProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -79,7 +79,8 @@ export default function Sidebar({
       {/* Sidebar with enhanced animations */}
       <div
         className={`
-          fixed inset-y-0 right-0 z-50
+          fixed z-50
+          inset-0 sm:inset-y-0 sm:right-0 sm:left-auto
           ${width}
           bg-white shadow-2xl
           flex flex-col

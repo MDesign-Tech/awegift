@@ -44,7 +44,7 @@ export interface ProductType {
 }
 
 export interface StateType {
-  shopy: {
+  aweGift: {
     cart: ProductType[];
     favorite: ProductType[];
     userInfo: any;
@@ -137,4 +137,29 @@ export interface CategoryType {
     createdAt: string;
     updatedAt: string;
   };
+}
+
+export interface NotificationType {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  read: boolean;
+  quoteId?: string;
+  createdAt: Date;
+}
+
+export interface QuoteType {
+  id: string;
+  userId: string;
+  products: { name: string; quantity: number }[];
+  message: string;
+  status: "pending" | "in_review" | "approved" | "rejected" | "completed";
+  adminResponse: string | null;
+  notified: boolean;
+  requesterId: string | null;
+  email: string | null;
+  phone?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

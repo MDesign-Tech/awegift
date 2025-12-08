@@ -65,6 +65,9 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
   const [tagInput, setTagInput] = useState("");
   const [uploadingImages, setUploadingImages] = useState(false);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deletingThumbnail, setDeletingThumbnail] = useState(false);
+
 
 
 
@@ -105,6 +108,77 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
     return Object.keys(newErrors).length === 0;
   };
 
+  const scrollToFirstError = () => {
+    // Find the first error field and scroll to it
+    const errorFields = ['title', 'description', 'brand', 'category', 'price', 'stock'];
+    for (const field of errorFields) {
+      if (errors[field]) {
+        const element = document.getElementById(field) as HTMLElement;
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.focus();
+          break;
+        }
+      }
+    }
+  };
+
+
+  const handleDeleteImage = async (url: string) => {
+    setDeletingId(url);
+    try {
+      const public_id = url.split("/").pop()?.split(".")[0]; // optional: extract public_id from URL
+      const response = await fetch("/api/cloudinary/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ public_id }),
+      });
+
+      if (response.ok) {
+        setFormData(prev => ({
+          ...prev,
+          images: prev.images.filter(img => img !== url)
+        }));
+        toast.success("Image deleted successfully!");
+      } else {
+        const errorData = await response.json();
+        toast.error(`Failed to delete image: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      toast.error("Error deleting image. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+
+  const handleDeleteThumbnail = async () => {
+    setDeletingThumbnail(true);
+    try {
+      const public_id = formData.thumbnail.split("/").pop()?.split(".")[0];
+      const response = await fetch("/api/cloudinary/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ public_id }),
+      });
+
+      if (response.ok) {
+        handleInputChange("thumbnail", "");
+        toast.success("Thumbnail deleted successfully!");
+      } else {
+        const errorData = await response.json();
+        toast.error(`Failed to delete thumbnail: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error("Error deleting thumbnail:", error);
+      toast.error("Error deleting thumbnail. Please try again.");
+    } finally {
+      setDeletingThumbnail(false);
+    }
+  };
+
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => {
       const newData = { ...prev };
@@ -134,11 +208,6 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
     });
 
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: "" }));
-  };
-
-  const handleArrayChange = (field: keyof ProductType, value: string) => {
-    const arr = value.split(',').map(v => v.trim()).filter(Boolean);
-    handleInputChange(field as string, arr);
   };
 
   const handleDimensionChange = (dim: keyof ProductType['dimensions'], value: number) => {
@@ -200,7 +269,11 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      // Scroll to first error after a brief delay to allow DOM updates
+      setTimeout(() => scrollToFirstError(), 100);
+      return;
+    }
 
     setLoading(true);
     try {
@@ -222,7 +295,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
         await refetchProducts();
         toast.success(product ? "Product updated successfully!" : "Product added successfully!");
         onSuccess();
-        
+
       } else {
         const errorData = await response.json();
         if (response.status === 404 && errorData.error === "Product not found") {
@@ -243,42 +316,46 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Info */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">Title *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
         <input
+          id="title"
           type="text"
           value={formData.title}
           onChange={(e) => handleInputChange("title", e.target.value)}
-          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color ${errors.title ? "border-red-500" : "border-gray-300"}`}
+          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color text-sm sm:text-base ${errors.title ? "border-red-500" : "border-gray-300"}`}
         />
         {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Description *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
         <textarea
+          id="description"
           value={formData.description}
           onChange={(e) => handleInputChange("description", e.target.value)}
           rows={4}
-          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color ${errors.description ? "border-red-500" : "border-gray-300"}`}
+          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color text-sm sm:text-base ${errors.description ? "border-red-500" : "border-gray-300"}`}
         />
         {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Brand *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Brand *</label>
         <input
+          id="brand"
           type="text"
           value={formData.brand}
           onChange={(e) => handleInputChange("brand", e.target.value)}
-          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color ${errors.brand ? "border-red-500" : "border-gray-300"}`}
+          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color text-sm sm:text-base ${errors.brand ? "border-red-500" : "border-gray-300"}`}
         />
         {errors.brand && <p className="text-red-500 text-sm">{errors.brand}</p>}
       </div>
 
       {/* Category */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">Category *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
         <select
+          id="category"
           value={formData.category}
           onChange={(e) => {
             const value = e.target.value;
@@ -292,7 +369,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
             }
           }}
           disabled={categoriesLoading}
-          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color ${errors.category ? "border-red-500" : "border-gray-300"} ${categoriesLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color text-sm sm:text-base ${errors.category ? "border-red-500" : "border-gray-300"} ${categoriesLoading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <option value="">
             {categoriesLoading ? "Loading categories..." : "Select category"}
@@ -304,8 +381,8 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
         </select>
 
         {showAddCategoryForm && (
-          <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-            <h4 className="text-md font-medium text-gray-900 mb-3">Add New Category</h4>
+          <div className="mt-4 p-3 sm:p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <h4 className="text-base sm:text-md font-medium text-gray-900 mb-3">Add New Category</h4>
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -315,7 +392,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
                   type="text"
                   value={categoryFormData.name}
                   onChange={(e) => handleCategoryFormChange("name", e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color border-gray-300"
+                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color border-gray-300 text-sm sm:text-base"
                   placeholder="Category name"
                 />
               </div>
@@ -327,7 +404,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
                   value={categoryFormData.description}
                   onChange={(e) => handleCategoryFormChange("description", e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color border-gray-300"
+                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color border-gray-300 text-sm sm:text-base"
                   placeholder="Category description"
                 />
               </div>
@@ -376,12 +453,12 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
                   </div>
                 )}
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   type="button"
                   onClick={handleAddCategory}
                   disabled={addingCategory}
-                  className="px-4 py-2 bg-theme-color text-white rounded-md hover:bg-theme-color/90 disabled:opacity-50 flex items-center"
+                  className="w-full sm:w-auto px-4 py-2 bg-theme-color text-white rounded-md hover:bg-theme-color/90 disabled:opacity-50 flex items-center justify-center text-sm sm:text-base"
                 >
                   {addingCategory ? (
                     <>
@@ -399,7 +476,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
                     setCategoryFormData({ name: "", slug: "", description: "", image: "" });
                   }}
                   disabled={!product}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   Cancel
                 </button>
@@ -411,59 +488,61 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
       </div>
 
       {/* Price & Discount */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Price *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Price *</label>
           <input
+            id="price"
             type="number"
             step="0.01"
             value={formData.price}
             onChange={(e) => handleInputChange("price", parseFloat(e.target.value) || 0)}
-            className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color ${errors.price ? "border-red-500" : "border-gray-300"}`}
+            className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color text-sm sm:text-base ${errors.price ? "border-red-500" : "border-gray-300"}`}
           />
           {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Discount %</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Discount %</label>
           <input
             type="number"
             step="0.01"
             value={formData.discountPercentage}
             onChange={(e) => handleInputChange("discountPercentage", parseFloat(e.target.value) || 0)}
-            className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color"
+            className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color text-sm sm:text-base border-gray-300"
           />
         </div>
       </div>
 
       {/* Stock & Availability */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Stock *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Stock *</label>
           <input
+            id="stock"
             type="number"
             value={formData.stock}
             onChange={(e) => handleInputChange("stock", parseInt(e.target.value) || 0)}
-            className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color ${errors.stock ? "border-red-500" : "border-gray-300"}`}
+            className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color text-sm sm:text-base ${errors.stock ? "border-red-500" : "border-gray-300"}`}
           />
           {errors.stock && <p className="text-red-500 text-sm">{errors.stock}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Minimum Order Quantity</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order Quantity</label>
           <input
             type="number"
             value={formData.minimumOrderQuantity}
             onChange={(e) => handleInputChange("minimumOrderQuantity", parseInt(e.target.value) || 1)}
-            className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color"
+            className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color text-sm sm:text-base border-gray-300"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Availability Status</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Availability Status</label>
         <select
           value={formData.availabilityStatus}
           onChange={(e) => handleInputChange("availabilityStatus", e.target.value)}
-          className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color"
+          className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color text-sm sm:text-base border-gray-300"
         >
           <option value="In Stock">In Stock</option>
           <option value="Out of Stock">Out of Stock</option>
@@ -479,9 +558,20 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
           {formData.tags.map((tag, i) => (
             <span
               key={i}
-              className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full"
+              className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full group hover:bg-blue-200 transition-colors"
             >
               {tag}
+              <button
+                type="button"
+                onClick={() => {
+                  const newTags = formData.tags.filter((_, index) => index !== i);
+                  handleInputChange("tags", newTags);
+                }}
+                className="ml-1 hover:bg-blue-300 rounded-full p-0.5 opacity-60 group-hover:opacity-100 transition-opacity"
+                title={`Remove ${tag}`}
+              >
+                <FiX className="h-3 w-3" />
+              </button>
             </span>
           ))}
         </div>
@@ -525,9 +615,9 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
       {/* Dimensions & Weight */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Dimensions & Weight</label>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <div>
-            <label className="block text-xs text-gray-600">Weight (kg)</label>
+            <label className="block text-xs text-gray-600 mb-1">Weight (kg)</label>
             <input
               type="number"
               step="0.01"
@@ -580,13 +670,18 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
               <button
                 type="button"
                 onClick={() => open()}
-                disabled={uploadingThumbnail}
+                disabled={uploadingThumbnail || !!formData.thumbnail}
                 className="flex items-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-theme-color disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploadingThumbnail ? (
                   <>
                     <FiLoader className="animate-spin mr-2 h-4 w-4" />
                     Uploading...
+                  </>
+                ) : formData.thumbnail ? (
+                  <>
+                    <FiUpload className="mr-2 h-4 w-4" />
+                    Thumbnail Uploaded
                   </>
                 ) : (
                   <>
@@ -613,11 +708,16 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
               />
               <button
                 type="button"
-                onClick={() => handleInputChange("thumbnail", "")}
-                className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700"
+                onClick={handleDeleteThumbnail}
+                disabled={deletingThumbnail}
+                className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 disabled:opacity-50"
                 title="Remove thumbnail"
               >
-                <FiX className="h-3 w-3" />
+                {deletingThumbnail ? (
+                  <FiLoader className="animate-spin h-3 w-3" />
+                ) : (
+                  <FiX className="h-3 w-3" />
+                )}
               </button>
             </div>
           </div>
@@ -633,12 +733,27 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
           <CldUploadWidget
             uploadPreset="default_unsigned"
             onSuccess={(result: any) => {
-              if (result?.info?.secure_url) {
-                const newImages = [...formData.images, result.info.secure_url];
-                handleInputChange("images", newImages);
-                toast.success("Image uploaded successfully!");
+              try {
+                if (result?.info?.secure_url) {
+                  // Use functional update to ensure we have the latest state
+                  setFormData(prevFormData => {
+                    const newImages = [...prevFormData.images, result.info.secure_url];
+                    // Remove duplicates in case of race conditions
+                    const uniqueImages = [...new Set(newImages)];
+                    return {
+                      ...prevFormData,
+                      images: uniqueImages
+                    };
+                  });
+                  toast.success("Image uploaded successfully!");
+                } else {
+                  console.error("Upload result missing secure_url:", result);
+                  toast.error("Upload failed: Invalid response");
+                }
+              } catch (error) {
+                console.error("Error processing upload result:", error);
+                toast.error("Upload failed: Processing error");
               }
-              setUploadingImages(false);
             }}
             onError={(error) => {
               console.error("Upload error:", error);
@@ -649,18 +764,27 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
                 errorMessage = error;
               }
               toast.error(`Upload failed: ${errorMessage}`);
+            }}
+            onClose={() => {
+              // Reset uploading state when widget closes
               setUploadingImages(false);
             }}
             options={{
-              maxFiles: 10,
+              // maxFiles: 10 - formData.images.length, // Adjust max files based on existing images
               resourceType: "image",
-              folder: "products/gallery"
+              folder: "products/gallery",
+              maxFileSize: 10000000, // 10MB limit
             }}
           >
             {({ open }) => (
               <button
                 type="button"
                 onClick={() => {
+                  // Check if we've reached the limit
+                  // if (formData.images.length >= 10) {
+                  //   toast.error("Maximum 10 images allowed");
+                  //   return;
+                  // }
                   setUploadingImages(true);
                   open();
                 }}
@@ -675,7 +799,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
                 ) : (
                   <>
                     <FiUpload className="mr-2 h-4 w-4" />
-                    Upload Images
+                    Upload Images ({formData.images.length})
                   </>
                 )}
               </button>
@@ -694,45 +818,34 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {formData.images.map((img, i) => (
-                <div key={`${img}-${i}`} className="relative group border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div key={`${img}-${i}`} className="relative group ...">
                   <CldImage
                     src={img}
                     alt={`Product image ${i + 1}`}
                     width={200}
                     height={200}
-                    className="w-full h-32 object-cover"
+                    className="w-full h-32 object-cover border rounded-md shadow-sm"
                   />
                   <button
                     type="button"
-                    onClick={() => {
-                      const filtered = formData.images.filter((_, index) => index !== i);
-                      handleInputChange("images", filtered);
-                      toast.success("Image removed");
-                    }}
-                    className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-700 hover:scale-110"
+                    onClick={() => handleDeleteImage(img)}
+                    disabled={deletingId === img}
+                    className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-700 hover:scale-110"
                     title="Remove image"
                   >
-                    <FiX className="h-3 w-3" />
+                    {deletingId === img ? (
+                      <FiLoader className="animate-spin h-3 w-3" />
+                    ) : (
+                      <FiX className="h-3 w-3" />
+                    )}
                   </button>
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Image {i + 1}
-                  </div>
                 </div>
               ))}
+
             </div>
           </div>
         )}
 
-        {formData.images.length === 0 && (
-          <div className="mt-4">
-            <img
-              src="/placeholder-product.svg"
-              alt="No product images"
-              className="w-32 h-32 object-cover border rounded-md shadow-sm opacity-50"
-            />
-            <p className="text-sm text-gray-500 mt-2">No images uploaded yet. Click "Upload Images" to add product photos.</p>
-          </div>
-        )}
       </div>
 
 
@@ -768,19 +881,19 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 pt-6 border-t">
+      <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-6 border-t">
         <button
           type="button"
           onClick={onCancel}
           disabled={addingCategory || !product}
-          className="px-6 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto px-4 sm:px-6 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading || addingCategory}
-          className="px-6 py-2 bg-theme-color text-white rounded-md disabled:opacity-50 flex items-center"
+          className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-theme-color text-white rounded-md disabled:opacity-50 flex items-center justify-center text-sm sm:text-base"
         >
           {loading ? (
             <>

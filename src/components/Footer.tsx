@@ -60,7 +60,7 @@ const Footer = () => {
             </div>
             <div className="mt-3">
               <p className="text-base flex items-center gap-x-3 text-gray-600">
-                <BsEnvelopeAt /> mdesignpro10@gmail.com
+                <BsEnvelopeAt /> support@awegift.com
               </p>
               <p className="text-base flex items-center gap-x-3 text-gray-600">
                 <GrLocation /> Jigali, Rwanda
