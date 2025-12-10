@@ -99,10 +99,10 @@ export default function DashboardOverviewClient() {
 
   return (
     <div className="space-y-8">
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Total Users - Only for admin and accountant */}
-        {userRole && hasPermission(userRole as any, "canViewUsers") && (
+      {/* Completed Orders - For roles that can view orders */}
+      {userRole && hasPermission(userRole as any, "canViewOverview") && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
           <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-500">Total Users</h3>
@@ -113,10 +113,7 @@ export default function DashboardOverviewClient() {
             </div>
             <p className="text-xs text-gray-500 mt-1">Registered users</p>
           </div>
-        )}
 
-        {/* Total Orders - For all roles that can view orders */}
-        {userRole && hasPermission(userRole as any, "canViewOrders") && (
           <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-500">Total Orders</h3>
@@ -127,10 +124,9 @@ export default function DashboardOverviewClient() {
             </div>
             <p className="text-xs text-gray-500 mt-1">All time orders</p>
           </div>
-        )}
 
-        {/* Total Revenue - Only for admin, accountant */}
-        {userRole && hasPermission(userRole as any, "canViewFinancials") && (
+
+
           <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-500">Total Revenue</h3>
@@ -141,10 +137,7 @@ export default function DashboardOverviewClient() {
             </div>
             <p className="text-xs text-gray-500 mt-1">Total earnings</p>
           </div>
-        )}
 
-        {/* Total Products - For all roles that can view products */}
-        {userRole && hasPermission(userRole as any, "canViewProducts") && (
           <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-500">
@@ -157,10 +150,8 @@ export default function DashboardOverviewClient() {
             </div>
             <p className="text-xs text-gray-500 mt-1">Available products</p>
           </div>
-        )}
 
-        {/* Pending Orders - For roles that can view orders */}
-        {userRole && hasPermission(userRole as any, "canViewOrders") && (
+
           <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-500">
@@ -173,10 +164,8 @@ export default function DashboardOverviewClient() {
             </div>
             <p className="text-xs text-gray-500 mt-1">Awaiting processing</p>
           </div>
-        )}
 
-        {/* Completed Orders - For roles that can view orders */}
-        {userRole && hasPermission(userRole as any, "canViewOrders") && (
+
           <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-500">
@@ -189,8 +178,9 @@ export default function DashboardOverviewClient() {
             </div>
             <p className="text-xs text-gray-500 mt-1">Successfully fulfilled</p>
           </div>
-        )}
-      </div>
+
+        </div>
+      )}
     </div>
   );
 }

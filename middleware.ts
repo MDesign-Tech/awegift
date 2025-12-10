@@ -3,13 +3,12 @@ import { auth } from "./auth";
 import { checkRouteAccess } from "@/lib/rbac/middleware";
 import { UserRole, getDefaultDashboardRoute } from "@/lib/rbac/roles";
 
-const roles: UserRole[] = ["user", "admin", "deliveryman", "packer", "accountant"];
+const roles: UserRole[] = ["user", "admin"];
 
 const dashboardRoutes = roles
   .map(role => getDefaultDashboardRoute(role))
   .filter(route => route.startsWith("/dashboard"));
 
-const dashboardMatchers = dashboardRoutes.map(route => `${route}/:path*`);
 
 const protectedRoutes = [
   "/account",
@@ -36,6 +35,17 @@ export async function middleware(request: any) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
   }
+
+  if (pathname.startsWith("/dashboard")) {
+  const session = await auth();
+  const userRole = session?.user?.role;
+  const dashboardRoute = getDefaultDashboardRoute(userRole as UserRole);
+
+  if (!pathname.startsWith(dashboardRoute)) {
+    return NextResponse.redirect(new URL(dashboardRoute, request.url));
+  }
+}
+
 
   // Prevent access to auth pages for logged-in users
   if (authRoutes.some((route) => pathname.startsWith(route))) {
@@ -76,6 +86,7 @@ export const config = {
     "/auth/:path*",
     "/success/:path*",
     "/checkout/:path*",
-    ...dashboardMatchers,
+    "/dashboard/:path*", // match all dashboard routes
   ],
 };
+

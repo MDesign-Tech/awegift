@@ -1,103 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
-import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
-
-interface UpdateQuoteRequest {
-  adminResponse?: string;
-  status?: "pending" | "in_review" | "completed";
-}
-
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const quoteRef = doc(db, "quotes", id);
-    const quoteSnap = await getDoc(quoteRef);
-
-    if (!quoteSnap.exists()) {
-      return NextResponse.json(
-        { error: "Quote not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        firestoreId: quoteSnap.id,
-        ...quoteSnap.data(),
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error fetching quote:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
+import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
+import { getToken } from "next-auth/jwt";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
-    const { adminResponse, status }: UpdateQuoteRequest = await request.json();
-
-    const quoteRef = doc(db, "quotes", id);
-    const quoteSnap = await getDoc(quoteRef);
-
-    if (!quoteSnap.exists()) {
-      return NextResponse.json(
-        { error: "Quote not found" },
-        { status: 404 }
-      );
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const updateData: any = {
-      updatedAt: serverTimestamp(),
-    };
-
-    if (adminResponse !== undefined) {
-      updateData.adminResponse = adminResponse;
+    const userRole = token.role as UserRole;
+    if (!hasPermission(userRole, "canManageQuotes")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    if (status !== undefined) {
-      updateData.status = status;
+    const quoteId = params.id;
+    const updateData = await request.json();
+
+    const quoteRef = doc(db, "quotes", quoteId);
+    const quoteDoc = await getDoc(quoteRef);
+
+    if (!quoteDoc.exists()) {
+      return NextResponse.json({ error: "Quote not found" }, { status: 404 });
     }
 
-    await updateDoc(quoteRef, updateData);
+    await updateDoc(quoteRef, {
+      ...updateData,
+      updatedAt: new Date(),
+    });
 
-    // If status changed to completed and adminResponse is provided, trigger notifications
-    if (status === "completed" && adminResponse && adminResponse.trim()) {
-      try {
-        // Trigger notifications automatically
-        await fetch(`${request.nextUrl.origin}/api/quotes/notifications`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            quoteId: id,
-          }),
-        });
-      } catch (notificationError) {
-        console.error("Error triggering notifications:", notificationError);
-        // Don't fail the update if notifications fail
-      }
-    }
-
-    return NextResponse.json(
-      { message: "Quote updated successfully" },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error updating quote:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }
@@ -105,32 +47,35 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
-    const quoteRef = doc(db, "quotes", id);
-    const quoteSnap = await getDoc(quoteRef);
-
-    if (!quoteSnap.exists()) {
-      return NextResponse.json(
-        { error: "Quote not found" },
-        { status: 404 }
-      );
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Note: In a real application, you might want to soft delete or archive instead
-    // For now, we'll allow hard deletion
-    // await deleteDoc(quoteRef);
+    const userRole = token.role as UserRole;
+    if (!hasPermission(userRole, "canManageQuotes")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
 
-    return NextResponse.json(
-      { message: "Quote deleted successfully" },
-      { status: 200 }
-    );
+    const quoteId = params.id;
+    const quoteRef = doc(db, "quotes", quoteId);
+    const quoteDoc = await getDoc(quoteRef);
+
+    if (!quoteDoc.exists()) {
+      return NextResponse.json({ error: "Quote not found" }, { status: 404 });
+    }
+
+    await deleteDoc(quoteRef);
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting quote:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }

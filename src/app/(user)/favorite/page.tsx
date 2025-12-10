@@ -3,7 +3,7 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useSession } from "next-auth/react";
-import { StateType } from "../../../../type";
+import { ProductType, StateType } from "../../../../type";
 import { addToFavorite, addToCart, resetFavorite } from "@/redux/shofySlice";
 import Container from "@/components/Container";
 import Link from "next/link";
@@ -25,7 +25,7 @@ const FavoritePage = () => {
     }
   };
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (product: ProductType) => {
     dispatch(addToCart(product));
     toast.success("Added to cart successfully!");
   };
@@ -144,7 +144,7 @@ const FavoritePage = () => {
                   </div>
 
                   <p className="text-xs text-gray-500 mb-3 capitalize">
-                    {product.category}
+                    {product.categories && product.categories.length > 0 ? product.categories.join(", ") : "No category"}
                   </p>
 
                   {/* Price */}

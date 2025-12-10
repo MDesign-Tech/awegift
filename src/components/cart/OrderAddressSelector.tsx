@@ -7,15 +7,17 @@ import AddressForm from "../account/AddressForm";
 import { Address } from "../../../type";
 import { FiPlus, FiMapPin, FiEdit2, FiCheck } from "react-icons/fi";
 
-interface ShippingAddressSelectorProps {
+interface OrderAddressSelectorProps {
   selectedAddress: Address | null;
   onAddressSelect: (address: Address | null) => void;
+  onLoadingChange?: (loading: boolean) => void;
 }
 
-export default function ShippingAddressSelector({
+export default function OrderAddressSelector({
   selectedAddress,
   onAddressSelect,
-}: ShippingAddressSelectorProps) {
+  onLoadingChange,
+}: OrderAddressSelectorProps) {
   const { data: session } = useSession();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +35,7 @@ export default function ShippingAddressSelector({
   const fetchAddresses = async () => {
     try {
       setLoading(true);
+      onLoadingChange?.(true);
       const response = await fetch(
         `/api/user/profile?email=${encodeURIComponent(
           session?.user?.email || ""
@@ -66,6 +69,7 @@ export default function ShippingAddressSelector({
       setAddresses([]);
     } finally {
       setLoading(false);
+      onLoadingChange?.(false);
     }
   };
 
@@ -108,17 +112,13 @@ export default function ShippingAddressSelector({
     }
   };
 
-  const formatAddress = (address: Address) => {
-    return `${address.street}, ${address.city}, ${address.state} ${address.zipCode}, ${address.country}`;
-  };
-
   if (!session?.user) {
     return (
       <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
         <div className="flex items-center text-orange-800">
           <FiMapPin className="text-orange-600 text-lg mr-2" />
           <span className="text-sm font-medium">
-            Please sign in to manage shipping addresses
+            Please sign in to select order delivery address
           </span>
         </div>
       </div>
@@ -142,7 +142,7 @@ export default function ShippingAddressSelector({
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-medium text-gray-900 flex items-center">
             <FiMapPin className="mr-2 text-theme-color" />
-            Shipping Address
+            Order Delivery Address
           </h3>
           {addresses.length > 0 && (
             <button
@@ -157,13 +157,13 @@ export default function ShippingAddressSelector({
         {addresses.length === 0 ? (
           <div className="text-center py-6">
             <FiMapPin className="mx-auto text-4xl text-gray-300 mb-3" />
-            <p className="text-gray-500 mb-4">No shipping addresses found</p>
+            <p className="text-gray-500 mb-4">No delivery addresses found</p>
             <Button
               onClick={() => setShowAddForm(true)}
               className="bg-theme-color hover:bg-theme-color/90"
             >
               <FiPlus className="mr-2" />
-              Add Shipping Address
+              Add Delivery Address
             </Button>
           </div>
         ) : (
@@ -176,7 +176,7 @@ export default function ShippingAddressSelector({
                     <div className="flex items-center mb-1">
                       <FiCheck className="text-green-600 mr-1 text-sm" />
                       <span className="text-sm font-medium text-green-800">
-                        Selected Address
+                        Selected Delivery Address
                       </span>
                       {selectedAddress.isDefault && (
                         <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
@@ -185,7 +185,7 @@ export default function ShippingAddressSelector({
                       )}
                     </div>
                     <p className="text-sm text-gray-700">
-                      {formatAddress(selectedAddress)}
+                      {selectedAddress.address}
                     </p>
                   </div>
                 </div>
@@ -218,7 +218,7 @@ export default function ShippingAddressSelector({
                           )}
                         </div>
                         <p className="text-sm text-gray-700">
-                          {formatAddress(address)}
+                          {address.address}
                         </p>
                       </div>
                     </div>
@@ -230,7 +230,7 @@ export default function ShippingAddressSelector({
                   className="w-full border-2 border-dashed border-gray-300 rounded-lg p-3 text-gray-500 hover:border-theme-color hover:text-theme-color transition-all flex items-center justify-center"
                 >
                   <FiPlus className="mr-2" />
-                  Add New Address
+                  Add New Delivery Address
                 </button>
               </div>
             )}
@@ -244,7 +244,7 @@ export default function ShippingAddressSelector({
           <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">Add New Address</h3>
+                <h3 className="text-lg font-medium">Add New Delivery Address</h3>
                 <button
                   onClick={() => setShowAddForm(false)}
                   className="text-gray-400 hover:text-gray-600"

@@ -8,13 +8,15 @@ export type Review = {
   reviewerEmail: string;
 };
 
+// ---------------------- PRODUCT -----------------------
+
 export interface ProductType {
   id: string;
   title: string;
   description: string;
   brand: string;
-  sku: string,
-  category: string;
+  sku: string;
+  categories: string[];
   price: number;
   stock: number;
   minimumOrderQuantity: number;
@@ -33,8 +35,12 @@ export interface ProductType {
   reviews: Review[];
   rating: number;
   warrantyInformation: string;
-  shippingInformation: string;
+
+  // Removed shippingInformation
+  // Local trading doesn't use shipping
+
   quantity?: number;
+
   meta: {
     createdAt: string;
     updatedAt: string;
@@ -42,6 +48,8 @@ export interface ProductType {
     qrCode: string;
   };
 }
+
+// ---------------------- STATE -----------------------
 
 export interface StateType {
   aweGift: {
@@ -51,15 +59,15 @@ export interface StateType {
   };
 }
 
+// ---------------------- ADDRESS / LOCATION -----------------------
+
 export interface Address {
   id?: string;
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
+  address: string; // Local address / meeting point
   isDefault?: boolean;
 }
+
+// ---------------------- USER -----------------------
 
 export interface UserData {
   id: string;
@@ -71,19 +79,24 @@ export interface UserData {
   updatedAt: string;
   emailVerified: boolean;
   provider?: string;
+
   profile: {
     firstName: string;
     lastName: string;
     phone: string;
-    addresses: Address[];
+    addresses: Address[]; // Local addresses
   };
+
   preferences: {
     newsletter: boolean;
     notifications: boolean;
   };
+
   cart: ProductType[];
   wishlist: ProductType[];
 }
+
+// ---------------------- ORDER -----------------------
 
 export interface OrderData {
   id: string;
@@ -91,21 +104,27 @@ export interface OrderData {
   customerName: string;
   customerEmail: string;
   status: OrderStatus;
+
   items: OrderItem[];
   totalAmount: number;
-  shippingAddress: Address;
+
+  // Removed shippingAddress → renamed to local trade location
+  orderAddress: Address;
+
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
-  trackingNumber?: string;
-  assignedDeliveryman?: string;
-  assignedPacker?: string;
+  paymentScreenshot?: string; // Screenshot of payment for MTN/Airtel verification
+
   statusHistory: OrderStatusHistory[];
+
   createdAt: string;
   updatedAt: string;
-  deliveryDate?: string;
-  packedAt?: string;
-  shippedAt?: string;
-  deliveredAt?: string;
+
+  // Local trading workflow
+  confirmedAt?: string; // When seller confirmed the order
+  readyAt?: string; // When order is ready for delivery
+  completedAt?: string; // When buyer receives goods
+
   notes?: string;
 }
 
@@ -127,6 +146,8 @@ export interface OrderStatusHistory {
 }
 
 
+// ---------------------- CATEGORY -----------------------
+
 export interface CategoryType {
   id: string;
   name: string;
@@ -139,27 +160,51 @@ export interface CategoryType {
   };
 }
 
+// ---------------------- NOTIFICATION -----------------------
+
 export interface NotificationType {
   id: string;
+  userId?: string;
   title: string;
   message: string;
-  type: string;
+
+  // Local trading notification types
+  type:
+    | "order"
+    | "payment"
+    | "quote"
+    | "system"
+    | "promotion";
+
   read: boolean;
-  quoteId?: string;
   createdAt: Date;
+  updatedAt?: Date;
+  readAt?: Date | null;
 }
+
+// ---------------------- QUOTE -----------------------
 
 export interface QuoteType {
   id: string;
   userId: string;
-  products: { name: string; quantity: number }[];
+
+  products: {
+    name: string;
+    quantity: number;
+  }[];
+
   message: string;
-  status: "pending" | "in_review" | "approved" | "rejected" | "completed";
+
+  status: "pending" | "rejected" | "responded";
+
   adminResponse: string | null;
+
   notified: boolean;
-  requesterId: string | null;
+
   email: string | null;
   phone?: string;
+
   createdAt: Date;
   updatedAt: Date;
 }
+

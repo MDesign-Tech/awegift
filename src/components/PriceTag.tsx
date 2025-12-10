@@ -13,9 +13,9 @@ const PriceTag = ({ regularPrice, discountedPrice, className }: PriceProps) => {
       <p className="line-through text-gray-500 font-medium">
         <PriceFormat amount={regularPrice} />
       </p>
-      <p className="font-bold text-skyText">
+      {/* <p className="font-bold text-skyText">
         <PriceFormat amount={discountedPrice} />
-      </p>
+      </p> */}
     </div>
   );
 };

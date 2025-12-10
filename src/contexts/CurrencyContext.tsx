@@ -22,25 +22,26 @@ interface CurrencyContextType {
   convertPrice: (amount: number, fromCurrency?: CurrencyCode) => number;
   getCurrencySymbol: (currencyCode: CurrencyCode) => string;
   getCurrencyName: (currencyCode: CurrencyCode) => string;
+  getCurrencyFlag: (currencyCode: CurrencyCode) => string;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(
   undefined
 );
 
-const currencyData: Record<CurrencyCode, { symbol: string; name: string }> = {
-  USD: { symbol: "$", name: "US Dollar" },
-  EUR: { symbol: "€", name: "Euro" },
-  GBP: { symbol: "£", name: "British Pound" },
-  JPY: { symbol: "¥", name: "Japanese Yen" },
-  CAD: { symbol: "C$", name: "Canadian Dollar" },
-  AUD: { symbol: "A$", name: "Australian Dollar" },
-  CHF: { symbol: "CHF", name: "Swiss Franc" },
-  CNY: { symbol: "¥", name: "Chinese Yuan" },
-  INR: { symbol: "₹", name: "Indian Rupee" },
-  BDT: { symbol: "৳", name: "Bangladeshi Taka" },
-  PKR: { symbol: "₨", name: "Pakistani Rupee" },
-  RWF: { symbol: "FRw", name: "Rwandan Franc" },
+const currencyData: Record<CurrencyCode, { symbol: string; name: string; flag: string }> = {
+  USD: { symbol: "$", name: "US Dollar", flag: "🇺🇸" },
+  EUR: { symbol: "€", name: "Euro", flag: "🇪🇺" },
+  GBP: { symbol: "£", name: "British Pound", flag: "🇬🇧" },
+  JPY: { symbol: "¥", name: "Japanese Yen", flag: "🇯🇵" },
+  CAD: { symbol: "C$", name: "Canadian Dollar", flag: "🇨🇦" },
+  AUD: { symbol: "A$", name: "Australian Dollar", flag: "🇦🇺" },
+  CHF: { symbol: "CHF", name: "Swiss Franc", flag: "🇨🇭" },
+  CNY: { symbol: "¥", name: "Chinese Yuan", flag: "🇨🇳" },
+  INR: { symbol: "₹", name: "Indian Rupee", flag: "🇮🇳" },
+  BDT: { symbol: "৳", name: "Bangladeshi Taka", flag: "🇧🇩" },
+  PKR: { symbol: "₨", name: "Pakistani Rupee", flag: "🇵🇰" },
+  RWF: { symbol: "FRw", name: "Rwandan Franc", flag: "🇷🇼" },
 };
 
 // Mock exchange rates - in a real app, you'd fetch these from an API
@@ -56,13 +57,13 @@ const mockExchangeRates: Record<CurrencyCode, number> = {
   INR: 83.25,
   BDT: 109.5,
   PKR: 278.5,
-  RWF: 1300,
+  RWF: 1414,
 };
 
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>("USD");
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>("RWF");
   const [exchangeRates, setExchangeRates] =
     useState<Record<CurrencyCode, number>>(mockExchangeRates);
 
@@ -100,6 +101,10 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({
     return currencyData[currencyCode]?.name || "US Dollar";
   };
 
+  const getCurrencyFlag = (currencyCode: CurrencyCode): string => {
+    return currencyData[currencyCode]?.flag || "🇺🇸";
+  };
+
   // Simulate fetching exchange rates (in a real app, you'd call an API)
   useEffect(() => {
     const fetchExchangeRates = async () => {
@@ -134,6 +139,7 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({
     convertPrice,
     getCurrencySymbol,
     getCurrencyName,
+    getCurrencyFlag,
   };
 
   return (

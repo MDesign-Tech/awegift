@@ -16,7 +16,7 @@ const RelatedProducts = ({
   const relatedProducts = products
     .filter(
       (product) =>
-        product.category === category && product.id !== currentProductId
+        product.categories && product.categories.includes(category) && product.id !== currentProductId
     )
     .slice(0, 4); // Show only 4 related products
 

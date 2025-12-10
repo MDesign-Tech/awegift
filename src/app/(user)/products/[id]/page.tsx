@@ -65,7 +65,7 @@ const SingleProductPage = async ({ params }: Props) => {
           </p>
           <p>
             Category:{" "}
-            <span className="font-medium capitalize">{product?.category}</span>
+            <span className="font-medium capitalize">{product?.categories && product.categories.length > 0 ? product.categories.join(", ") : "No category"}</span>
           </p>
           <p>
             Tags:{" "}
@@ -109,7 +109,7 @@ const SingleProductPage = async ({ params }: Props) => {
         <RelatedProducts
           products={allProducts}
           currentProductId={product?.id}
-          category={product?.category}
+          category={product?.categories && product.categories.length > 0 ? product.categories[0] : ""}
         />
       </Container>
     </div>

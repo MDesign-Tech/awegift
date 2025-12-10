@@ -82,7 +82,7 @@ export async function PUT(request: NextRequest) {
 
     // Validate role if provided (admin role is set separately via setup API)
     if (role !== undefined) {
-      const validRoles: UserRole[] = ["user", "deliveryman", "packer", "accountant"];
+      const validRoles: UserRole[] = ["user", "admin"];
       if (!validRoles.includes(role as UserRole)) {
         return NextResponse.json(
           { error: `Invalid role. Valid roles are: ${validRoles.join(", ")}` },

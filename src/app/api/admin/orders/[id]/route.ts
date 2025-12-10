@@ -10,7 +10,6 @@ import {
   collection,
   getDocs,
 } from "firebase/firestore";
-import { sendOrderStatusNotification } from "@/lib/notifications/orderNotifications";
 
 export async function PUT(
   request: NextRequest,
@@ -52,27 +51,7 @@ export async function PUT(
           updatedAt: new Date().toISOString(),
         });
 
-        // Send notification if status changed
-        if (newStatus && oldStatus !== newStatus) {
-          try {
-            await sendOrderStatusNotification({
-              orderId,
-              userId: currentOrderData.userId,
-              userEmail: currentOrderData.shippingAddress?.email || currentOrderData.customerEmail,
-              userPhone: currentOrderData.shippingAddress?.phone,
-              oldStatus,
-              newStatus,
-              orderDetails: {
-                totalAmount: currentOrderData.totalAmount || currentOrderData.amount || 0,
-                items: currentOrderData.items || [],
-                orderId: currentOrderData.orderId || orderId,
-              },
-            });
-          } catch (notificationError) {
-            console.error("Failed to send order notification:", notificationError);
-            // Don't fail the order update if notification fails
-          }
-        }
+        // TODO: Send notification if status changed (notification system not implemented)
 
         return NextResponse.json({
           success: true,

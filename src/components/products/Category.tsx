@@ -3,24 +3,25 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaChevronDown } from "react-icons/fa";
+import { ProductType } from "../../../type";
 
 interface CategoryProps {
-  categories?: any[];
-  allProducts?: any[];
+  categories?: Array<{ id: string; name: string; slug: string; productCount?: number }>;
+  allProducts?: ProductType[];
 }
 
 const Category = ({ categories = [], allProducts = [] }: CategoryProps) => {
   const [isOpen, setIsOpen] = useState(true); // Open by default
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentCategory = searchParams.get("category");
+  const currentCategories = searchParams.getAll("category");
 
   // Helper function to get exact product count for a category
   const getProductCountForCategory = (categorySlug: string): number => {
     if (!allProducts || allProducts.length === 0) return 0;
     return allProducts.filter(
-      (product: any) =>
-        product.category.toLowerCase() === categorySlug.toLowerCase()
+      (product: ProductType) =>
+        product.categories && product.categories.some((cat: string) => cat.toLowerCase() === categorySlug.toLowerCase())
     ).length;
   };
 
@@ -32,18 +33,13 @@ const Category = ({ categories = [], allProducts = [] }: CategoryProps) => {
       case "bestsellers":
         // Products with rating >= 4.5 or high review count
         return allProducts.filter(
-          (product: any) =>
+          (product: ProductType) =>
             product.rating >= 4.5 ||
             (product.reviews && product.reviews.length > 50)
         ).length;
       case "new":
         // Products from last few categories (simulated new arrivals)
         return Math.floor(allProducts.length * 0.15); // Assume 15% are new
-      case "offers":
-        // Products with discount percentage > 10%
-        return allProducts.filter(
-          (product: any) => product.discountPercentage > 10
-        ).length;
       default:
         return 0;
     }
@@ -53,12 +49,21 @@ const Category = ({ categories = [], allProducts = [] }: CategoryProps) => {
   const specialCategories = [
     { name: "bestsellers", label: "Best Sellers" },
     { name: "new", label: "New Arrivals" },
-    { name: "offers", label: "Special Offers" },
   ];
 
   const handleCategoryClick = (categorySlug: string) => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));
-    current.set("category", categorySlug);
+    const currentCats = current.getAll("category");
+
+    if (currentCats.includes(categorySlug)) {
+      // Remove if already selected
+      current.delete("category");
+      currentCats.filter(cat => cat !== categorySlug).forEach(cat => current.append("category", cat));
+    } else {
+      // Add if not selected
+      current.append("category", categorySlug);
+    }
+
     const search = current.toString();
     const query = search ? `?${search}` : "";
     router.push(`/products${query}`);
@@ -96,18 +101,18 @@ const Category = ({ categories = [], allProducts = [] }: CategoryProps) => {
               <div className="space-y-2">
                 {/* Special Categories */}
                 {specialCategories.map((category, index) => {
-                  const isActive = currentCategory === category.name;
+                   const isActive = currentCategories.includes(category.name);
                   const count = getSpecialCategoryCount(category.name);
                   return (
                     <div key={`special-${index}`} className="flex items-center">
                       <input
-                        type="radio"
-                        id={`category-${category.name}`}
-                        name="category"
-                        checked={isActive}
-                        onChange={() => {}}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                      />
+                          type="checkbox"
+                          id={`category-${category.name}`}
+                          name="category"
+                          checked={isActive}
+                          onChange={() => {}}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                        />
                       <button
                         onClick={() => handleCategoryClick(category.name)}
                         className="ml-2 text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors flex-1 text-left"
@@ -120,12 +125,12 @@ const Category = ({ categories = [], allProducts = [] }: CategoryProps) => {
 
                 {/* Regular Categories */}
                 {categories.map((category, index) => {
-                  const isActive = currentCategory === category.slug;
+                   const isActive = currentCategories.includes(category.slug);
                   const count = getProductCountForCategory(category.slug);
                   return (
                     <div key={index} className="flex items-center">
                       <input
-                        type="radio"
+                        type="checkbox"
                         id={`category-${category.slug}`}
                         name="category"
                         checked={isActive}

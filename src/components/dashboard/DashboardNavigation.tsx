@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { UserRole, hasPermission } from "@/lib/rbac/roles";
 import { fetchUserFromFirestore } from "@/lib/firebase/userService";
-import { FirestoreUser } from "@/lib/firebase/userService";
 
 interface TabItem {
   id: string;
@@ -44,61 +43,63 @@ export default function DashboardNavigation() {
 
   // Dashboard tabs based on permissions
   const getDashboardTabs = (userRole: string): TabItem[] => {
+    const basePath = userRole === "admin" ? "/dashboard" : "/account";
+
     const allTabs: TabItem[] = [
       {
         id: "overview",
         label: "Overview",
         icon: "📊",
-        path: `/dashboard/${role}`,
+        path: basePath,
         permission: "canViewOverview",
       },
       {
         id: "products",
         label: "Products",
         icon: "📦",
-        path: `/dashboard/${role}/products`,
+        path: `${basePath}/products`,
         permission: "canViewProducts",
       },
       {
         id: "categories",
         label: "Categories",
         icon: "📂",
-        path: `/dashboard/${role}/categories`,
-        permission: "canViewProducts", // Assuming categories are part of product management
+        path: `${basePath}/categories`,
+        permission: "canViewProducts",
       },
       {
         id: "users",
         label: "Users",
         icon: "👥",
-        path: `/dashboard/${role}/users`,
+        path: `${basePath}/users`,
         permission: "canViewUsers",
       },
       {
         id: "orders",
         label: "Orders",
         icon: "🛒",
-        path: `/dashboard/${role}/orders`,
+        path: `${basePath}/orders`,
         permission: "canViewOrders",
       },
       {
         id: "quotes",
         label: "Quotes",
         icon: "💬",
-        path: `/dashboard/${role}/quotes`,
+        path: `${basePath}/quotes`,
         permission: "canViewQuotes",
       },
       {
         id: "notifications",
         label: "Notifications",
         icon: "🔔",
-        path: `/dashboard/${role}/notifications`,
-        permission: "canManageQuotes", // Only admins can manage notifications
+        path: `${basePath}/notifications`,
+        permission: "canManageQuotes",
       },
       {
         id: "analytics",
         label: "Analytics",
         icon: "📈",
-        path: `/dashboard/${role}/analytics`,
+        path: `${basePath}/analytics`,
         permission: "canViewAnalytics",
       },
     ];

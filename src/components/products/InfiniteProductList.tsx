@@ -5,6 +5,7 @@ import EnhancedProductCard from "../EnhancedProductCard";
 import ActiveFilters from "./ActiveFilters";
 import { BsGridFill } from "react-icons/bs";
 import { ImList } from "react-icons/im";
+import { FiLoader } from "react-icons/fi";
 
 interface InfiniteProductListProps {
   products: any[];
@@ -198,7 +199,7 @@ const InfiniteProductList = ({
       {/* Loading indicator */}
       {isLoading && (
         <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <FiLoader className="animate-spin text-theme-color mr-2 h-4 w-4" />
           <span className="ml-2 text-gray-600">Loading more products...</span>
         </div>
       )}

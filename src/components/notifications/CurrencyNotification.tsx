@@ -93,9 +93,7 @@ const CurrencyNotification = ({
           <div className="p-4">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-12 h-12 bg-gradient-to-br from-theme-color/10 to-sky-color/10 rounded-lg flex items-center justify-center border border-theme-color/20">
-                <span className="text-xl font-bold text-theme-color">
-                  {currencySymbol}
-                </span>
+                <img className="w-12 h-12 rounded-full object-cover" src={currencySymbol} alt={currencyCode} />
               </div>
               <div>
                 <p className="text-gray-900 font-medium text-sm">

@@ -29,7 +29,7 @@ export const useProductSearch = ({
   const [hasSearched, setHasSearched] = useState(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const API_BASE_URL = "/api/admin/products";
+  const API_BASE_URL = "/api/products";
 
   // Function to fetch products
   const fetchProducts = async () => {
@@ -72,7 +72,7 @@ export const useProductSearch = ({
 
     try {
       // Use API search endpoint for better results
-      const searchEndpoint = `/api/admin/products/search?q=${encodeURIComponent(
+      const searchEndpoint = `/api/products/search?q=${encodeURIComponent(
         searchTerm
       )}&limit=10`;
       const searchData = await getData(searchEndpoint);

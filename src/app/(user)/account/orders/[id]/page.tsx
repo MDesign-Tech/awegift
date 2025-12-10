@@ -20,6 +20,7 @@ import {
   FiPhone,
   FiMail,
   FiCheckCircle,
+  FiLoader,
 } from "react-icons/fi";
 
 
@@ -30,6 +31,7 @@ const OrderTrackingPage = () => {
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const orderId = params.id as string;
 
@@ -74,6 +76,36 @@ const OrderTrackingPage = () => {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const handleMarkCompleted = async () => {
+    if (!order) return;
+
+    try {
+      setUpdatingStatus(true);
+      const response = await fetch("/api/orders/update-status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId: order.id,
+          status: "completed",
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh order data
+        fetchOrderDetails();
+      } else {
+        throw new Error("Failed to update order status");
+      }
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      alert("Failed to mark order as completed. Please try again.");
+    } finally {
+      setUpdatingStatus(false);
+    }
   };
 
   if (loading) {
@@ -124,10 +156,9 @@ const OrderTrackingPage = () => {
   // Simple tracking steps based on order status
   const trackingSteps = [
     { id: "pending", label: "Order Placed", completed: true, active: order.status === "pending", icon: FiPackage },
-    { id: "confirmed", label: "Order Confirmed", completed: ["confirmed", "packed", "out_for_delivery", "delivered"].includes(order.status), active: order.status === "confirmed", icon: FiCheckCircle },
-    { id: "packed", label: "Order Packed", completed: ["packed", "out_for_delivery", "delivered"].includes(order.status), active: order.status === "packed", icon: FiPackage },
-    { id: "shipped", label: "Out for Delivery", completed: ["out_for_delivery", "delivered"].includes(order.status), active: order.status === "out_for_delivery", icon: FiTruck },
-    { id: "delivered", label: "Delivered", completed: order.status === "delivered", active: false, icon: FiCheckCircle },
+    { id: "confirmed", label: "Order Confirmed", completed: ["confirmed", "ready", "completed"].includes(order.status), active: order.status === "confirmed", icon: FiCheckCircle },
+    { id: "ready", label: "Ready for Delivery", completed: ["ready", "completed"].includes(order.status), active: order.status === "ready", icon: FiPackage },
+    { id: "completed", label: "Order Completed", completed: order.status === "completed", active: false, icon: FiCheckCircle },
   ];
 
   return (
@@ -232,25 +263,12 @@ const OrderTrackingPage = () => {
                 })}
               </div>
 
-              {order.trackingNumber && (
+              {order.paymentScreenshot && (
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                   <h4 className="font-medium text-blue-900 mb-2">
-                    Tracking Number
+                    Payment Screenshot
                   </h4>
-                  <p className="text-blue-700 font-mono text-sm">
-                    {order.trackingNumber}
-                  </p>
-                </div>
-              )}
-
-              {order.deliveryDate && (
-                <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-medium text-green-900 mb-2">
-                    Estimated Delivery
-                  </h4>
-                  <p className="text-green-700 text-sm">
-                    {formatDate(order.deliveryDate)}
-                  </p>
+                  <img src={order.paymentScreenshot} alt="Payment Screenshot" className="max-w-full h-auto rounded" />
                 </div>
               )}
             </div>
@@ -288,7 +306,7 @@ const OrderTrackingPage = () => {
                         {item.title}
                       </h4>
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span>Qty: {item.quantity}</span>
+                        <span>Quantity: {item.quantity}</span>
                         <span>
                           <PriceFormat amount={item.price} />
                         </span>
@@ -324,7 +342,6 @@ const OrderTrackingPage = () => {
                     </p>
                   </div>
                 </div>
-
                 <div className="flex items-center space-x-3">
                   <FiCheckCircle className="w-5 h-5 text-gray-400" />
                   <div>
@@ -345,13 +362,33 @@ const OrderTrackingPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Mark as Completed Button */}
+              {order.status === "ready" && order.paymentStatus === "paid" && (
+                <div className="mt-4 pt-4 border-t">
+                  <button
+                    onClick={handleMarkCompleted}
+                    disabled={updatingStatus}
+                    className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {updatingStatus ? (
+                      <>
+                        <FiLoader className="animate-spin mr-2" />
+                        Updating...
+                      </>
+                    ) : (
+                      "Mark as Completed"
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Shipping Address */}
-            {order.shippingAddress && (
+            {/* Order Location */}
+            {order.orderAddress && (
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Shipping Address
+                  Order Location
                 </h3>
 
                 <div className="flex items-start space-x-3">
@@ -361,15 +398,7 @@ const OrderTrackingPage = () => {
                       {session?.user?.name || "Customer"}
                     </p>
                     <p className="text-sm text-gray-600 mt-1">
-                      {order.shippingAddress.street}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {order.shippingAddress.city},{" "}
-                      {order.shippingAddress.state}{" "}
-                      {order.shippingAddress.zipCode}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {order.shippingAddress.country}
+                      {order.orderAddress.address}
                     </p>
                   </div>
                 </div>
@@ -387,7 +416,7 @@ const OrderTrackingPage = () => {
                   <FiPhone className="w-5 h-5 text-blue-600" />
                   <div>
                     <p className="font-medium text-gray-900">Call Support</p>
-                    <p className="text-sm text-gray-600">1-800-AWEGIFT-HELP</p>
+                    <p className="text-sm text-gray-600">+250 781 990 310</p>
                   </div>
                 </button>
 

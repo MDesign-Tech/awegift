@@ -25,15 +25,19 @@ interface UserProfileDropdownProps {
   };
 }
 
+interface MenuItem {
+  href: string;
+  icon: any;
+  label: string;
+  badge: string | null;
+}
+
 const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user: currentUser } = useCurrentUser();
   const { notifications } = useNotifications();
-
-  const fallbackImage =
-    "https://res.cloudinary.com/dlbqw7atu/image/upload/v1747734054/userImage_dhytay.png";
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -93,21 +97,18 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   const unreadCount = notifications.filter(n => !n.read).length;
   const displayCount = unreadCount > 9 ? "9+" : unreadCount.toString();
 
-  const menuItems: Array<{
-    href: string;
-    icon: any;
-    label: string;
-    badge?: string | null;
-  }> = [
+  const menuItems: MenuItem[] = [
     {
       href: "/account",
       icon: FaUser,
       label: "My Profile",
+      badge: null,
     },
     {
       href: "/account/orders",
       icon: FaBox,
       label: "My Orders",
+      badge: null,
     },
     {
       href: "/account/notifications",
@@ -119,26 +120,29 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
       href: "/favorite",
       icon: FaHeart,
       label: "Wishlist",
+      badge: null,
     },
     {
       href: "/account/settings",
       icon: FaCog,
       label: "Settings",
+      badge: null,
     },
   ];
 
   // Add dashboard link for admin users
-  const adminMenuItems = isAdminUser
+  const adminMenuItems: MenuItem[] = isAdminUser
     ? [
         {
           href: getDefaultDashboardRoute(currentUser.role as any || "user"),
           icon: FaShieldAlt,
           label: `${getRoleDisplayName(currentUser.role as any)} Dashboard`,
+          badge: null,
         },
       ]
     : [];
 
-  const allMenuItems = [...menuItems, ...adminMenuItems];
+  const allMenuItems: MenuItem[] = [...menuItems, ...adminMenuItems];
 
   return (
     <div

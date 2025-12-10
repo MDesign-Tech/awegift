@@ -21,24 +21,21 @@ const currencies: {
   code: CurrencyCode;
   name: string;
   symbol: string;
+  flag: string;
   region?: string;
 }[] = [
-  { code: "RWF", name: "Rwandan Franc", symbol: "FRw", region: "Africa" },
-  { code: "USD", name: "US Dollar", symbol: "$", region: "Global" },
-  // { code: "EUR", name: "Euro", symbol: "€", region: "Europe" },
-  // { code: "GBP", name: "British Pound", symbol: "£", region: "Europe" },
-  // { code: "JPY", name: "Japanese Yen", symbol: "¥", region: "Asia" },
-  // {
-  //   code: "CAD",
-  //   name: "Canadian Dollar",
-  //   symbol: "C$",
-  //   region: "North America",
-  // },
-  // { code: "AUD", name: "Australian Dollar", symbol: "A$", region: "Oceania" },
-  // { code: "BDT", name: "Bangladeshi Taka", symbol: "৳", region: "South Asia" },
-  // { code: "INR", name: "Indian Rupee", symbol: "₹", region: "South Asia" },
-  // { code: "PKR", name: "Pakistani Rupee", symbol: "₨", region: "South Asia" },
-];
+    { code: "RWF", name: "Rwandan Franc", symbol: "FRw", flag: "https://flagcdn.com/w320/rw.png", region: "Africa" },
+    { code: "USD", name: "US Dollar", symbol: "$", flag: "https://flagcdn.com/w320/us.png", region: "Global" },
+    // { code: "EUR", name: "Euro", symbol: "€", flag: "🇪🇺", region: "Europe" },
+    // { code: "GBP", name: "British Pound", symbol: "£", flag: "🇬🇧", region: "Europe" },
+    // { code: "JPY", name: "Japanese Yen", symbol: "¥", flag: "🇯🇵", region: "Asia" },
+    // {
+    // },
+    // { code: "AUD", name: "Australian Dollar", symbol: "A$", flag: "🇦🇺", region: "Oceania" },
+    // { code: "BDT", name: "Bangladeshi Taka", symbol: "৳", flag: "🇧🇩", region: "South Asia" },
+    // { code: "INR", name: "Indian Rupee", symbol: "₹", flag: "🇮🇳", region: "South Asia" },
+    // { code: "PKR", name: "Pakistani Rupee", symbol: "₨", flag: "🇵🇰", region: "South Asia" },
+  ];
 
 const CurrencyDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -69,6 +66,7 @@ const CurrencyDropdown = () => {
     code: CurrencyCode;
     name: string;
     symbol: string;
+    flag: string;
     region?: string;
   }) => {
     // Don't show notification if selecting the same currency
@@ -83,7 +81,7 @@ const CurrencyDropdown = () => {
     // Show custom notification
     setNotificationData({
       name: currency.name,
-      symbol: currency.symbol,
+      symbol: currency.flag,
       code: currency.code,
     });
     setShowNotification(true);
@@ -98,12 +96,11 @@ const CurrencyDropdown = () => {
         onClick={() => setIsOpen(!isOpen)}
         className="headerTopMenu cursor-pointer hover:text-orange-300 transition-colors flex items-center gap-1"
       >
-        <span className="hidden sm:inline">{currentCurrency.symbol}</span>
+        <img className="w-4 h-4 rounded-full object-cover" src={currentCurrency.flag} alt={currentCurrency.code} />
         <span>{currentCurrency.code}</span>
         <IoChevronDownSharp
-          className={`transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+            }`}
         />
       </button>
 
@@ -116,16 +113,13 @@ const CurrencyDropdown = () => {
             <button
               key={currency.code}
               onClick={() => handleCurrencySelect(currency)}
-              className={`w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center justify-between transition-colors ${
-                currency.region === "South Asia"
+              className={`w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center justify-between transition-colors ${currency.region === "South Asia"
                   ? "border-l-2 border-l-green-500 bg-green-50/30"
                   : ""
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
-                <span className="text-lg font-medium text-gray-700">
-                  {currency.symbol}
-                </span>
+                <img className="w-6 h-6 rounded-full object-cover" src={currency.flag} alt={currency.code} />
                 <div>
                   <div className="text-sm font-medium text-gray-900 flex items-center gap-1">
                     {currency.code}

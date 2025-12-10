@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
         email: data.email || data.userEmail || "",
         paymentMethod: data.paymentMethod || "",
         paymentStatus: data.paymentStatus || "",
-        shippingAddress: data.shippingAddress || {},
+        deliveryAddress: data.orderAddress || data.shippingAddress || {},
         statusHistory: data.statusHistory || [],
       };
     });

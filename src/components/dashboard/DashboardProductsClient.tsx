@@ -291,13 +291,15 @@ export default function DashboardProductsClient() {
           <div className="grid grid-cols-2 items-center sm:flex sm:grid-cols-none gap-2">
             {hasPermission(userRole as UserRole, "canDeleteProducts") && (
               <>
-                <button
-                  onClick={handleDeleteSelected}
-                  className="flex items-center px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm disabled:opacity-50"
-                  disabled={selectedProducts.length === 0 || isRefreshing}
-                >
-                  Delete Selected ({selectedProducts.length})
-                </button>
+                {selectedProducts.length > 0 && (
+                  <button
+                    onClick={handleDeleteSelected}
+                    className="flex items-center px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm disabled:opacity-50"
+                    disabled={isRefreshing}
+                  >
+                    Delete Selected ({selectedProducts.length})
+                  </button>
+                )}
                 <button
                   onClick={() => setDeleteAllModal(true)}
                   className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm disabled:opacity-50"
@@ -461,9 +463,17 @@ export default function DashboardProductsClient() {
                   </div>
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap">
-                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                    {product.category}
-                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {product.categories && product.categories.length > 0 ? (
+                      product.categories.map((cat, index) => (
+                        <span key={index} className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                          {cat}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-gray-500">No categories</span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
                   <PriceFormat amount={product.price} />
@@ -692,10 +702,12 @@ export default function DashboardProductsClient() {
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">
-                      Category
+                      Categories
                     </dt>
                     <dd className="text-sm text-gray-900">
-                      {viewProductModal.category}
+                      {viewProductModal.categories && viewProductModal.categories.length > 0
+                        ? viewProductModal.categories.join(", ")
+                        : "No categories"}
                     </dd>
                   </div>
                   <div>

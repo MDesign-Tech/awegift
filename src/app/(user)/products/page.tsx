@@ -14,7 +14,7 @@ import { config } from "../../../../config";
 
 interface Props {
   searchParams: Promise<{
-    category?: string;
+    category?: string | string[];
     search?: string;
     brand?: string;
     minPrice?: string;
@@ -41,7 +41,7 @@ const ProductsPage = async ({ searchParams }: Props) => {
   // Fetch all products and categories from local API
   const [productsData, categoriesData] = await Promise.all([
     getData(absoluteUrl(`/api/products?limit=0`)), // Get all products
-    getData(absoluteUrl(`/api/admin/categories`)), // Get categories from admin API
+    getData(absoluteUrl(`/api/categories`)), // Get categories from admin API
   ]);
 
   let products = productsData.products || [];
@@ -54,18 +54,33 @@ const ProductsPage = async ({ searchParams }: Props) => {
 
   // Apply filters
   if (params.category) {
-    switch (params.category) {
-      case "bestsellers":
-        products = getBestSellers(products);
-        break;
-      case "new":
-        products = getNewArrivals(products);
-        break;
-      case "offers":
-        products = getOffers(products);
-        break;
-      default:
-        products = getProductsByCategory(products, params.category);
+    const categories = Array.isArray(params.category) ? params.category : [params.category];
+    const specialCategories = ["bestsellers", "new", "offers"];
+    const regularCategories = categories.filter(cat => !specialCategories.includes(cat));
+    const specialCats = categories.filter(cat => specialCategories.includes(cat));
+
+    // Apply special category filters
+    specialCats.forEach(cat => {
+      switch (cat) {
+        case "bestsellers":
+          products = getBestSellers(products);
+          break;
+        case "new":
+          products = getNewArrivals(products);
+          break;
+        case "offers":
+          products = getOffers(products);
+          break;
+      }
+    });
+
+    // Apply regular category filters - products must match ANY of the selected categories
+    if (regularCategories.length > 0) {
+      products = products.filter((product: any) =>
+        product.categories && product.categories.some((cat: string) =>
+          regularCategories.some(selectedCat => selectedCat.toLowerCase() === cat.toLowerCase())
+        )
+      );
     }
   }
 
@@ -111,18 +126,37 @@ const ProductsPage = async ({ searchParams }: Props) => {
   // Get the page title based on category
   const getPageTitle = () => {
     if (params.category) {
-      switch (params.category) {
-        case "bestsellers":
-          return "Best Sellers";
-        case "new":
-          return "New Arrivals";
-        case "offers":
-          return "Special Offers";
-        default:
-          return `${
-            params.category.charAt(0).toUpperCase() + params.category.slice(1)
-          } Products`;
+      const categories = Array.isArray(params.category) ? params.category : [params.category];
+      const specialCategories = ["bestsellers", "new", "offers"];
+      const regularCategories = categories.filter(cat => !specialCategories.includes(cat));
+
+      // If only one special category is selected
+      if (categories.length === 1) {
+        const singleCategory = categories[0] as string;
+        switch (singleCategory) {
+          case "bestsellers":
+            return "Best Sellers";
+          case "new":
+            return "New Arrivals";
+          case "offers":
+            return "Special Offers";
+          default:
+            return `${singleCategory.charAt(0).toUpperCase() + singleCategory.slice(1)} Products`;
+        }
       }
+
+      // If multiple categories or regular categories
+      if (regularCategories.length > 0) {
+        if (regularCategories.length === 1) {
+          const singleRegularCategory = regularCategories[0] as string;
+          return `${singleRegularCategory.charAt(0).toUpperCase() + singleRegularCategory.slice(1)} Products`;
+        } else {
+          return "Filtered Products";
+        }
+      }
+
+      // Multiple special categories
+      return "Special Products";
     }
     if (params.search) {
       return `Search Results for "${params.search}"`;
@@ -152,7 +186,7 @@ const ProductsPage = async ({ searchParams }: Props) => {
                 Products
               </Link>
             </li>
-            {params.category && (
+            {(params.category && (Array.isArray(params.category) ? params.category.length > 0 : params.category.trim() !== "")) && (
               <>
                 <li>/</li>
                 <li className="text-gray-900 font-medium">{getPageTitle()}</li>

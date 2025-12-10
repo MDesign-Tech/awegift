@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const limitParam = parseInt(searchParams.get("limit") || "20");
     const offsetParam = parseInt(searchParams.get("offset") || "0");
     const searchQuery = searchParams.get("q")?.trim();
-    const categoryFilter = searchParams.get("category")?.trim();
+    const categoryFilters = searchParams.getAll("category").map(cat => cat.trim()).filter(Boolean);
 
     // Fetch products ordered by creation date
     const productsRef = collection(db, "products");
@@ -33,10 +33,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Category filter
-    if (categoryFilter) {
+    if (categoryFilters.length > 0) {
       allDocs = allDocs.filter((doc) => {
         const data = doc.data() as ProductType;
-        return data.category === categoryFilter;
+        return data.categories && data.categories.some(cat => categoryFilters.includes(cat));
       });
     }
 

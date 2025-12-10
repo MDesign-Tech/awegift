@@ -13,8 +13,6 @@ import {
   orderBy,
   where,
 } from "firebase/firestore";
-import { getVisibleOrderStatuses } from "@/lib/orderStatus";
-import { sendOrderStatusNotification } from "@/lib/notifications/orderNotifications";
 
 export async function GET(request: NextRequest) {
   try {
@@ -68,7 +66,7 @@ export async function GET(request: NextRequest) {
         userId: data.userId,
         totalAmount: data.totalAmount || 0,
         paymentMethod: data.paymentMethod,
-        shippingAddress: data.shippingAddress,
+        deliveryAddress: data.orderAddress || data.shippingAddress,
         trackingNumber: data.trackingNumber,
       };
     });
@@ -77,12 +75,8 @@ export async function GET(request: NextRequest) {
     if (userRole === "user") {
       // Regular users can only see their own orders
       orders = orders.filter((order) => order.customerEmail === token.email);
-    } else if (userRole !== "admin" && userRole !== "accountant") {
-      // Role-based filtering for staff (packer, deliveryman)
-      const visibleStatuses = getVisibleOrderStatuses(userRole);
-      orders = orders.filter((order) => visibleStatuses.includes(order.status));
     }
-    // Admin and accountant see all orders (no filter)
+    // Admin sees all orders (no filter)
 
     return NextResponse.json({ orders });
   } catch (error) {
@@ -133,28 +127,6 @@ export async function PUT(request: NextRequest) {
           ...updateFields,
           updatedAt: new Date().toISOString(),
         });
-
-        // Send notification if status changed
-        if (newStatus && oldStatus !== newStatus) {
-          try {
-            await sendOrderStatusNotification({
-              orderId,
-              userId: currentOrderData.userId,
-              userEmail: currentOrderData.shippingAddress?.email || currentOrderData.customerEmail,
-              userPhone: currentOrderData.shippingAddress?.phone,
-              oldStatus,
-              newStatus,
-              orderDetails: {
-                totalAmount: currentOrderData.totalAmount || currentOrderData.amount || 0,
-                items: currentOrderData.items || [],
-                orderId: currentOrderData.orderId || orderId,
-              },
-            });
-          } catch (notificationError) {
-            console.error("Failed to send order notification:", notificationError);
-            // Don't fail the order update if notification fails
-          }
-        }
 
         return NextResponse.json({
           success: true,

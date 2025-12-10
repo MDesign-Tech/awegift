@@ -257,13 +257,15 @@ export default function DashboardCategoriesClient() {
           <div className="grid grid-cols-2 items-center sm:flex sm:grid-cols-none gap-2">
             {hasPermission(userRole as UserRole, "canDeleteProducts") && (
               <>
-                <button
-                  onClick={handleDeleteSelected}
-                  className="flex items-center px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm disabled:opacity-50"
-                  disabled={selectedCategories.length === 0 || isRefreshing}
-                >
-                  Delete Selected ({selectedCategories.length})
-                </button>
+                {selectedCategories.length > 0 && (
+                  <button
+                    onClick={handleDeleteSelected}
+                    className="flex items-center px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm disabled:opacity-50"
+                    disabled={isRefreshing}
+                  >
+                    Delete Selected ({selectedCategories.length})
+                  </button>
+                )}
                 <button
                   onClick={() => setDeleteAllModal(true)}
                   className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm disabled:opacity-50"

@@ -3,14 +3,13 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import Container from "@/components/Container";
-import { getDefaultDashboardRoute, getRoleDisplayName } from "@/lib/rbac/roles";
+import { getDefaultDashboardRoute } from "@/lib/rbac/roles";
 import { FiAlertTriangle } from "react-icons/fi";
 
 export default function Unauthorized() {
   const { data: session } = useSession();
   const userRole = session?.user?.role || "user";
   const defaultRoute = getDefaultDashboardRoute(userRole);
-  const roleDisplayName = getRoleDisplayName(userRole);
 
   return (
     <Container>
@@ -25,12 +24,7 @@ export default function Unauthorized() {
           </h1>
 
           <p className="text-gray-600 mb-6">
-            You don&apos;t have permission to access this page. Your current
-            role is{" "}
-            <span className="font-semibold text-sky-600">
-              {roleDisplayName}
-            </span>
-            .
+            You don&apos;t have permission to access this page.
           </p>
 
           <div className="space-y-3">
@@ -48,10 +42,6 @@ export default function Unauthorized() {
               Return to Home
             </Link>
           </div>
-
-          <p className="text-sm text-gray-500 mt-6">
-            If you believe this is an error, please contact your administrator.
-          </p>
         </div>
       </div>
     </Container>

@@ -2,16 +2,17 @@ import { FiX, FiDollarSign } from "react-icons/fi";
 import { useState } from "react";
 
 type CurrencyCode =
+  | "RWF"
   | "USD"
-  | "EUR"
-  | "GBP"
-  | "JPY"
-  | "CAD"
-  | "AUD"
-  | "CHF"
-  | "CNY"
-  | "INR"
-  | "BDT";
+  // | "EUR"
+  // | "GBP"
+  // | "JPY"
+  // | "CAD"
+  // | "AUD"
+  // | "CHF"
+  // | "CNY"
+  // | "INR"
+  // | "BDT";
 
 interface CurrencyModalProps {
   isOpen: boolean;
@@ -26,16 +27,17 @@ const currencies: Array<{
   symbol: string;
   flag: string;
 }> = [
+    { code: "RWF", name: "Rwandan Frans", symbol: "RWF", flag: "RWF" },
   { code: "USD", name: "US Dollar", symbol: "$", flag: "🇺🇸" },
-  { code: "EUR", name: "Euro", symbol: "€", flag: "🇪🇺" },
-  { code: "GBP", name: "British Pound", symbol: "£", flag: "🇬🇧" },
-  { code: "JPY", name: "Japanese Yen", symbol: "¥", flag: "🇯🇵" },
-  { code: "CAD", name: "Canadian Dollar", symbol: "C$", flag: "🇨🇦" },
-  { code: "AUD", name: "Australian Dollar", symbol: "A$", flag: "🇦🇺" },
-  { code: "CHF", name: "Swiss Franc", symbol: "CHF", flag: "🇨🇭" },
-  { code: "CNY", name: "Chinese Yuan", symbol: "¥", flag: "🇨🇳" },
-  { code: "INR", name: "Indian Rupee", symbol: "₹", flag: "🇮🇳" },
-  { code: "BDT", name: "Bangladeshi Taka", symbol: "৳", flag: "🇧🇩" },
+  // { code: "EUR", name: "Euro", symbol: "€", flag: "🇪🇺" },
+  // { code: "GBP", name: "British Pound", symbol: "£", flag: "🇬🇧" },
+  // { code: "JPY", name: "Japanese Yen", symbol: "¥", flag: "🇯🇵" },
+  // { code: "CAD", name: "Canadian Dollar", symbol: "C$", flag: "🇨🇦" },
+  // { code: "AUD", name: "Australian Dollar", symbol: "A$", flag: "🇦🇺" },
+  // { code: "CHF", name: "Swiss Franc", symbol: "CHF", flag: "🇨🇭" },
+  // { code: "CNY", name: "Chinese Yuan", symbol: "¥", flag: "🇨🇳" },
+  // { code: "INR", name: "Indian Rupee", symbol: "₹", flag: "🇮🇳" },
+  // { code: "BDT", name: "Bangladeshi Taka", symbol: "৳", flag: "🇧🇩" },
 ];
 
 const CurrencyModal = ({

@@ -59,7 +59,7 @@ export async function PUT(
     const productData: Partial<ProductType> = await request.json();
 
     // Validate required fields only if present
-    if (productData.title === "" || productData.price == null || productData.category === "") {
+    if (productData.title === "" || productData.price == null || (productData.categories && (!Array.isArray(productData.categories) || productData.categories.length === 0))) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
