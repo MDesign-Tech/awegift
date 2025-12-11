@@ -140,7 +140,7 @@ export default function AboutPage() {
               Ready to Shop?
             </h2>
             <p className="text-light-text mb-6">
-              Explore our wide range of products and experience the Shofy
+              Explore our wide range of products and experience the AweGift
               difference today.
             </p>
             <Link

@@ -12,7 +12,7 @@ export const POST = async (request: NextRequest) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   try {
     const reqBody = await request.json();
-    let { items, email, shippingAddress, orderId, orderAmount } = reqBody;
+    let { items, email, orderAddress, orderId, orderAmount } = reqBody;
 
     let orderItems = items;
     let orderTotal = orderAmount;
@@ -20,14 +20,19 @@ export const POST = async (request: NextRequest) => {
 
     // If orderId is provided, fetch the existing order
     if (orderId) {
-      const orderRef = doc(db, "orders", orderId);
-      const orderDoc = await getDoc(orderRef);
+      try {
+        const orderRef = doc(db, "orders", orderId);
+        const orderDoc = await getDoc(orderRef);
 
-      if (orderDoc.exists()) {
-        existingOrder = orderDoc.data();
-        orderItems = existingOrder.items;
-        orderTotal = existingOrder.totalAmount;
-        shippingAddress = existingOrder.shippingAddress;
+        if (orderDoc.exists()) {
+          existingOrder = orderDoc.data();
+          orderItems = existingOrder.items;
+          orderTotal = existingOrder.totalAmount;
+          orderAddress = existingOrder.orderAddress;
+        }
+      } catch (error) {
+        console.warn("Failed to fetch existing order, proceeding as new order:", error);
+        existingOrder = null;
       }
     }
 
@@ -41,26 +46,24 @@ export const POST = async (request: NextRequest) => {
               (item.total ? item.total / (item.quantity || 1) : 0);
             const unitAmount = Math.round(itemPrice * 100);
 
+            const exchangeRate = 1414; // 1 USD = 1414 RWF
+            const unitAmountRWF = Math.round(itemPrice * exchangeRate * 100);
+
             return {
               quantity: item?.quantity || 1,
               price_data: {
-                currency: "usd",
-                unit_amount: unitAmount,
+                currency: "rwf",
+                unit_amount: unitAmountRWF,
                 product_data: {
                   name: item?.title || item?.name || "Product",
                   description:
                     item?.description ||
                     `Order item: ${item?.name || item?.title || "Product"}`,
-                  images:
-                    item?.images && item?.images.length > 0
-                      ? [item.images[0]]
-                      : [],
+                  images: Array.isArray(item.thumbnail) ? item.thumbnail : (item.thumbnail ? [item.thumbnail] : []),
                   metadata: {
                     productId: item?.id?.toString() || "",
                     originalPrice: item?.price?.toString() || "",
-                    discountPercentage:
-                      item?.discountPercentage?.toString() || "0",
-                    category: item?.category || "",
+                    category: item?.categories && item.categories.length > 0 ? item.categories.join(", ") : "",
                     orderId: orderId || "",
                   },
                 },
@@ -72,8 +75,8 @@ export const POST = async (request: NextRequest) => {
             {
               quantity: 1,
               price_data: {
-                currency: "usd",
-                unit_amount: Math.round(parseFloat(orderAmount) * 100),
+                currency: "rwf",
+                unit_amount: Math.round(parseFloat(orderAmount) * 1414 * 100),
                 product_data: {
                   name: `Order #${orderId}`,
                   description: `Payment for existing order`,
@@ -105,6 +108,24 @@ export const POST = async (request: NextRequest) => {
       }
     }
 
+    // Calculate total amount in FRw
+    const totalFRw = extractingItems.reduce(
+      (sum: number, item: any) =>
+        sum + (item.price_data.unit_amount * item.quantity) / 100,
+      0
+    );
+
+    // Approximate exchange rate: 1 USD ≈ 1414 FRw (based on 99 FRw ≈ $0.07)
+    const exchangeRate = 1414;
+    const totalUSD = totalFRw / exchangeRate;
+
+    // Stripe requires minimum 50 cents USD equivalent
+    if (totalUSD < 0.5) {
+      throw new Error(
+        `The minimum order amount is 707 FRw (equivalent to $0.50). Your total is ${totalFRw.toFixed(2)} FRw (≈$${totalUSD.toFixed(2)}).`
+      );
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: extractingItems,
@@ -119,7 +140,7 @@ export const POST = async (request: NextRequest) => {
         email,
         orderDate: new Date().toISOString(),
         itemCount: orderItems && orderItems.length > 0 ? orderItems.length.toString() : "1",
-        shippingAddress: shippingAddress ? JSON.stringify(shippingAddress) : "",
+        orderAddress: orderAddress ? JSON.stringify(orderAddress) : "",
         orderId: orderId || "",
         orderAmount: orderTotal || "",
       },
@@ -156,54 +177,60 @@ export const POST = async (request: NextRequest) => {
         .toUpperCase()}`;
 
       // Create the order in the database
-      const orderRef = doc(db, "orders", finalOrderId);
-      await setDoc(orderRef, {
-        id: finalOrderId,
-        orderId: finalOrderId,
-        email,
-        items: extractingItems.map((item: any) => ({
-          productId: item.price_data.product_data.metadata.productId,
-          title: item.price_data.product_data.name,
-          quantity: item.quantity,
-          price: item.price_data.unit_amount / 100, // Convert back to original price
-          image: item.price_data.product_data.images?.[0] || "",
-        })),
-        total:
-          orderAmount ||
-          Math.round(
-            extractingItems.reduce(
-              (sum: number, item: any) =>
-                sum + (item.price_data.unit_amount || 0) * (item.quantity || 1),
-              0
-            ) / 100
-          ),
-        shippingAddress,
-        status: ORDER_STATUSES.PENDING,
-        paymentStatus: PAYMENT_STATUSES.PENDING,
-        paymentMethod: PAYMENT_METHODS.ONLINE,
-        userEmail: email,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        statusHistory: [
-          {
-            status: ORDER_STATUSES.PENDING,
-            timestamp: new Date().toISOString(),
-            updatedBy: email,
-            userRole: "user",
-            notes: "Order placed via online payment",
-          },
-        ],
-        paymentHistory: [
-          {
-            status: PAYMENT_STATUSES.PENDING,
-            timestamp: new Date().toISOString(),
-            updatedBy: email,
-            userRole: "user",
-            method: PAYMENT_METHODS.ONLINE,
-            notes: "Stripe checkout session created",
-          },
-        ],
-      });
+      try {
+        const orderRef = doc(db, "orders", finalOrderId);
+        await setDoc(orderRef, {
+          id: finalOrderId,
+          orderId: finalOrderId,
+          email,
+          items: extractingItems.map((item: any) => ({
+            productId: item.price_data.product_data.metadata.productId,
+            title: item.price_data.product_data.name,
+            quantity: item.quantity,
+            price: item.price_data.unit_amount / 100, // Convert back to original price
+            image: item.price_data.product_data.images?.[0] || "",
+          })),
+          totalAmount:
+            orderAmount ||
+            Math.round(
+              extractingItems.reduce(
+                (sum: number, item: any) =>
+                  sum + (item.price_data.unit_amount || 0) * (item.quantity || 1),
+                0
+              ) / 100
+            ),
+          orderAddress,
+          customerName: email, // Will be updated when user data is available
+          customerEmail: email,
+          status: ORDER_STATUSES.PENDING,
+          paymentStatus: PAYMENT_STATUSES.PENDING,
+          paymentMethod: PAYMENT_METHODS.ONLINE,
+          userId: "", // Will be set when processing
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          statusHistory: [
+            {
+              status: ORDER_STATUSES.PENDING,
+              timestamp: new Date().toISOString(),
+              updatedBy: email,
+              userRole: "user",
+              notes: "Order placed via online payment",
+            },
+          ],
+          paymentHistory: [
+            {
+              status: PAYMENT_STATUSES.PENDING,
+              timestamp: new Date().toISOString(),
+              updatedBy: email,
+              userRole: "user",
+              method: PAYMENT_METHODS.ONLINE,
+              notes: "Stripe checkout session created",
+            },
+          ],
+        });
+      } catch (error) {
+        console.warn("Failed to create new order, but Stripe session was created:", error);
+      }
     }
 
     return NextResponse.json({

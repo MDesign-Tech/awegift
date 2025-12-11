@@ -22,9 +22,6 @@ export default function PaymentClient() {
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             Payment Methods
           </h3>
-          <p className="text-gray-500 mb-6">
-            Manage your saved payment methods and billing information
-          </p>
 
           <div className="max-w-md mx-auto space-y-4">
             <div className="p-4 border border-gray-200 rounded-lg">

@@ -1,5 +1,5 @@
 import { ProductType } from "../../type";
-import { FiPackage, FiTruck, FiShield, FiInfo } from "react-icons/fi";
+import { FiPackage, FiShield, FiInfo } from "react-icons/fi";
 
 interface ProductSpecificationsProps {
   product: ProductType;
@@ -11,11 +11,6 @@ const ProductSpecifications = ({ product }: ProductSpecificationsProps) => {
       icon: <FiPackage className="w-5 h-5 text-blue-600" />,
       label: "Weight",
       value: `${product?.weight || "N/A"} kg`,
-    },
-    {
-      icon: <FiTruck className="w-5 h-5 text-green-600" />,
-      label: "Shipping Info",
-      value: product?.shippingInformation || "Standard shipping available",
     },
     {
       icon: <FiShield className="w-5 h-5 text-purple-600" />,

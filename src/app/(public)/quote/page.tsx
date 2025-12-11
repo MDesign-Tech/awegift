@@ -128,36 +128,17 @@ export default function QuotePage() {
   }
 
   return (
-    <Container className="py-10 lg:py-20">
-      <div className="max-w-4xl mx-auto">
+    <Container className="py-10">
+      <div className="mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
           <Title className="text-3xl lg:text-4xl font-bold mb-4">Request Quote</Title>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* Info Section */}
-          <div>
-            <h2 className="text-2xl font-semibold text-theme-color mb-6">Why Choose Our Services?</h2>
-
-            <div className="space-y-6">
-              <div className="bg-light-bg rounded-lg p-6">
-                <h3 className="font-semibold text-gray-800 mb-2">Competitive Pricing</h3>
-                <p className="text-light-text">We offer transparent pricing with no hidden fees. Get the best value for your investment.</p>
-              </div>
-
-              <div className="bg-light-bg rounded-lg p-6">
-                <h3 className="font-semibold text-gray-800 mb-2">Quick Response</h3>
-                <p className="text-light-text">Expect a response within 1-2 business days. We prioritize your inquiries and provide timely solutions.</p>
-              </div>
-            </div>
-          </div>
 
           {/* Quote Form */}
           <div className="bg-light-bg rounded-lg p-6 lg:p-8">
-            <h2 className="text-2xl font-semibold text-theme-color mb-6 flex items-center gap-2">
-              <FiMessageSquare className="w-6 h-6" /> Request Your Quote
-            </h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -233,6 +214,24 @@ export default function QuotePage() {
               </button>
             </form>
           </div>
+
+          {/* Info Section */}
+          <div>
+            <h2 className="text-2xl font-semibold text-theme-color mb-6">Why Choose Our Services?</h2>
+
+            <div className="space-y-6">
+              <div className="bg-light-bg rounded-lg p-6">
+                <h3 className="font-semibold text-gray-800 mb-2">Competitive Pricing</h3>
+                <p className="text-light-text">We offer transparent pricing with no hidden fees. Get the best value for your investment.</p>
+              </div>
+
+              <div className="bg-light-bg rounded-lg p-6">
+                <h3 className="font-semibold text-gray-800 mb-2">Quick Response</h3>
+                <p className="text-light-text">Expect a response within 1-2 business days. We prioritize your inquiries and provide timely solutions.</p>
+              </div>
+            </div>
+          </div>
+          
         </div>
       </div>
     </Container>

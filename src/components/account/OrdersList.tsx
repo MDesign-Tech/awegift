@@ -13,7 +13,7 @@ import {
 } from "react-icons/fi";
 import Link from "next/link";
 import { OrderData, OrderItem } from "../../../type";
-import { getStatusDisplayInfo } from "@/lib/orderStatus";
+import { getStatusDisplayInfo, getPaymentStatusDisplayInfo, PAYMENT_METHODS } from "@/lib/orderStatus";
 
 interface OrdersListProps {
   showHeader?: boolean;
@@ -50,7 +50,6 @@ export default function OrdersList({
       }
 
       const data = await response.json();
-      console.log("Fetched orders:", data);
       if (data.orders && Array.isArray(data.orders)) {
         const sortedOrders = data.orders.sort(
           (a: OrderData, b: OrderData) =>
@@ -186,17 +185,6 @@ export default function OrdersList({
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <FiCalendar className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Payment Status</p>
-                  <p className="font-medium text-gray-900 capitalize">
-                    {selectedOrder.paymentStatus}
-                  </p>
-                </div>
-              </div>
             </div>
 
             {/* Order Items */}
@@ -245,6 +233,22 @@ export default function OrdersList({
                 ))}
               </div>
             </div>
+
+            {/* Payment Screenshot */}
+            {selectedOrder.paymentScreenshot && (
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                  Payment Screenshot
+                </h4>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <img
+                    src={selectedOrder.paymentScreenshot}
+                    alt="Payment Screenshot"
+                    className="max-w-full h-auto rounded-lg shadow-sm"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Modal Footer */}
@@ -256,27 +260,53 @@ export default function OrdersList({
               >
                 Close
               </button>
-              {((selectedOrder.status.toLowerCase() === "confirmed" &&
-                selectedOrder.paymentStatus.toLowerCase() === "paid") ||
-              (selectedOrder.paymentMethod?.toLowerCase() === "online" &&
-               selectedOrder.paymentStatus.toLowerCase() !== "pending") ||
-              (selectedOrder.paymentMethod?.toLowerCase() === "cash" &&
-               selectedOrder.paymentStatus.toLowerCase() !== "pending")) && (
-                <Link
-                  href={`/account/orders/${selectedOrder.id}`}
-                  className="px-4 py-2 text-sm font-medium text-white bg-theme-color rounded-md hover:bg-theme-color/90 transition-colors"
-                >
-                  Track Order
-                </Link>
-              )}
-              {selectedOrder.paymentStatus.toLowerCase() === "pending" && (
-                <Link
-                  href={`/checkout?orderId=${selectedOrder.id}`}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
-                >
-                  Pay Now
-                </Link>
-              )}
+              {((selectedOrder.status === "confirmed" &&
+                selectedOrder.paymentStatus === "paid") ||
+                (selectedOrder.paymentMethod === "online" &&
+                  selectedOrder.paymentStatus !== "pending") ||
+                (selectedOrder.paymentMethod === "mtn" &&
+                  selectedOrder.paymentStatus !== "pending") ||
+                (selectedOrder.paymentMethod === "airtel" &&
+                  selectedOrder.paymentStatus !== "pending")) && (
+                  <Link
+                    href={`/account/orders/${selectedOrder.id}`}
+                    className="px-4 py-2 text-sm font-medium text-white bg-theme-color rounded-md hover:bg-theme-color/90 transition-colors"
+                  >
+                    Track Order
+                  </Link>
+                )}
+              {selectedOrder.paymentStatus === "pending" &&
+                (selectedOrder.paymentMethod === "mtn" ||
+                  selectedOrder.paymentMethod === "airtel") &&
+                !selectedOrder.paymentScreenshot && (
+                  <Link
+                    href={`/checkout?orderId=${selectedOrder.id}`}
+                    className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 transition-colors"
+                    title="Complete Payment"
+                  >
+                    Complete Payment
+                  </Link>
+                )}
+              {selectedOrder.paymentStatus === "pending" &&
+                (selectedOrder.paymentMethod === "mtn" ||
+                  selectedOrder.paymentMethod === "airtel") &&
+                selectedOrder.paymentScreenshot && (
+                  <span
+                    className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md"
+                  >
+                    Payment Under Review
+                  </span>
+                )}
+              {selectedOrder.paymentStatus === "pending" &&
+                selectedOrder.paymentMethod !== "mtn" &&
+                selectedOrder.paymentMethod !== "airtel" && (
+                  <Link
+                    href={`/checkout?orderId=${selectedOrder.id}`}
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
+                  >
+                    Pay Now
+                  </Link>
+                )}
             </div>
           </div>
         </div>
@@ -428,9 +458,8 @@ export default function OrdersList({
               {orders.map((order) => (
                 <tr
                   key={order.id}
-                  className={`hover:bg-gray-50 ${
-                    selectedOrders.includes(order.id) ? "bg-blue-50" : ""
-                  }`}
+                  className={`hover:bg-gray-50 ${selectedOrders.includes(order.id) ? "bg-blue-50" : ""
+                    }`}
                 >
                   <td className="px-3 py-4 whitespace-nowrap">
                     <input
@@ -492,6 +521,7 @@ export default function OrdersList({
                     </span>
                     <div className="text-xs text-gray-500 mt-1 truncate">
                       {order.paymentStatus}
+                      {order.paymentMethod && ` • ${order.paymentMethod}`}
                     </div>
                   </td>
                   <td className="px-3 py-4 whitespace-nowrap">
@@ -508,29 +538,56 @@ export default function OrdersList({
                       >
                         <FiEye className="w-3 h-3" />
                       </button>
-                      {(order.status.toLowerCase() === "confirmed" &&
-                        order.paymentStatus.toLowerCase() === "paid") ||
-                      (order.paymentMethod?.toLowerCase() === "online" &&
-                       order.paymentStatus.toLowerCase() !== "pending") ||
-                      (order.paymentMethod?.toLowerCase() === "cash" &&
-                       order.paymentStatus.toLowerCase() !== "pending") ? (
-                        <Link
-                          href={`/account/orders/${order.id}`}
-                          className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-                          title="Track Order"
-                        >
-                          Track
-                        </Link>
-                      ) : null}
-                      {order.paymentStatus.toLowerCase() === "pending" && (
-                        <Link
-                          href={`/checkout?orderId=${order.id}`}
-                          className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 transition-colors"
-                          title="Complete Payment"
-                        >
-                          Pay
-                        </Link>
-                      )}
+                      {((order.status === "confirmed" &&
+                        order.paymentStatus === "paid") ||
+                        (order.paymentMethod === "online" &&
+                          order.paymentStatus !== "pending") ||
+                        (order.paymentMethod === "mtn" &&
+                          order.paymentStatus !== "pending") ||
+                        (order.paymentMethod === "airtel" &&
+                          order.paymentStatus !== "pending")) && (
+                          <Link
+                            href={`/account/orders/${order.id}`}
+                            className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                            title="Track Order"
+                          >
+                            Track
+                          </Link>
+                        )}
+                      {order.paymentStatus === "pending" &&
+                        (order.paymentMethod === "mtn" ||
+                          order.paymentMethod === "airtel") &&
+                        !order.paymentScreenshot && (
+                          <Link
+                            href={`/checkout?orderId=${order.id}`}
+                            className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 transition-colors"
+                            title="Complete Payment"
+                          >
+                            Complete Payment
+                          </Link>
+                        )}
+                      {order.paymentStatus === "pending" &&
+                        (order.paymentMethod === "mtn" ||
+                          order.paymentMethod === "airtel") &&
+                        order.paymentScreenshot && (
+                          <span
+                            className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-gray-600 bg-gray-100"
+                            title="Payment Under Review"
+                          >
+                            Review
+                          </span>
+                        )}
+                      {order.paymentStatus === "pending" &&
+                        order.paymentMethod !== "mtn" &&
+                        order.paymentMethod !== "airtel" && (
+                          <Link
+                            href={`/checkout?orderId=${order.id}`}
+                            className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 transition-colors"
+                            title="Go to choose Payment method"
+                          >
+                            Pay
+                          </Link>
+                        )}
                     </div>
                   </td>
                 </tr>
@@ -545,11 +602,10 @@ export default function OrdersList({
         {orders.map((order) => (
           <div
             key={order.id}
-            className={`bg-white rounded-lg shadow border border-gray-200 p-4 ${
-              selectedOrders.includes(order.id)
-                ? "ring-2 ring-blue-500 bg-blue-50"
-                : ""
-            }`}
+            className={`bg-white rounded-lg shadow border border-gray-200 p-4 ${selectedOrders.includes(order.id)
+              ? "ring-2 ring-blue-500 bg-blue-50"
+              : ""
+              }`}
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-3">
@@ -622,12 +678,14 @@ export default function OrdersList({
                   <FiEye className="w-3 h-3 mr-1" />
                   View
                 </button>
-                {(order.status.toLowerCase() === "confirmed" &&
-                  order.paymentStatus.toLowerCase() === "paid") ||
-                (order.paymentMethod?.toLowerCase() === "online" &&
-                 order.paymentStatus.toLowerCase() !== "pending") ||
-                (order.paymentMethod?.toLowerCase() === "cash" &&
-                 order.paymentStatus.toLowerCase() !== "pending") ? (
+                {(order.status === "confirmed" &&
+                  order.paymentStatus === "paid") ||
+                  (order.paymentMethod === "online" &&
+                    order.paymentStatus !== "pending") ||
+                  (order.paymentMethod === "mtn" &&
+                    order.paymentStatus !== "pending") ||
+                  (order.paymentMethod === "airtel" &&
+                    order.paymentStatus !== "pending") ? (
                   <Link
                     href={`/account/orders/${order.id}`}
                     className="flex items-center justify-center px-3 py-1 text-xs bg-theme-color text-white rounded hover:bg-theme-color/90 transition-colors whitespace-nowrap"
@@ -635,14 +693,40 @@ export default function OrdersList({
                     Track
                   </Link>
                 ) : null}
-                {order.paymentStatus.toLowerCase() === "pending" && (
-                  <Link
-                    href={`/checkout?orderId=${order.id}`}
-                    className="flex items-center justify-center px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors whitespace-nowrap"
-                  >
-                    Pay Now
-                  </Link>
-                )}
+                {order.paymentStatus === "pending" &&
+                  (order.paymentMethod === "mtn" ||
+                    order.paymentMethod === "airtel") &&
+                  !order.paymentScreenshot && (
+                    <Link
+                      href={`/checkout?orderId=${order.id}`}
+                      className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 transition-colors"
+                      title="Complete Payment"
+                    >
+                      Complete Payment
+                    </Link>
+                  )}
+                {order.paymentStatus === "pending" &&
+                  (order.paymentMethod === "mtn" ||
+                    order.paymentMethod === "airtel") &&
+                  order.paymentScreenshot && (
+                    <span
+                      className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-gray-600 bg-gray-100"
+                      title="Payment Under Review"
+                    >
+                      Review
+                    </span>
+                  )}
+                {order.paymentStatus === "pending" &&
+                  order.paymentMethod !== "mtn" &&
+                  order.paymentMethod !== "airtel" && (
+                    <Link
+                      href={`/checkout?orderId=${order.id}`}
+                      className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 transition-colors"
+                      title="Complete Payment"
+                    >
+                      Pay
+                    </Link>
+                  )}
               </div>
             </div>
           </div>

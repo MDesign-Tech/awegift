@@ -25,10 +25,7 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
   // Check if user has any admin role using session role
   const userRole = session?.user?.role;
   const isAdmin = userRole && [
-    "admin",
-    "accountant",
-    "packer",
-    "deliveryman"
+    "admin"
   ].includes(userRole as any);
 
   // Check if current path requires admin access
@@ -104,27 +101,6 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
   // Handle access control after all hooks
   const roleInfo = getRoleInfo();
   const currentTabs = tabs;
-
-  // Handle access denied for admin paths
-  if (isAdminPath && !isAdmin && userRole) {
-    return (
-      <Container className="py-10">
-        <div className="text-center">
-          <div className="text-6xl mb-4">🛡️</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600 mb-6">
-            You don't have permission to access the admin panel. Your role may have been changed.
-          </p>
-          <Link
-            href="/account"
-            className="inline-block bg-theme-color text-white px-6 py-2 rounded hover:bg-theme-color/80"
-          >
-            Go to My Account
-          </Link>
-        </div>
-      </Container>
-    );
-  }
 
   return (
     <Container className="py-10">

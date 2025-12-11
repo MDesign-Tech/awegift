@@ -6,9 +6,9 @@ import { toast } from "react-hot-toast";
 import { ProductType } from "../../../type";
 import { CldUploadWidget, CldImage } from 'next-cloudinary';
 
-const generateSKU = (product: { category: string; brand: string; title: string; id: string | number }) => {
-  const { category, brand, title, id } = product;
-  const catCode = category.substring(0, 3).toUpperCase();
+const generateSKU = (product: { categories: string[]; brand: string; title: string; id: string | number }) => {
+  const { categories, brand, title, id } = product;
+  const catCode = categories.length > 0 ? categories[0].substring(0, 3).toUpperCase() : 'GEN';
   const brandCode = brand.substring(0, 3).toUpperCase();
   const productCode = title.substring(0, 3).toUpperCase();
   const uniqueId = id.toString().padStart(3, '0');
@@ -28,7 +28,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
     id: "",
     title: "M Design",
     description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Rem dolores, quo soluta sit ea ratione eligendi neque suscipit sequi, veniam id, nostrum amet? Officia dolorem, adipisci velit error natus maxime sed, provident eum assumenda eaque perspiciatis. Sit culpa quaerat vero minus. Necessitatibus sapiente, sed dolor cumque magnam quam perferendis dolorem.",
-    category: "",
+    categories: [],
     price: 1,
     discountPercentage: 1,
     stock: 1,
@@ -37,7 +37,6 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
     weight: 1,
     dimensions: { width: 1, height: 1, depth: 1 },
     warrantyInformation: "1 year warranty",
-    shippingInformation: "Ships in 3-5 business days",
     availabilityStatus: "In Stock",
     returnPolicy: "30 days return policy",
     minimumOrderQuantity: 3,
@@ -100,7 +99,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
     if (!formData.title.trim()) newErrors.title = "Title is required";
     if (!formData.description.trim()) newErrors.description = "Description is required";
     if (!formData.price || formData.price <= 0) newErrors.price = "Price must be greater than 0";
-    if (!formData.category.trim()) newErrors.category = "Category is required";
+    if (!formData.categories || formData.categories.length === 0) newErrors.category = "At least one category is required";
     if (!formData.brand.trim()) newErrors.brand = "Brand is required";
     if (formData.stock < 0) newErrors.stock = "Stock must be 0 or greater";
 
@@ -195,9 +194,9 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
       }
 
       // Auto-generate SKU if product exists
-      if ((field === "title" || field === "category" || field === "brand") && product?.id) {
+      if ((field === "title" || field === "categories" || field === "brand") && product?.id) {
         newData.sku = generateSKU({
-          category: newData.category,
+          categories: newData.categories,
           brand: newData.brand,
           title: newData.title,
           id: product.id,
@@ -250,7 +249,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
         }
 
         // Auto-select the new category
-        handleInputChange("category", newCategory.name);
+        handleInputChange("categories", [...formData.categories, newCategory.name]);
 
         // Hide the form and reset
         setShowAddCategoryForm(false);
@@ -351,34 +350,39 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
         {errors.brand && <p className="text-red-500 text-sm">{errors.brand}</p>}
       </div>
 
-      {/* Category */}
+      {/* Categories */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-        <select
-          id="category"
-          value={formData.category}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value === "add-new") {
-              setShowAddCategoryForm(true);
-              setShowCustomCategory(false);
-            } else {
-              setShowCustomCategory(false);
-              setShowAddCategoryForm(false);
-              handleInputChange("category", value);
-            }
-          }}
-          disabled={categoriesLoading}
-          className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color text-sm sm:text-base ${errors.category ? "border-red-500" : "border-gray-300"} ${categoriesLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-        >
-          <option value="">
-            {categoriesLoading ? "Loading categories..." : "Select category"}
-          </option>
-          {categories.map(cat => (
-            <option key={cat.id} value={cat.name}>{cat.name}</option>
-          ))}
-          <option value="add-new">➕ Add New Category</option>
-        </select>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Categories *</label>
+        <div className="space-y-2">
+          {categoriesLoading ? (
+            <p className="text-sm text-gray-500">Loading categories...</p>
+          ) : (
+            categories.map(cat => (
+              <label key={cat.id} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.categories.includes(cat.name)}
+                  onChange={(e) => {
+                    const categoryName = cat.name;
+                    const newCategories = e.target.checked
+                      ? [...formData.categories, categoryName]
+                      : formData.categories.filter(c => c !== categoryName);
+                    handleInputChange("categories", newCategories);
+                  }}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="ml-2 text-sm text-gray-900">{cat.name}</span>
+              </label>
+            ))
+          )}
+          <button
+            type="button"
+            onClick={() => setShowAddCategoryForm(true)}
+            className="text-sm text-blue-600 hover:text-blue-800 underline"
+          >
+            ➕ Add New Category
+          </button>
+        </div>
 
         {showAddCategoryForm && (
           <div className="mt-4 p-3 sm:p-4 border border-gray-200 rounded-lg bg-gray-50">
@@ -780,11 +784,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
               <button
                 type="button"
                 onClick={() => {
-                  // Check if we've reached the limit
-                  // if (formData.images.length >= 10) {
-                  //   toast.error("Maximum 10 images allowed");
-                  //   return;
-                  // }
+                 
                   setUploadingImages(true);
                   open();
                 }}
@@ -866,16 +866,6 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
           type="text"
           value={formData.warrantyInformation}
           onChange={(e) => handleInputChange("warrantyInformation", e.target.value)}
-          className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Shipping Information</label>
-        <input
-          type="text"
-          value={formData.shippingInformation}
-          onChange={(e) => handleInputChange("shippingInformation", e.target.value)}
           className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color"
         />
       </div>

@@ -115,7 +115,7 @@ npm run dev
 - **Profile**: Edit personal information and upload avatar
 - **Orders**: Order history and tracking
 - **Order Details**: Detailed order information
-- **Addresses**: Manage shipping and billing addresses
+- **Addresses**: Manage delivery addresses
 - **Settings**: Account preferences and notifications
 - **Cart**: Shopping cart management
 - **Checkout**: Secure payment process

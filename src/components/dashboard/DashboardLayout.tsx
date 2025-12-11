@@ -22,25 +22,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           title: `${getRoleDisplayName(role as UserRole)} Dashboard`,
           description: "Manage users, orders, analytics, and system settings"
         };
-      case "deliveryman":
+      case "user":
         return {
-          title: `${getRoleDisplayName(role as UserRole)} Dashboard`,
-          description: "Handle shipping, delivery tracking, and logistics management"
-        };
-      case "packer":
-        return {
-          title: `${getRoleDisplayName(role as UserRole)} Dashboard`,
-          description: "Manage order fulfillment, packing, and inventory tracking"
-        };
-      case "accountant":
-        return {
-          title: `${getRoleDisplayName(role as UserRole)} Dashboard`,
-          description: "Handle financial management, payments, and accounting reports"
+          title: "My Account",
+          description: "View your orders, profile, and account settings"
         };
       default:
         return {
           title: "Dashboard",
-          description: "Your dashboard overview"
+          description: "Dashboard overview"
         };
     }
   };

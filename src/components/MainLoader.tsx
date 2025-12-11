@@ -12,7 +12,7 @@ const MainLoader = () => {
       <span className="w-14 h-14 inline-flex border-8 border-border-color rounded-full relative">
         <span className="w-14 h-14 border-8 border-r-sky-color border-b-border-color border-t-border-color border-l-border-color rounded-full absolute -top-2 -left-2 animate-spin" />
       </span>
-      <p className="text-lg text-center font-semibold tracking-wide text-theme-color tracking-wide">
+      <p className="text-lg text-center font-semibold tracking-wide text-theme-color">
         Loading...
       </p>
     </div>

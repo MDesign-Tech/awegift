@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     const filteredProducts = allProducts.filter(product =>
       product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (product.categories && product.categories.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()))) ||
       product.brand.toLowerCase().includes(searchQuery.toLowerCase())
     ).slice(0, limitParam);
 

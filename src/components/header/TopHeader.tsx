@@ -3,7 +3,6 @@ import { CiDeliveryTruck } from "react-icons/ci";
 import { useState } from "react";
 import Link from "next/link";
 import Container from "../Container";
-import ShippingModal from "../ShippingModal";
 import CurrencyDropdown from "./CurrencyDropdown";
 import SettingsDropdown from "./SettingsDropdown";
 
@@ -12,22 +11,12 @@ const TopHeader = ({
 }: {
   freeShippingThreshold: string;
 }) => {
-  const [isShippingModalOpen, setIsShippingModalOpen] = useState(false);
-
-  const openShippingModal = () => {
-    setIsShippingModalOpen(true);
-  };
-
-  const closeShippingModal = () => {
-    setIsShippingModalOpen(false);
-  };
 
   return (
     <div className="bg-[#010f1c] text-gray-200 w-full">
       <Container className="flex items-center justify-between">
         <p
           className="w-full md:w-auto text-sm flex items-center justify-center md:justify-normal font-medium py-1 cursor-pointer hover:text-orange-300 transition-colors duration-200"
-          onClick={openShippingModal}
         >
           <CiDeliveryTruck className="text-[#ffb342] text-2xl mr-1" /> FREE Delivery
            On Orders {freeShippingThreshold} RWF+
@@ -43,13 +32,6 @@ const TopHeader = ({
           <SettingsDropdown />
         </div>
       </Container>
-
-      {/* Shipping Modal */}
-      <ShippingModal
-        isOpen={isShippingModalOpen}
-        onClose={closeShippingModal}
-        freeShippingThreshold={freeShippingThreshold}
-      />
     </div>
   );
 };

@@ -79,22 +79,24 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <p className="text-sm text-gray-500 uppercase tracking-wide">
-                    {product?.category}
+                    {product?.categories && product.categories.length > 0 ? product.categories[0] : "No category"}
                   </p>
-                  <a
-                    href="https://wa.me/250781990310"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-green-500 hover:text-green-700 transition-colors duration-200 text-lg"
-                    title="Contact us on WhatsApp"
-                  >
-                    <FaWhatsapp />
-                  </a>
-                  {product?.brand && (
-                    <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full font-medium">
-                      {product.brand}
-                    </span>
-                  )}
+                  <div className="flex bg-blue-50 px-2 py-1 rounded-full items-center gap-1">
+                    <a
+                      href={`https://wa.me/250781990310?text=Hi%20I%20need%20more%20about%20this%20product%20(${encodeURIComponent(product?.title || "this product")})`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-500 hover:text-green-700 transition-colors duration-200 text-sm"
+                      title="Contact us on WhatsApp"
+                    >
+                      <FaWhatsapp />
+                    </a>
+                    {product?.brand && (
+                      <span className="text-xs text-blue-600 font-medium">
+                        {product.brand}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <Link
@@ -248,20 +250,20 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
       <div className="p-5">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">
-            {product?.category}
+            {product?.categories && product.categories.length > 0 ? product.categories[0] : "No category"}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex bg-blue-50 px-2 py-1 rounded-full items-center gap-1">
             <a
-              href="https://wa.me/250781990310"
+              href={`https://wa.me/250781990310?text=Hi%20I%20need%20more%20about%20this%20product%20(${encodeURIComponent(product?.title || "this product")})`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-green-500 hover:text-green-700 transition-colors duration-200 text-lg"
+              className="text-green-500 hover:text-green-700 transition-colors duration-200 text-sm"
               title="Contact us on WhatsApp"
             >
               <FaWhatsapp />
             </a>
             {product?.brand && (
-              <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full font-medium">
+              <span className="text-xs text-blue-600 font-medium">
                 {product.brand}
               </span>
             )}
@@ -282,7 +284,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
         {/* Rating and Stock in flex-col
         <div className="flex flex-col gap-2 mb-3">
           {/* Rating */}
-          {/* <div className="flex items-center gap-1">
+        {/* <div className="flex items-center gap-1">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <FaStar
@@ -301,12 +303,12 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
           </div>
 
           {/* Stock Status */}
-          {/* {product?.stock > 0 && (
+        {/* {product?.stock > 0 && (
             <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full font-medium w-fit">
               In Stock ({product.stock})
             </span>
           )}
-        </div> */} 
+        </div> */}
 
         {/* Price */}
         <div className="mb-4">

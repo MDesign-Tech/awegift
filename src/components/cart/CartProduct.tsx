@@ -59,7 +59,7 @@ const CartProduct = ({ product }: { product: ProductType }) => {
               Brand: <span className="font-medium">{product?.brand}</span>
             </p>
             <p className="text-xs">
-              Category: <span className="font-medium">{product?.category}</span>
+              Category: <span className="font-medium">{product?.categories && product.categories.length > 0 ? product.categories.join(", ") : "No category"}</span>
             </p>
             <div className="flex items-center gap-6 mt-2">
               <PriceFormat
@@ -87,18 +87,6 @@ const CartProduct = ({ product }: { product: ProductType }) => {
               <span>In Stock</span>
             </p>
           )}
-          <p className="text-sm">
-            You are saving{" "}
-            <PriceFormat
-              className="text-semibold text-green-500"
-              amount={
-                product?.price *
-                (product?.discountPercentage / 100) *
-                product.quantity!
-              }
-            />{" "}
-            upon purchase
-          </p>
         </div>
       </div>
     </div>

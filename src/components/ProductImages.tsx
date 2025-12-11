@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 interface Props {
   images: string[];
   thumbsail?: string;
@@ -20,12 +20,6 @@ const ProductImages = ({ images , thumbsail }: Props) => {
     }, 500);
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      changeImage((currentIndex + 1) % thumbnailImages.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [currentIndex, thumbnailImages.length]);
   return (
     <div className="flex flex-col gap-4">
       {/* Main Image */}

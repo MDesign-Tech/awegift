@@ -116,9 +116,9 @@ const SearchInput = () => {
                       <p className="text-sm font-medium text-gray-800 truncate">
                         {item?.title}
                       </p>
-                      {item?.category && (
+                      {item?.categories && item.categories.length > 0 && (
                         <p className="text-xs text-gray-500">
-                          in {item.category}
+                          in {item.categories[0]}
                         </p>
                       )}
                     </div>
@@ -170,9 +170,9 @@ const SearchInput = () => {
                       <p className="text-sm font-medium text-gray-800 truncate">
                         {item?.title}
                       </p>
-                      {item?.category && (
+                      {item?.categories && item.categories.length > 0 && (
                         <p className="text-xs text-gray-500">
-                          in {item.category}
+                          in {item.categories[0]}
                         </p>
                       )}
                     </div>

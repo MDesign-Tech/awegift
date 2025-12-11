@@ -3,13 +3,12 @@ import { useDispatch } from "react-redux";
 import Title from "../Title";
 import Button from "../ui/Button";
 import PriceFormat from "../PriceFormat";
-import ShippingAddressSelector from "./ShippingAddressSelector";
+import OrderAddressSelector from "./OrderAddressSelector";
 import { ProductType, Address, OrderData } from "../../../type";
-import { ORDER_STATUSES } from "@/lib/orderStatus";
+import { ORDER_STATUSES, PAYMENT_METHODS,PAYMENT_STATUSES } from "@/lib/orderStatus";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { CiDeliveryTruck } from "react-icons/ci";
 import { FiAlertCircle, FiLoader } from "react-icons/fi";
 import { FaSignInAlt } from "react-icons/fa";
 import Link from "next/link";
@@ -21,11 +20,10 @@ interface Props {
 
 const CartSummary = ({ cart }: Props) => {
   const [totalAmt, setTotalAmt] = useState(0);
-  const [discountAmt, setDiscountAmt] = useState(0);
-  const [shippingCost, setShippingCost] = useState(0);
-  const [isFreeShipping, setIsFreeShipping] = useState(false);
+  // const [discountAmt, setDiscountAmt] = useState(0);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [placing, setPlacing] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(true);
 
   const { data: session } = useSession();
   const router = useRouter();
@@ -34,33 +32,15 @@ const CartSummary = ({ cart }: Props) => {
   const userRole = session?.user?.role as UserRole;
   const canPlaceOrder = hasPermission(userRole, "canCreateOrders");
 
-  // Get free shipping threshold from environment
-  const freeShippingThreshold =
-    Number(process.env.NEXT_PUBLIC_FREE_SHIPPING_THRESHOLD) || 10000000;
-  const standardShippingCost = 15; // Standard shipping cost
-
   useEffect(() => {
     let amt = 0;
-    let discount = 0;
     cart?.map((item) => {
       amt += item?.price * item?.quantity!;
-      discount +=
-        ((item?.price * item?.discountPercentage) / 100) * item?.quantity!;
     });
 
     setTotalAmt(amt);
-    setDiscountAmt(discount);
-
-    // Calculate shipping cost based on order total
-    const orderTotal = amt - discount;
-    if (orderTotal >= freeShippingThreshold) {
-      setIsFreeShipping(true);
-      setShippingCost(0);
-    } else {
-      setIsFreeShipping(false);
-      setShippingCost(standardShippingCost);
-    }
-  }, [cart, freeShippingThreshold]);
+    // setDiscountAmt(discount);
+  }, [cart]);
 
   const handleCheckout = async () => {
     if (!session?.user) {
@@ -75,14 +55,14 @@ const CartSummary = ({ cart }: Props) => {
     }
 
     if (!selectedAddress) {
-      alert("Please select a shipping address before placing your order.");
+      alert("Please select a delivery address before placing your order.");
       return;
     }
 
     try {
       setPlacing(true);
-      // Calculate totals
-      const finalTotal = totalAmt - discountAmt + shippingCost;
+      
+      const finalTotal = totalAmt;
 
       // Generate order ID
       const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
@@ -91,19 +71,21 @@ const CartSummary = ({ cart }: Props) => {
       const orderData: OrderData = {
         id: orderId,
         userId: "", // Will be set by API
+        customerName: session?.user?.name || "",
+        customerEmail: session?.user?.email || "",
         status: ORDER_STATUSES.PENDING,
         items: cart.map((item: ProductType) => ({
           productId: item.id,
           title: item.title,
-          price: item.price * (1 - item.discountPercentage / 100),
+          price: item.price,
           quantity: item.quantity!,
           thumbnail: item.thumbnail || item.images?.[0] || "",
           sku: item.sku || "",
         })),
         totalAmount: finalTotal,
-        shippingAddress: selectedAddress!,
-        paymentMethod: "cash" as const, // Default to cash, will be updated in checkout
-        paymentStatus: "pending" as const,
+        orderAddress: selectedAddress!,
+        paymentMethod: PAYMENT_METHODS.ONLINE, // Default to online, will be updated in checkout
+        paymentStatus: PAYMENT_STATUSES.PENDING,
         statusHistory: [
           {
             status: ORDER_STATUSES.PENDING,
@@ -129,11 +111,12 @@ const CartSummary = ({ cart }: Props) => {
       if (response.ok) {
         const result = await response.json();
 
-        // Clear cart after successful order placement
-        dispatch(resetCart());
-
         // Navigate to checkout page with order ID for payment method selection
         router.push(`/checkout?orderId=${result.id}`);
+
+        // Clear cart after successful order placement
+        dispatch(resetCart());
+        
       } else {
         throw new Error("Failed to place order");
       }
@@ -145,7 +128,7 @@ const CartSummary = ({ cart }: Props) => {
     }
   };
 
-  const isCheckoutDisabled = session?.user && (!canPlaceOrder || !selectedAddress || placing);
+  const isCheckoutDisabled = session?.user && (!canPlaceOrder || (!addressLoading && !selectedAddress) || placing);
 
   return (
     <section className="rounded-lg bg-gray-100 px-4 py-6 sm:p-10 lg:col-span-5 mt-16 lg:mt-0">
@@ -154,19 +137,20 @@ const CartSummary = ({ cart }: Props) => {
       {/* Show different content based on authentication status */}
       {session?.user ? (
         <>
-          {/* Shipping Address Selector */}
-          <ShippingAddressSelector
+          {/* Order Address Selector */}
+          <OrderAddressSelector
             selectedAddress={selectedAddress}
             onAddressSelect={setSelectedAddress}
+            onLoadingChange={setAddressLoading}
           />
 
-          {/* Address Required Warning */}
-          {isCheckoutDisabled && (
+          {/* address Required Warning */}
+          {!addressLoading && !selectedAddress && (
             <div className="mb-6 p-3 bg-orange-50 border border-orange-200 rounded-lg">
               <div className="flex items-center text-orange-800">
                 <FiAlertCircle className="text-orange-600 text-lg mr-2" />
                 <span className="text-sm font-medium">
-                  Please select a shipping address to proceed with checkout
+                  Please select a delivery address to proceed with checkout
                 </span>
               </div>
             </div>
@@ -197,66 +181,20 @@ const CartSummary = ({ cart }: Props) => {
         </div>
       )}
 
-      {/* Free Shipping Banner */}
-      {isFreeShipping ? (
-        <div className="mt-4 mb-6 p-3 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-center text-green-800">
-            <CiDeliveryTruck className="text-green-600 text-xl mr-2" />
-            <span className="text-sm font-medium">
-              🎉 Congratulations! You qualify for FREE shipping!
-            </span>
-          </div>
-        </div>
-      ) : (
-        <div className="mt-4 mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-center text-blue-800">
-            <CiDeliveryTruck className="text-blue-600 text-xl mr-2" />
-            <div className="text-sm">
-              <div className="font-medium">
-                Add{" "}
-                <PriceFormat
-                  amount={freeShippingThreshold - (totalAmt - discountAmt)}
-                  className="font-bold"
-                />{" "}
-                more for FREE shipping!
-              </div>
-              <div className="text-xs text-blue-600 mt-1">
-                Free shipping on orders over{" "}
-                <PriceFormat amount={freeShippingThreshold} />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="mt-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <Title className="text-lg font-medium">Sub Total</Title>
           <PriceFormat amount={totalAmt} />
         </div>
-        <div className="flex items-center justify-between">
+        {/* <div className="flex items-center justify-between">
           <Title className="text-lg font-medium">Discount</Title>
           <PriceFormat amount={discountAmt} />
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Title className="text-lg font-medium">Shipping</Title>
-            {isFreeShipping && (
-              <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                FREE
-              </span>
-            )}
-          </div>
-          {isFreeShipping ? (
-            <span className="text-green-600 font-medium">Free</span>
-          ) : (
-            <PriceFormat amount={shippingCost} />
-          )}
-        </div>
+        </div> */}
         <div className="border-t border-gray-300 pt-3 flex items-center justify-between">
           <Title className="text-lg font-bold">Total Amount</Title>
           <PriceFormat
-            amount={totalAmt - discountAmt + shippingCost}
+            amount={totalAmt}
             className="text-lg font-bold text-theme-color"
           />
         </div>
@@ -276,7 +214,7 @@ const CartSummary = ({ cart }: Props) => {
               <FiLoader className="animate-spin mr-2" />
               Placing Order...
             </>
-          ) : !selectedAddress ? (
+          ) : (!addressLoading && !selectedAddress) ? (
             "Select Address to Place Order"
           ) : (
             "Place Order"

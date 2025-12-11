@@ -11,36 +11,26 @@ import {
   FiSearch,
 } from "react-icons/fi";
 
-// export const metadata: Metadata = {
-//   title: "FAQs - Shofy",
-//   description: "Frequently Asked Questions - Find answers to common questions about Shofy",
-// };
+export const metadata: Metadata = {
+  title: "FAQs - AweGift",
+  description: "Frequently Asked Questions - Find answers to common questions about AweGift",
+};
 
 const faqCategories = [
   {
     id: "orders",
-    title: "Orders & Shipping",
+    title: "Orders",
     icon: "📦",
     faqs: [
       {
-        question: "How long does shipping take?",
-        answer:
-          "Standard shipping typically takes 3-7 business days. Express shipping is available for 1-2 business days delivery. Shipping times may vary based on your location and product availability.",
-      },
-      {
         question: "Can I track my order?",
         answer:
-          "Yes! Once your order ships, you'll receive a tracking number via email. You can also track your order status by logging into your account and visiting the 'Orders' section.",
-      },
-      {
-        question: "What are the shipping costs?",
-        answer:
-          "Shipping costs vary based on your location, order size, and shipping method. Free standard shipping is available on orders over $50. Exact shipping costs will be calculated at checkout.",
+          "Yes! You can track your order status by logging into your account and visiting the 'Orders' section. You'll receive updates as your order progresses.",
       },
       {
         question: "Can I change or cancel my order?",
         answer:
-          "You can cancel or modify your order within 1 hour of placement. After that, please contact our customer service team immediately, and we'll do our best to accommodate your request if the order hasn't shipped yet.",
+          "You can cancel or modify your order within 1 hour of placement. After that, please contact our customer service team immediately, and we'll do our best to accommodate your request if the order hasn't been processed yet.",
       },
     ],
   },
@@ -57,17 +47,12 @@ const faqCategories = [
       {
         question: "How do I initiate a return?",
         answer:
-          "To start a return, log into your account, go to 'Order History', and click 'Return Item' next to the product. Follow the instructions to print a return label and drop off the package at any authorized shipping location.",
+          "To start a return, log into your account, go to 'Order History', and click 'Return Item' next to the product. Follow the instructions provided to complete your return.",
       },
       {
         question: "When will I receive my refund?",
         answer:
           "Refunds are processed within 3-5 business days after we receive your returned item. The refund will be credited to your original payment method. Credit card refunds may take an additional 1-2 billing cycles to appear.",
-      },
-      {
-        question: "Who pays for return shipping?",
-        answer:
-          "For defective or incorrect items, we provide a prepaid return label. For other returns, customers are responsible for return shipping costs unless the order qualifies for free returns.",
       },
     ],
   },
@@ -94,7 +79,7 @@ const faqCategories = [
       {
         question: "Can I save multiple addresses?",
         answer:
-          "Yes! You can save multiple shipping and billing addresses in your account. This makes checkout faster and easier for future orders. You can add, edit, or delete addresses anytime in your account settings.",
+          "Yes! You can save multiple addresses in your account. This makes future orders faster and easier. You can add, edit, or delete addresses anytime in your account settings.",
       },
     ],
   },
@@ -156,7 +141,7 @@ export default function FAQsPage() {
             Frequently Asked Questions
           </Title>
           <p className="text-light-text text-lg mb-8">
-            Find answers to common questions about shopping with Shofy
+            Find answers to common questions about shopping with AweGift
           </p>
 
           {/* Search Bar */}
@@ -335,7 +320,7 @@ export default function FAQsPage() {
               Contact Support
             </a>
             <a
-              href="mailto:support@shofy.com"
+              href="mailto:support@awegift.com"
               className="inline-block bg-theme-white text-theme-color border-2 border-theme-color px-6 py-3 rounded-lg hover:bg-theme-color hover:text-theme-white transition-colors duration-200 font-medium"
             >
               Email Us

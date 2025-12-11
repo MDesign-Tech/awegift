@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const productData: Omit<ProductType, 'id' | 'meta'> = await request.json();
 
     // Validate required fields
-    if (!productData.title || !productData.price || !productData.category) {
+    if (!productData.title || !productData.price || !productData.categories || !Array.isArray(productData.categories) || productData.categories.length === 0) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }

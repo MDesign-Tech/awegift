@@ -17,7 +17,6 @@ const BottomHeader = async () => {
               {item?.title}
             </Link>
           ))}
-          <SignOutButton session={session} />
         </div>
         <p className="text-xs text-gray-400 font-medium hidden md:inline-flex items-center gap-3">
           Tel: <span className="text-[#ed4c07]">+250 781 990 310</span>

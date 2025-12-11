@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Sidebar from "./Sidebar";
 import AddressForm from "./AddressForm";
-import { getCountryByCode } from "./countryData";
 import { Address } from "../../../type";
 
 interface AddressManagementProps {
@@ -251,17 +250,10 @@ export default function AddressManagement({
                       </span>
                     )}
                     <div className="text-gray-900">
-                      <p className="font-medium text-lg mb-1">
-                        {address.street}
-                      </p>
-                      <p className="text-gray-600">
-                        {address.city}, {address.state} {address.zipCode}
-                      </p>
-                      <p className="text-gray-600">
-                        {getCountryByCode(address.country)?.name ||
-                          address.country}
-                      </p>
-                    </div>
+                       <p className="font-medium text-lg mb-1">
+                         {address.address}
+                       </p>
+                     </div>
                   </div>
                   <div className="flex flex-col gap-2 ml-6">
                     <button

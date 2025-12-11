@@ -70,7 +70,7 @@ export const getFeaturedProducts = (products: ProductType[]): ProductType[] => {
       (product) =>
         product.rating >= 3.5 &&
         product.stock > 10 &&
-        popularCategories.includes(product.category.toLowerCase())
+        product.categories && product.categories.some(cat => popularCategories.includes(cat.toLowerCase()))
     )
     .sort((a, b) => b.rating - a.rating);
 
@@ -104,7 +104,7 @@ export const getProductsByCategory = (
   if (!products || products.length === 0) return [];
 
   return products.filter(
-    (product) => product.category.toLowerCase() === category.toLowerCase()
+    (product) => product.categories && product.categories.some(cat => cat.toLowerCase() === category.toLowerCase())
   );
 };
 
@@ -120,7 +120,7 @@ export const searchProducts = (
     (product) =>
       product.title.toLowerCase().includes(term) ||
       product.description.toLowerCase().includes(term) ||
-      product.category.toLowerCase().includes(term) ||
+      (product.categories && product.categories.some(cat => cat.toLowerCase().includes(term))) ||
       product.brand.toLowerCase().includes(term) ||
       product.tags.some((tag: string) => tag.toLowerCase().includes(term))
   );
@@ -134,7 +134,7 @@ export const getProductCountByCategory = (
   if (!products || products.length === 0 || !category) return 0;
 
   return products.filter(
-    (product) => product.category.toLowerCase() === category.toLowerCase()
+    (product) => product.categories && product.categories.some(cat => cat.toLowerCase() === category.toLowerCase())
   ).length;
 };
 
@@ -145,11 +145,15 @@ export const getCategoriesWithCounts = (products: ProductType[]) => {
   const categoryMap = new Map();
 
   products.forEach((product) => {
-    const category = product.category.toLowerCase();
-    if (categoryMap.has(category)) {
-      categoryMap.set(category, categoryMap.get(category) + 1);
-    } else {
-      categoryMap.set(category, 1);
+    if (product.categories) {
+      product.categories.forEach(cat => {
+        const category = cat.toLowerCase();
+        if (categoryMap.has(category)) {
+          categoryMap.set(category, categoryMap.get(category) + 1);
+        } else {
+          categoryMap.set(category, 1);
+        }
+      });
     }
   });
 

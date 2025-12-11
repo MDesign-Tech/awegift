@@ -53,10 +53,7 @@ const CartProducts = () => {
             Shopping Cart
           </h1>
           <p className="text-base max-w-[700px] text-center text-gray-600 tracking-wide leading-6">
-            Your cart is empty. Lorem ipsum dolor sit amet consectetur
-            adipisicing elit. Voluptate in ab blanditiis officiis deleniti, amet
-            omnis esse quisquam voluptates, eveniet, illo magnam error odit modi
-            cumque minima a fugit aut.
+            Your cart is empty. Browse our products and add items to your cart to get started!
           </p>
           <Link
             className="bg-sky-color/90 text-gray-100 px-8 py-4 rounded-md hover:bg-sky-color duration-200 uppercase text-sm font-semibold tracking-wide"

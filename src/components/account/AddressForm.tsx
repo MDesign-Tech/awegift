@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { countries, getCitiesByCountryCode } from "./countryData";
+import React, { useState } from "react";
 import { Address } from "../../../type";
 
 interface AddressFormProps {
@@ -22,43 +21,15 @@ export default function AddressForm({
   showSetDefault = true,
 }: AddressFormProps) {
   const [formData, setFormData] = useState<Address>({
-    street: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    country: "",
+    address: "",
     isDefault: false,
     ...address,
   });
 
-  const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Update cities when country changes
-  useEffect(() => {
-    if (formData.country) {
-      const cities = getCitiesByCountryCode(formData.country);
-      setAvailableCities(cities);
-
-      // Reset city if it's not in the new country's cities
-      if (formData.city && !cities.includes(formData.city)) {
-        setFormData((prev) => ({ ...prev, city: "" }));
-      }
-    } else {
-      setAvailableCities([]);
-    }
-  }, [formData.country]);
-
-  // Initialize cities if address already has a country
-  useEffect(() => {
-    if (address?.country) {
-      const cities = getCitiesByCountryCode(address.country);
-      setAvailableCities(cities);
-    }
-  }, [address]);
-
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const { name, value, type } = e.target;
     const checked =
@@ -78,20 +49,8 @@ export default function AddressForm({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.street.trim()) {
-      newErrors.street = "Street address is required";
-    }
-    if (!formData.city.trim()) {
-      newErrors.city = "City is required";
-    }
-    if (!formData.state.trim()) {
-      newErrors.state = "State/Province is required";
-    }
-    if (!formData.zipCode.trim()) {
-      newErrors.zipCode = "ZIP/Postal code is required";
-    }
-    if (!formData.country) {
-      newErrors.country = "Country is required";
+    if (!formData.address.trim()) {
+      newErrors.address = "Address is required";
     }
 
     setErrors(newErrors);
@@ -108,129 +67,23 @@ export default function AddressForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Street Address */}
+      {/* Address */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Street Address *
+          Address *
         </label>
         <input
           type="text"
-          name="street"
-          value={formData.street}
+          name="address"
+          value={formData.address}
           onChange={handleInputChange}
           className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-theme-color ${
-            errors.street ? "border-red-500" : "border-gray-300"
+            errors.address ? "border-red-500" : "border-gray-300"
           }`}
-          placeholder="Enter your street address"
+          placeholder="Gikondo, mereze"
         />
-        {errors.street && (
-          <p className="text-red-500 text-sm mt-1">{errors.street}</p>
-        )}
-      </div>
-
-      {/* Country */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Country *
-        </label>
-        <select
-          name="country"
-          value={formData.country}
-          onChange={handleInputChange}
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-theme-color ${
-            errors.country ? "border-red-500" : "border-gray-300"
-          }`}
-        >
-          <option value="">Select Country</option>
-          {countries.map((country) => (
-            <option key={country.code} value={country.code}>
-              {country.name}
-            </option>
-          ))}
-        </select>
-        {errors.country && (
-          <p className="text-red-500 text-sm mt-1">{errors.country}</p>
-        )}
-      </div>
-
-      {/* City */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          City *
-        </label>
-        {availableCities.length > 0 ? (
-          <select
-            name="city"
-            value={formData.city}
-            onChange={handleInputChange}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-theme-color ${
-              errors.city ? "border-red-500" : "border-gray-300"
-            }`}
-          >
-            <option value="">Select City</option>
-            {availableCities.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <input
-            type="text"
-            name="city"
-            value={formData.city}
-            onChange={handleInputChange}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-theme-color ${
-              errors.city ? "border-red-500" : "border-gray-300"
-            }`}
-            placeholder={
-              formData.country ? "Select a country first" : "Enter city name"
-            }
-            disabled={!formData.country}
-          />
-        )}
-        {errors.city && (
-          <p className="text-red-500 text-sm mt-1">{errors.city}</p>
-        )}
-      </div>
-
-      {/* State/Province */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          State/Province *
-        </label>
-        <input
-          type="text"
-          name="state"
-          value={formData.state}
-          onChange={handleInputChange}
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-theme-color ${
-            errors.state ? "border-red-500" : "border-gray-300"
-          }`}
-          placeholder="Enter state or province"
-        />
-        {errors.state && (
-          <p className="text-red-500 text-sm mt-1">{errors.state}</p>
-        )}
-      </div>
-
-      {/* ZIP Code */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          ZIP/Postal Code *
-        </label>
-        <input
-          type="text"
-          name="zipCode"
-          value={formData.zipCode}
-          onChange={handleInputChange}
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-theme-color ${
-            errors.zipCode ? "border-red-500" : "border-gray-300"
-          }`}
-          placeholder="Enter ZIP or postal code"
-        />
-        {errors.zipCode && (
-          <p className="text-red-500 text-sm mt-1">{errors.zipCode}</p>
+        {errors.address && (
+          <p className="text-red-500 text-sm mt-1">{errors.address}</p>
         )}
       </div>
 

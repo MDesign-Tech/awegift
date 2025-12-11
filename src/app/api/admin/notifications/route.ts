@@ -1,38 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "../../../../../auth";
-import { collection, query, orderBy, getDocs, where } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
+import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
+import { getToken } from "next-auth/jwt";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.role || !["admin"].includes(session.user.role)) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    // Check authentication and permissions
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get all notifications for admin
+    const userRole = token.role as UserRole;
+    if (!hasPermission(userRole, "canViewUsers")) { // Admin can view notifications
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
     const notificationsRef = collection(db, "notifications");
     const q = query(notificationsRef, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
 
-    const querySnapshot = await getDocs(q);
-    const notifications = querySnapshot.docs.map(doc => ({
+    const notifications = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
     }));
 
-    return NextResponse.json({
-      notifications,
-      count: notifications.length,
-    });
+    return NextResponse.json({ notifications });
   } catch (error) {
     console.error("Error fetching notifications:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }

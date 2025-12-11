@@ -45,11 +45,11 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-1">Address</h3>
                   <p className="text-light-text">
-                    123 Business Street
+                    KG-250 Business Street
                     <br />
-                    Commerce City, CC 12345
+                    Commerce City, KC 250
                     <br />
-                    United States
+                    Rwanda
                   </p>
                 </div>
               </div>
@@ -60,10 +60,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-1">Phone</h3>
-                  <p className="text-light-text">+1 (555) 123-4567</p>
-                  <p className="text-light-text text-sm">
-                    Monday - Friday, 9AM - 6PM
-                  </p>
+                  <p className="text-light-text">+250 781 990 310</p>
                 </div>
               </div>
 
@@ -74,7 +71,6 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-1">Email</h3>
                   <p className="text-light-text">support@awegift.com</p>
-                  <p className="text-light-text">sales@awegift.com</p>
                 </div>
               </div>
 
@@ -87,9 +83,7 @@ export default function ContactPage() {
                     Business Hours
                   </h3>
                   <div className="text-light-text text-sm">
-                    <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
-                    <p>Saturday: 10:00 AM - 4:00 PM</p>
-                    <p>Sunday: Closed</p>
+                    <p>Monday - Sunday: 9:00 AM - 6:00 PM</p>
                   </div>
                 </div>
               </div>
@@ -214,7 +208,7 @@ export default function ContactPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+15551234567"
+              href="tel:+250781990310"
               className="inline-flex items-center gap-2 bg-theme-color text-theme-white px-6 py-3 rounded-lg hover:bg-theme-color/90 transition-colors duration-200 font-medium"
             >
               <FiPhone className="w-4 h-4" />

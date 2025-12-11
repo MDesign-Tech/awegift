@@ -26,7 +26,7 @@ const SuccessPage = () => {
 
   useEffect(() => {
     if (sessionId && session?.user?.email && !orderProcessed) {
-      // Process the order and save to user's orders
+      // Process the order and save to orders
       processOrder();
     }
   }, [sessionId, session?.user?.email, orderProcessed]);
@@ -82,6 +82,16 @@ const SuccessPage = () => {
     }
   };
 
+  if (!orderProcessed) {
+    return (
+      <ProtectedRoute loadingMessage="Processing your order...">
+        <Container className="py-10">
+          <OrderSummarySkeleton />
+        </Container>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute loadingMessage="Processing your order...">
       <Container className="py-10">
@@ -106,7 +116,7 @@ const SuccessPage = () => {
           </div>
 
           {/* Success Message */}
-          <div className="text-center mb-8">
+          <div className="flex flex-col gap-3 items-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               🎉 Payment Successful!
             </h1>
@@ -115,60 +125,25 @@ const SuccessPage = () => {
               <span className="font-semibold text-theme-color">AweGift</span>
             </p>
             <p className="text-gray-500">
-              Your order has been confirmed and will be processed shortly.
+              Your order has been paid and you will receive an email of confirmation shortly
+              after being confirmed.
             </p>
-          </div>
 
-          {/* Order Details Card */}
-          {!orderProcessed ? (
-            <OrderSummarySkeleton />
-          ) : orderDetails ? (
-            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8 max-w-md w-full shadow-sm">
-              <h3 className="font-semibold text-gray-900 mb-3">
-                Order Summary
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Order ID:</span>
-                  <span className="font-medium">#{orderDetails.id}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Amount:</span>
-                  <span className="font-medium">
-                    <PriceFormat amount={orderDetails.amount} />
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Status:</span>
-                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                    Confirmed
-                  </span>
-                </div>
+            {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <Link href="/account/orders">
+                  <button className="bg-theme-color text-white px-8 py-3 rounded-md font-medium hover:bg-theme-color/90 transition-colors duration-200 w-52">
+                    View My Orders
+                  </button>
+                </Link>
+                <Link href="/products">
+                  <button className="border border-gray-300 text-gray-700 px-8 py-3 rounded-md font-medium hover:bg-gray-50 transition-colors duration-200 w-52">
+                    Continue Shopping
+                  </button>
+                </Link>
               </div>
-            </div>
-          ) : null}
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            <Link href="/account/orders">
-              <button className="bg-theme-color text-white px-8 py-3 rounded-md font-medium hover:bg-theme-color/90 transition-colors duration-200 w-52">
-                View My Orders
-              </button>
-            </Link>
-            <Link href="/">
-              <button className="border border-gray-300 text-gray-700 px-8 py-3 rounded-md font-medium hover:bg-gray-50 transition-colors duration-200 w-52">
-                Continue Shopping
-              </button>
-            </Link>
           </div>
 
-          {/* Additional Info */}
-          <div className="mt-8 text-center max-w-md">
-            <p className="text-sm text-gray-500">
-              You will receive an email confirmation shortly with your order
-              details and tracking information.
-            </p>
-          </div>
         </div>
       </Container>
     </ProtectedRoute>

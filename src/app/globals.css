@@ -1,9 +1,11 @@
+/* Import Google Fonts first */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+
+/* Tailwind and base imports with layers */
 @import "./base.css" layer(components);
 @import "tailwindcss/utilities" layer(utilities);
 
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap")
-layer(utilities);
-
+/* Your theme variables */
 @theme {
   --font-sans: Jost, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -19,6 +21,7 @@ layer(utilities);
   --color-light-text: #55585b;
 }
 
+/* Utilities layer */
 @layer utilities {
   .headerTopMenu {
     @apply flex items-center gap-x-1 border-r border-r-gray-400 px-4;
@@ -30,7 +33,6 @@ button:hover {
   cursor: pointer;
 }
 
-/* Ensure disabled buttons don't show pointer cursor */
 button:disabled:hover {
   cursor: not-allowed;
 }

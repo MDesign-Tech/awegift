@@ -23,8 +23,6 @@ const ProductCard = ({ product }: Props) => {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const regularPrice = product?.price;
-  const discountedPrice =
-    product?.price - (product?.price * product?.discountPercentage) / 100;
 
   // Check if product is in favorites
   useEffect(() => {
@@ -33,19 +31,6 @@ const ProductCard = ({ product }: Props) => {
       setIsFavorite(!!isInFavorites);
     }
   }, [favorite, product.id, session?.user]);
-
-  const handleFavoriteClick = () => {
-    if (session?.user) {
-      dispatch(addToFavorite(product));
-      if (isFavorite) {
-        toast.success("Removed from favorites");
-      } else {
-        toast.success("Added to favorites");
-      }
-    } else {
-      toast.error("Please login to add to favorites");
-    }
-  };
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl hover:shadow-xl hover:shadow-black/10 transition-all duration-300 overflow-hidden group transform hover:-translate-y-1 relative">
@@ -113,20 +98,20 @@ const ProductCard = ({ product }: Props) => {
       <div className="p-5">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">
-            {product?.category}
+            {product?.categories && product.categories.length > 0 ? product.categories[0] : "No category"}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex bg-blue-50 px-2 py-1 rounded-full items-center gap-1">
             <a
-              href={`https://wa.me/250781990310?text=Hi%20I%20am%20interested%20in%20${encodeURIComponent(product?.title || "this product")}`}
+              href={`https://wa.me/250781990310?text=Hi%20I%20need%20more%20about%20this%20product%20(${encodeURIComponent(product?.title || "this product")})`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-green-500 hover:text-green-700 transition-colors duration-200 text-lg"
+              className="text-green-500 hover:text-green-700 transition-colors duration-200 text-sm"
               title="Contact us on WhatsApp"
             >
               <FaWhatsapp />
             </a>
             {product?.brand && (
-              <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full font-medium">
+              <span className="text-xs text-blue-600 font-medium">
                 {product.brand}
               </span>
             )}
@@ -175,7 +160,6 @@ const ProductCard = ({ product }: Props) => {
         <div className="mb-4">
           <ProductPrice
             regularPrice={regularPrice}
-            discountedPrice={discountedPrice}
             product={product}
           />
         </div>

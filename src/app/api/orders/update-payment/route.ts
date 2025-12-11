@@ -12,7 +12,9 @@ import {
   getDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import { OrderData } from "../../../../../type";
+import { OrderData, OrderStatusHistory } from "../../../../../type";
+import { OrderStatus } from "@/lib/orderStatus";
+import { UserRole } from "@/lib/rbac/roles";
 import { PaymentStatus, canUpdatePaymentStatus } from "@/lib/orderStatus";
 import { auth } from "../../../../../auth";
 import { fetchUserFromFirestore } from "@/lib/firebase/userService";
@@ -29,6 +31,7 @@ export async function POST(request: NextRequest) {
       orderId,
       paymentStatus,
       paymentMethod,
+      paymentScreenshot,
     } = await request.json();
 
     if (!orderId) {
@@ -79,6 +82,24 @@ export async function POST(request: NextRequest) {
     // Handle payment method update
     if (paymentMethod && paymentMethod !== currentOrder.paymentMethod) {
       updateData.paymentMethod = paymentMethod;
+    }
+
+    // Handle payment screenshot update
+    if (paymentScreenshot) {
+      updateData.paymentScreenshot = paymentScreenshot;
+    }
+
+    // Add status history entry if payment status changed
+    if (paymentStatus && paymentStatus !== currentPaymentStatus) {
+      const statusHistoryEntry: OrderStatusHistory = {
+        status: currentOrder.status,
+        changedBy: session.user.email,
+        changedByRole: userRole as UserRole,
+        timestamp: new Date().toISOString(),
+        notes: `Payment status updated to ${paymentStatus}`,
+      };
+
+      updateData.statusHistory = [...(currentOrder.statusHistory || []), statusHistoryEntry];
     }
 
     // Update the order

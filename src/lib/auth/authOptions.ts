@@ -79,7 +79,7 @@ export const authConfig: NextAuthConfig = {
           };
 
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Firestore timeout")), 5000)
+            setTimeout(() => reject(new Error("Firestore timeout")), 15000)
           );
 
           return await Promise.race([authOperation(), timeoutPromise]) as any;
@@ -147,7 +147,7 @@ export const authConfig: NextAuthConfig = {
           };
 
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Firestore timeout")), 5000)
+            setTimeout(() => reject(new Error("Firestore timeout")), 15000)
           );
 
           const userId = await Promise.race([firestoreOperation(), timeoutPromise]) as string;
@@ -190,7 +190,7 @@ export const authConfig: NextAuthConfig = {
           // Add timeout to prevent hanging on Firestore connection issues
           const userDocPromise = getDoc(doc(db, "users", token.id as string));
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Firestore timeout")), 5000)
+            setTimeout(() => reject(new Error("Firestore timeout")), 15000)
           );
 
           const userDoc = await Promise.race([userDocPromise, timeoutPromise]) as any;
@@ -224,7 +224,7 @@ export const authConfig: NextAuthConfig = {
           // Add timeout to prevent hanging on Firestore connection issues
           const userDocPromise = getDoc(doc(db, "users", session.user.id));
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Firestore timeout")), 5000)
+            setTimeout(() => reject(new Error("Firestore timeout")), 15000)
           );
 
           const userDoc = await Promise.race([userDocPromise, timeoutPromise]) as any;

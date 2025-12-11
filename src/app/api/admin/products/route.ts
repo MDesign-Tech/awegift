@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const limitParam = parseInt(searchParams.get('limit') || '20');
     const offsetParam = parseInt(searchParams.get('offset') || '0');
     const searchQuery = searchParams.get('q')?.trim();
-    const categoryFilter = searchParams.get('category')?.trim();
+    const categoryFilters = searchParams.getAll('category').map(cat => cat.trim()).filter(Boolean);
 
     // Fetch products with optional search and category filtering
     const productsRef = collection(db, "products");
@@ -43,10 +43,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Apply category filter if provided
-    if (categoryFilter) {
+    if (categoryFilters.length > 0) {
       allDocs = allDocs.filter(doc => {
         const data = doc.data() as ProductType;
-        return data.category === categoryFilter;
+        return data.categories && data.categories.some(cat => categoryFilters.includes(cat));
       });
     }
 
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       ...doc.data(),
     })) as ProductType[];
 
-    console.log("Fetched products:", products.length, "offset:", offsetParam, "limit:", limitParam, "search:", searchQuery, "category:", categoryFilter);
+    console.log("Fetched products:", products.length, "offset:", offsetParam, "limit:", limitParam, "search:", searchQuery, "categories:", categoryFilters);
 
     return NextResponse.json({
       products,

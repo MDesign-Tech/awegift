@@ -45,25 +45,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Extract shipping address
-    let shippingAddress: Address | undefined;
-    if (session.metadata?.shippingAddress) {
+    // Extract order adress from session metadata
+    let orderAddress: Address | undefined;
+    if (session.metadata?.orderAddress) {
       try {
-        shippingAddress = JSON.parse(session.metadata.shippingAddress);
+        orderAddress = JSON.parse(session.metadata.orderAddress);
       } catch (e) {
-        console.warn("Failed to parse shipping address from metadata:", e);
+        console.warn("Failed to parse order location from metadata:", e);
       }
     }
 
     // Map items to OrderItem
     const items: OrderItem[] = session.line_items?.data?.map((item: any) => ({
-      productId: parseInt(item.price?.product?.metadata?.productId || item.price?.product?.id || "0"),
+      productId: item.price?.product?.metadata?.productId || item.price?.product?.id || "0",
       title: item.price?.product?.name || "",
       price: item.price?.unit_amount ? item.price.unit_amount / 100 : 0,
       quantity: item.quantity,
-      thumbnail: item.price?.product?.images?.[0] || "",
+      thumbnail: item.thumbnail || "",
       sku: item.price?.product?.metadata?.sku || "",
-      total: item.amount_total ? item.amount_total / 100 : 0,
     })) || [];
 
     // Calculate total amount
@@ -73,19 +72,21 @@ export async function POST(request: NextRequest) {
     const orderData: OrderData = {
       id: "", // Will be set after addDoc
       userId: user.id,
+      customerName: user.name || user.email,
+      customerEmail: user.email,
       status: ORDER_STATUSES.PENDING,
       items: items,
       totalAmount: totalAmount,
-      shippingAddress: shippingAddress!,
-      paymentMethod: "online" as PaymentMethod,
-      paymentStatus: "paid" as PaymentStatus,
+      orderAddress: orderAddress!,
+      paymentMethod: PAYMENT_METHODS.ONLINE,
+      paymentStatus: PAYMENT_STATUSES.PENDING, // Will be updated when payment is confirmed
       statusHistory: [
         {
           status: ORDER_STATUSES.PENDING,
           changedBy: user.email,
           changedByRole: user.role as UserRole,
           timestamp: new Date().toISOString(),
-          notes: "Order placed via Stripe payment",
+          notes: "Order placed via online payment",
         },
       ],
       createdAt: new Date().toISOString(),
