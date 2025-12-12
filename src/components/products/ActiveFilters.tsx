@@ -9,26 +9,28 @@ const ActiveFilters = () => {
   const activeFilters = [];
 
   // Check for active filters
-  const category = searchParams.get("category");
+  const categories = searchParams.getAll("category");
   const brand = searchParams.get("brand");
   const color = searchParams.get("color");
   const minPrice = searchParams.get("min_price");
   const maxPrice = searchParams.get("max_price");
   const search = searchParams.get("search");
 
-  if (category) {
-    activeFilters.push({
-      type: "category",
-      label: "Category",
-      value: category,
-      displayValue:
-        category === "bestsellers"
-          ? "Best Sellers"
-          : category === "new"
-          ? "New Arrivals"
-          : category === "offers"
-          ? "Special Offers"
-          : category.charAt(0).toUpperCase() + category.slice(1),
+  if (categories.length > 0) {
+    categories.forEach(category => {
+      activeFilters.push({
+        type: "category",
+        label: "Category",
+        value: category,
+        displayValue:
+          category === "bestsellers"
+            ? "Best Sellers"
+            : category === "new"
+            ? "New Arrivals"
+            : category === "offers"
+            ? "Special Offers"
+            : category.charAt(0).toUpperCase() + category.slice(1),
+      });
     });
   }
 
@@ -68,12 +70,19 @@ const ActiveFilters = () => {
     });
   }
 
-  const removeFilter = (filterType: string) => {
+  const removeFilter = (filterType: string, value?: string) => {
     const params = new URLSearchParams(searchParams.toString());
 
     switch (filterType) {
       case "category":
-        params.delete("category");
+        if (value) {
+          // Remove specific category value
+          const currentCategories = params.getAll("category");
+          params.delete("category");
+          currentCategories.filter(cat => cat !== value).forEach(cat => params.append("category", cat));
+        } else {
+          params.delete("category");
+        }
         break;
       case "brand":
         params.delete("brand");
@@ -123,7 +132,7 @@ const ActiveFilters = () => {
             <span className="font-medium">{filter.label}:</span>
             <span>{filter.displayValue}</span>
             <button
-              onClick={() => removeFilter(filter.type)}
+              onClick={() => removeFilter(filter.type, filter.value)}
               className="flex items-center justify-center w-4 h-4 bg-blue-200 hover:bg-blue-300 rounded-full transition-colors ml-1"
             >
               <FaTimes className="w-2 h-2" />

@@ -60,11 +60,17 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
       count: orderCount,
     },
     {
-      id: "payment",
-      label: "Payment",
-      icon: "💳",
-      path: "/account/payment",
+      id: "quotes",
+      label: "Quotes",
+      icon: "💬",
+      path: "/account/quotes",
     },
+    // {
+    //   id: "payment",
+    //   label: "Payment",
+    //   icon: "💳",
+    //   path: "/account/payment",
+    // },
     {
       id: "notifications",
       label: "Notifications",

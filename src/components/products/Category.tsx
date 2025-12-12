@@ -17,11 +17,11 @@ const Category = ({ categories = [], allProducts = [] }: CategoryProps) => {
   const currentCategories = searchParams.getAll("category");
 
   // Helper function to get exact product count for a category
-  const getProductCountForCategory = (categorySlug: string): number => {
+  const getProductCountForCategory = (categoryName: string): number => {
     if (!allProducts || allProducts.length === 0) return 0;
     return allProducts.filter(
       (product: ProductType) =>
-        product.categories && product.categories.some((cat: string) => cat.toLowerCase() === categorySlug.toLowerCase())
+        product.categories && product.categories.some((cat: string) => cat.toLowerCase() === categoryName.toLowerCase())
     ).length;
   };
 
@@ -51,17 +51,17 @@ const Category = ({ categories = [], allProducts = [] }: CategoryProps) => {
     { name: "new", label: "New Arrivals" },
   ];
 
-  const handleCategoryClick = (categorySlug: string) => {
+  const handleCategoryClick = (categoryName: string) => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));
     const currentCats = current.getAll("category");
 
-    if (currentCats.includes(categorySlug)) {
+    if (currentCats.includes(categoryName)) {
       // Remove if already selected
       current.delete("category");
-      currentCats.filter(cat => cat !== categorySlug).forEach(cat => current.append("category", cat));
+      currentCats.filter(cat => cat !== categoryName).forEach(cat => current.append("category", cat));
     } else {
       // Add if not selected
-      current.append("category", categorySlug);
+      current.append("category", categoryName);
     }
 
     const search = current.toString();
@@ -125,27 +125,27 @@ const Category = ({ categories = [], allProducts = [] }: CategoryProps) => {
 
                 {/* Regular Categories */}
                 {categories.map((category, index) => {
-                   const isActive = currentCategories.includes(category.slug);
-                  const count = getProductCountForCategory(category.slug);
-                  return (
-                    <div key={index} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={`category-${category.slug}`}
-                        name="category"
-                        checked={isActive}
-                        onChange={() => {}}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                      />
-                      <button
-                        onClick={() => handleCategoryClick(category.slug)}
-                        className="ml-2 text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors flex-1 text-left"
-                      >
-                        {category.name} ({count})
-                      </button>
-                    </div>
-                  );
-                })}
+                    const isActive = currentCategories.includes(category.name);
+                   const count = getProductCountForCategory(category.name);
+                   return (
+                     <div key={index} className="flex items-center">
+                       <input
+                         type="checkbox"
+                         id={`category-${category.name}`}
+                         name="category"
+                         checked={isActive}
+                         onChange={() => {}}
+                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                       />
+                       <button
+                         onClick={() => handleCategoryClick(category.name)}
+                         className="ml-2 text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors flex-1 text-left"
+                       >
+                         {category.name} ({count})
+                       </button>
+                     </div>
+                   );
+                 })}
               </div>
             </div>
           </motion.div>

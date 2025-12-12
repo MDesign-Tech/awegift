@@ -6,26 +6,19 @@ import { FiArrowRight, FiPackage } from "react-icons/fi";
 
 import type { CategoryType } from "../../../../type";
 
-const ImageFallback = () => (
-  <svg
-    className="h-16 w-16 text-gray-400"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-    />
-  </svg>
-);
+interface Category {
+  slug: string;
+  name: string;
+  url: string;
+  description: string;
+  count?: number;
+}
 
 interface InfiniteCategoryGridProps {
   // optional seed categories (kept for compatibility) — the component will fetch from /api/categories
-  initialCategories?: CategoryType[];
+  initialCategories?: Category[];
   totalProducts?: number;
+  allProducts?: any[];
 }
 
 // Category skeleton component
@@ -44,7 +37,9 @@ const CategorySkeleton = () => (
   </div>
 );
 
-const CategoryCard: React.FC<{ category: CategoryType; index: number }> = ({
+
+
+const CategoryCard: React.FC<{ category: Category; index: number }> = ({
   category,
   index,
 }) => {
@@ -52,9 +47,8 @@ const CategoryCard: React.FC<{ category: CategoryType; index: number }> = ({
     .replace(/([A-Z])/g, " $1")
     .replace(/^./, (str) => str.toUpperCase());
   const categorySlug = category.slug;
-  const image = (category as any).image || category.image;
   const description = category.description || "Discover amazing products in this category";
-  const productCount = (category as any).productCount || (category as any).count || 0;
+  const productCount = category.count || 0;
   const isDisabled = productCount === 0;
 
   const cardContent = (
@@ -67,9 +61,9 @@ const CategoryCard: React.FC<{ category: CategoryType; index: number }> = ({
     >
       {/* Image Container */}
       <div className="relative h-36 lg:h-44 overflow-hidden">
-        {image ? (
+        {category.url ? (
           <img
-            src={image}
+            src={category.url}
             alt={categoryName}
             className={`w-full h-full object-cover transition-transform duration-700 ${
               isDisabled
@@ -80,7 +74,19 @@ const CategoryCard: React.FC<{ category: CategoryType; index: number }> = ({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <ImageFallback />
+            <svg
+              className="h-12 w-12 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
           </div>
         )}
 
@@ -213,68 +219,72 @@ const CategoryCard: React.FC<{ category: CategoryType; index: number }> = ({
 const InfiniteCategoryGrid: React.FC<InfiniteCategoryGridProps> = ({
   initialCategories = [],
   totalProducts = 0,
+  allProducts = [],
 }) => {
   // allCategories is the full dataset (from API). categories is the paginated slice shown.
-  const [allCategories, setAllCategories] = useState<CategoryType[]>([]);
-  const [categories, setCategories] = useState<CategoryType[]>([]);
-  const [loading, setLoading] = useState(true); // Start as true to show skeletons on initial mount
-  const [hasMore, setHasMore] = useState(false);
+  const [allCategories, setAllCategories] = useState<Category[]>(
+    initialCategories || []
+  );
+  const [categories, setCategories] = useState<Category[]>(
+    (initialCategories || []).slice(0, 12)
+  );
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState((initialCategories || []).length > 12);
   const [page, setPage] = useState(1);
-  const [totalCategoryCount, setTotalCategoryCount] = useState(0);
-  const [totalProductCount, setTotalProductCount] = useState(0);
-
-  // Compute brands dynamically from product count (estimate: 1 brand per 20 products)
-  const totalBrands = Math.max(1, Math.floor(totalProductCount / 20));
+  const [totalBrands, setTotalBrands] = useState(0);
 
   // Fetch categories from the API on mount and replace the data source
   useEffect(() => {
     let mounted = true;
 
-    const fetchData = async () => {
+    const fetchCategories = async () => {
       setLoading(true);
       try {
-        const [categoriesRes, productsRes] = await Promise.all([
-          fetch("/api/categories"),
-          fetch("/api/products?limit=0"),
-        ]);
-
-        if (!categoriesRes.ok || !productsRes.ok) {
-          throw new Error("Failed to load data");
-        }
-
-        const categoriesData = await categoriesRes.json();
-        const productsData = await productsRes.json();
+        const res = await fetch("/api/categories");
+        if (!res.ok) throw new Error("Failed to load categories");
+        const data = await res.json();
 
         // Support different response shapes: array or { categories: [] }
-        const list: CategoryType[] = Array.isArray(categoriesData)
-          ? categoriesData
-          : categoriesData?.categories || [];
+        const list: CategoryType[] = Array.isArray(data)
+          ? data
+          : data?.categories || [];
 
-        const productCount = productsData?.total || (Array.isArray(productsData?.products) ? productsData.products.length : 0);
+        const mapped: Category[] = list.map((c) => ({
+          slug: c.slug,
+          name: c.name,
+          url: c.image || "",
+          description: c.description || "",
+          count: (c as any).productCount ?? 0,
+        }));
 
         if (!mounted) return;
 
-        // Use CategoryType directly; UI will read image/description fields
-        setAllCategories(list);
-        setCategories(list.slice(0, 12));
-        setHasMore(list.length > 12);
+        setAllCategories(mapped);
+        setCategories(mapped.slice(0, 12));
+        setHasMore(mapped.length > 12);
         setPage(1);
-        setTotalCategoryCount(list.length);
-        setTotalProductCount(productCount);
       } catch (err) {
-        console.warn("Error fetching categories/products:", err);
-        // Keep state as empty on error
+        // keep existing initialCategories if fetch fails
+        // console.warn(err);
       } finally {
         if (mounted) setLoading(false);
       }
     };
 
-    fetchData();
+    fetchCategories();
 
     return () => {
       mounted = false;
     };
   }, []);
+
+  // Calculate unique brands from allProducts
+  useEffect(() => {
+    if (allProducts.length > 0) {
+      const uniqueBrands = [...new Set(allProducts.map((p: any) => p.brand).filter(Boolean))];
+      setTotalBrands(uniqueBrands.length);
+    }
+  }, [allProducts]);
 
   const loadMoreCategories = useCallback(async () => {
     if (loading || !hasMore) return;
@@ -326,13 +336,13 @@ const InfiniteCategoryGrid: React.FC<InfiniteCategoryGridProps> = ({
         <div className="flex flex-col sm:flex-row justify-center items-center gap-8">
           <div className="text-center">
             <div className="text-3xl font-bold text-blue-600">
-              {totalCategoryCount}
+              {allCategories.length}
             </div>
             <div className="text-gray-600">Total Categories</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-green-600">
-              {totalProductCount}+
+              {totalProducts}+
             </div>
             <div className="text-gray-600">Products</div>
           </div>
@@ -377,7 +387,7 @@ const InfiniteCategoryGrid: React.FC<InfiniteCategoryGridProps> = ({
               🎉 You&apos;ve seen it all!
             </div>
             <p className="text-gray-600 mb-6">
-              You&apos;ve explored all our {totalCategoryCount}{" "}
+              You&apos;ve explored all our {initialCategories.length}{" "}
               categories. Ready to start shopping?
             </p>
             <Link

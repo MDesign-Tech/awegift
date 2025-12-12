@@ -110,7 +110,7 @@ export default function SettingsClient() {
           </div>
         </div>
 
-        {/* App Information */}
+        {/* App Information
         <div className="bg-white rounded-lg shadow p-8">
           <h3 className="text-lg font-medium text-gray-900 mb-4">About</h3>
 
@@ -129,7 +129,7 @@ export default function SettingsClient() {
               </a>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

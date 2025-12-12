@@ -4,6 +4,7 @@ import { getData } from "../helpers";
 import { getCategoriesWithCounts } from "../helpers/productHelpers";
 import { Metadata } from "next";
 import Link from "next/link";
+import { absoluteUrl } from "../../../../config";
 
 export const metadata: Metadata = {
   title: "Product Categories | AweGift - Shop by Category",
@@ -35,8 +36,8 @@ export const metadata: Metadata = {
 export default async function CategoriesPage() {
   // Fetch categories and all products data
   const [categoriesData, allProductsData] = await Promise.all([
-    getData(`https://dummyjson.com/products/categories`),
-    getData(`https://dummyjson.com/products?limit=0`), // Fetch all products
+    getData(absoluteUrl(`/api/categories`)), // Get categories from admin API
+    getData(absoluteUrl(`/api/products?limit=0`)), // Get all products
   ]);
 
   console.log("Categories Data:", categoriesData);
@@ -83,6 +84,7 @@ export default async function CategoriesPage() {
       <InfiniteCategoryGrid
         initialCategories={enrichedCategories}
         totalProducts={allProductsData?.total || 0}
+        allProducts={allProductsData?.products || []}
       />
     </Container>
   );

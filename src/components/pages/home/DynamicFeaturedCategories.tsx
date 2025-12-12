@@ -3,23 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { getCategoriesWithCounts } from "@/app/(user)/helpers/productHelpers";
 import RoundedCategoriesCarousel from "./RoundedCategoriesCarousel";
+import CategoriesSkeleton from "@/components/skeletons/CategoriesSkeleton";
 import type { CategoryType } from "../../../../type";
 
-const ImageFallback = () => (
-  <svg
-    className="h-16 w-16 text-gray-400"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-    />
-  </svg>
-);
 
 const DynamicFeaturedCategories: React.FC = () => {
   const [categories, setCategories] = useState<CategoryType[]>([]);
@@ -105,21 +91,8 @@ const DynamicFeaturedCategories: React.FC = () => {
     fetchCategories();
   }, []);
 
-  if (error) {
-    return (
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Shop by Category
-          </h2>
-          <p className="text-gray-600">{error}</p>
-        </div>
-      </section>
-    );
-  }
-
-  if (loading || categories.length === 0) {
-    return null; // Or return a skeleton loader if you prefer
+  if (loading) {
+    return <CategoriesSkeleton />;
   }
 
   return <RoundedCategoriesCarousel categories={categories} />;

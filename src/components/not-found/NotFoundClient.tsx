@@ -25,7 +25,7 @@ export default function NotFoundClient() {
           href="/"
           className="px-8 py-3 bg-theme-color text-white rounded-xl hover:bg-theme-color/90 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
         >
-          🏠 Back to Home
+          Back to Home
         </Link>
 
         <button

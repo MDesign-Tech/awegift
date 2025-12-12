@@ -1,14 +1,19 @@
+"use client";
+
 import Container from "@/components/Container";
 import Button from "@/components/ui/Button";
 import { banner } from "@/constants";
 import { GoArrowRight } from "react-icons/go";
+import PriceFormat from "../../PriceFormat";
 
-const Banner = async () => {
+const Banner = () => {
   return (
     <div className="bg-[#115061] py-20 text-theme-white">
       <Container className="flex items-center justify-between">
         <div className="flex flex-col gap-5">
-          <p className="text-base font-semibold">{banner?.priceText}</p>
+          <p className="text-base font-semibold">
+            Starting at <PriceFormat amount={20000} fromCurrency="RWF" />
+          </p>
           <h2 className="text-5xl font-bold max-w-[500px]">{banner?.title}</h2>
           <p className="text-lg font-bold">
             {banner?.textOne}{" "}

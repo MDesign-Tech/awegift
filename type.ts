@@ -167,7 +167,7 @@ export interface NotificationType {
   userId?: string;
   title: string;
   message: string;
-
+ 
   // Local trading notification types
   type:
     | "order"
@@ -182,29 +182,63 @@ export interface NotificationType {
   readAt?: Date | null;
 }
 
-// ---------------------- QUOTE -----------------------
+// ---------------------- QUOTE PRODUCT -----------------------
+export interface QuoteProductType {
+  productId: string | null;     // If not found, treat as custom product
+  name: string;
+  quantity: number;
+  unitPrice?: number;           // Optional until admin sets price
+  totalPrice?: number;
+  notes?: string;               // Additional user information
+}
 
+// ---------------------- MESSAGE THREAD (NEGOTIATION CHAT) ----
+export interface QuoteMessage {
+  sender: "user" | "admin";
+  message: string;
+  timestamp: Date;
+  attachments?: string[];
+}
+
+// ---------------------- MAIN QUOTE TYPE -----------------------
 export interface QuoteType {
   id: string;
   userId: string;
+  email: string;
+  phone?: string | null;
 
-  products: {
-    name: string;
-    quantity: number;
-  }[];
+  products: QuoteProductType[];
 
-  message: string;
+  subtotal: number;                 // products total before discounts
+  discount?: number;                // admin can add discount if giving offer
+  deliveryFee?: number;             // local delivery only (not shipping)
+  finalAmount: number;              // subtotal - discount + delivery
 
-  status: "pending" | "rejected" | "responded";
+  status:
+    | "pending"                     // user requested, waiting for admin
+    | "responded"                   // admin sent price
+    | "waiting_customer"            // admin asked user more info
+    | "negotiation"                 // back-and-forth messaging
+    | "accepted"                    // user accepted price
+    | "rejected"                    // user or admin rejected
+    | "expired";                    // price expired
 
-  adminResponse: string | null;
+  messages: QuoteMessage[];         // negotiation history
+  userNotes?: string;               // user extra info
+  adminNote?: string;               // admin-only notes (private)
 
-  notified: boolean;
+  deliveryAddress?: string;        // local place (Kigali, Gisozi, Remera...)
 
-  email: string | null;
-  phone?: string;
+  expirationDate: Date;
+  validUntil: Date;
+
+  notified: boolean;                // email/notification sent?
+  viewed: boolean;                  // did user open quote?
+
+  attachments?: string[];           // user uploads: design, pictures
 
   createdAt: Date;
   updatedAt: Date;
 }
+
 

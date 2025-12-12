@@ -15,7 +15,7 @@ export default function DashboardSidebar({
   onClose,
   title,
   children,
-  width = "w-full sm:w-[600px]",
+  width = "w-full md:w-[800px]",
 }: SidebarProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);

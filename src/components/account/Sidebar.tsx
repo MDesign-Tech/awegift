@@ -15,7 +15,7 @@ export default function Sidebar({
   onClose,
   title,
   children,
-  width = "w-full sm:w-[500px]",
+  width = "w-full sm:w-[600px]",
 }: SidebarProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);

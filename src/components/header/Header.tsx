@@ -6,7 +6,7 @@ const Header = () => {
   const freeShippingThreshold =
     process.env.NEXT_PUBLIC_FREE_SHIPPING_THRESHOLD || "1000";
   return (
-    <header className="w-full bg-theme-white sticky top-0 z-50">
+    <header className="w-full bg-theme-white sticky top-0 z-49">
       {/* TopHeader */}
       <TopHeader freeShippingThreshold={freeShippingThreshold} />
       <div>

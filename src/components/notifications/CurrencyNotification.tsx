@@ -60,11 +60,11 @@ const CurrencyNotification = ({
   return (
     <>
       {/* Backdrop - subtle overlay */}
-      <div className="fixed inset-0 z-50 pointer-events-none" />
+      <div className="fixed inset-0 z-[100] pointer-events-none" />
 
       {/* Notification Modal */}
       <div
-        className={`fixed bottom-6 right-6 z-50 transform transition-all duration-300 ease-out ${
+        className={`fixed bottom-6 right-6 z-[100] transform transition-all duration-300 ease-out ${
           isVisible
             ? "translate-y-0 opacity-100 scale-100"
             : "translate-y-4 opacity-0 scale-95"

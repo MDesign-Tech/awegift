@@ -17,7 +17,10 @@ export default function GlobalNotFound() {
       <div className="max-w-4xl mx-auto">
         {/* Hero Section */}
         <div className="text-center mb-12">
-            <img src="../assets/notFound.png" alt="Page not found" />
+          <img src={NotFound.src}
+            className="mx-auto"
+
+            alt="Page not found" />
           <h2 className="text-2xl md:text-3xl font-semibold text-gray-700 mb-4">
             Oops! Page Not Found
           </h2>
