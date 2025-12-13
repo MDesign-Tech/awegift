@@ -43,9 +43,10 @@ export default function AdminQuoteDetailPage() {
   useEffect(() => {
     if (editableQuote) {
       const fetchProductData = async () => {
-        const productIds = editableQuote.products
+        const productIds: string[] = editableQuote.products
           .filter((p: QuoteProductType) => p.productId)
-          .map((p: QuoteProductType) => p.productId);
+          .map((p: QuoteProductType) => p.productId!)
+          .filter((id): id is string => id !== null);
 
         if (productIds.length === 0) return;
 

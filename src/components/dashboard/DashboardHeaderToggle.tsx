@@ -65,7 +65,7 @@ export default function DashboardHeaderToggle() {
         setHeaderVisible(!headerVisible);
       }}
       onMouseDown={(e) => e.preventDefault()}
-      className="fixed top-4 right-4 z-50 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="fixed top-4 right-4 z-50 bg-theme-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
       aria-label="Toggle header"
       type="button"
     >
@@ -73,7 +73,7 @@ export default function DashboardHeaderToggle() {
         animate={{ rotate: headerVisible ? 180 : 0 }}
         transition={{ duration: 0.2 }}
       >
-        <IoChevronDownSharp className="w-6 h-6 text-gray-700" />
+        <IoChevronDownSharp className="w-6 h-6 text-theme-color" />
       </motion.div>
     </button>
   );
