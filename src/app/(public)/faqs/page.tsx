@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 
 import Container from "@/components/Container";
 import Title from "@/components/Title";
@@ -13,7 +13,8 @@ import {
 
 export const metadata: Metadata = {
   title: "FAQs - AweGift",
-  description: "Frequently Asked Questions - Find answers to common questions about AweGift",
+  description:
+    "Frequently Asked Questions - Find answers to common questions about AweGift",
 };
 
 const faqCategories = [
