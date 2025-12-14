@@ -58,9 +58,11 @@ export async function PUT(
 
     const productData: Partial<ProductType> = await request.json();
 
-    // Validate required fields only if present
-    if (productData.title === "" || productData.price == null || (productData.categories && (!Array.isArray(productData.categories) || productData.categories.length === 0))) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    // Validate provided fields
+    if ((productData.title !== undefined && productData.title === "") ||
+        (productData.price !== undefined && productData.price === null) ||
+        (productData.categories !== undefined && (!Array.isArray(productData.categories) || productData.categories.length === 0))) {
+      return NextResponse.json({ error: "Invalid field values" }, { status: 400 });
     }
 
     const docRef = doc(db, "products", id);
@@ -87,6 +89,7 @@ export async function PUT(
     };
 
     await updateDoc(docRef, updatedData);
+    console.log("Product updated successfully:", id);
 
     return NextResponse.json({ id, ...docSnap.data(), ...updatedData });
   } catch (error) {

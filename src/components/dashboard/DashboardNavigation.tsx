@@ -1,11 +1,9 @@
 "use client";
 
 import { usePathname, useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { UserRole, hasPermission } from "@/lib/rbac/roles";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface TabItem {
   id: string;
@@ -19,27 +17,7 @@ export default function DashboardNavigation() {
   const pathname = usePathname();
   const params = useParams();
   const role = params.role as string;
-  const { data: session } = useSession();
-  const [userRole, setUserRole] = useState<string>("user");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (session?.user?.id) {
-        try {
-          const user = await fetchUserFromFirestore(session.user.id);
-          if (user) {
-            setUserRole(user.role || "user");
-          }
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-        }
-      }
-      setLoading(false);
-    };
-
-    fetchUserRole();
-  }, [session?.user?.id]);
+  const { userRole } = useCurrentUser();
 
   // Dashboard tabs based on permissions
   const getDashboardTabs = (userRole: string): TabItem[] => {
@@ -108,25 +86,6 @@ export default function DashboardNavigation() {
   };
 
   const tabs = getDashboardTabs(userRole);
-
-  if (loading) {
-    return (
-      <div className="w-full mb-8">
-        <div className="animate-pulse">
-          <div className="hidden md:block border-b border-gray-200">
-            <div className="flex space-x-8">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-8 bg-gray-200 rounded w-20"></div>
-              ))}
-            </div>
-          </div>
-          <div className="md:hidden">
-            <div className="h-10 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full mb-8">

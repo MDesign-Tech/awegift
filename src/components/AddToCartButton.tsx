@@ -4,7 +4,7 @@ import {
   addToCart,
   decreaseQuantity,
   increaseQuantity,
-} from "@/redux/shofySlice";
+} from "@/redux/aweGiftSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { ProductType, StateType } from "../../type";
 import toast from "react-hot-toast";

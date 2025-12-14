@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import aweGiftReducer from "./shofySlice";
+import aweGiftReducer from "./aweGiftSlice";
 
 import {
   persistStore,

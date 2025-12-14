@@ -4,7 +4,7 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useSession } from "next-auth/react";
 import { ProductType, StateType } from "../../../../type";
-import { addToFavorite, addToCart, resetFavorite } from "@/redux/shofySlice";
+import { addToFavorite, addToCart, resetFavorite } from "@/redux/aweGiftSlice";
 import Container from "@/components/Container";
 import Link from "next/link";
 import { FaHeart, FaShoppingCart, FaTrash } from "react-icons/fa";

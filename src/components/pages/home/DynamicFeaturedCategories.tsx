@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { getCategoriesWithCounts } from "@/app/(user)/helpers/productHelpers";
-import RoundedCategoriesCarousel from "./RoundedCategoriesCarousel";
+import CategoriesCarousel from "./CategoriesCarousel";
 import CategoriesSkeleton from "@/components/skeletons/CategoriesSkeleton";
 import type { CategoryType } from "../../../../type";
 
@@ -95,7 +95,7 @@ const DynamicFeaturedCategories: React.FC = () => {
     return <CategoriesSkeleton />;
   }
 
-  return <RoundedCategoriesCarousel categories={categories} />;
+  return <CategoriesCarousel categories={categories} />;
 };
 
 export default DynamicFeaturedCategories;

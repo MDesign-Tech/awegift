@@ -4,7 +4,7 @@ import { LuEye } from "react-icons/lu";
 import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
 import { ProductType, StateType } from "../../../type";
 import { useDispatch, useSelector } from "react-redux";
-import { addToFavorite, resetFavorite } from "@/redux/shofySlice";
+import { addToFavorite, resetFavorite } from "@/redux/aweGiftSlice";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";

@@ -23,12 +23,12 @@ const ImageFallback = () => (
   </svg>
 );
 
-interface RoundedCategoriesCarouselProps {
-  categories: CategoryType[];
+interface CategoriesCarouselProps {
+   categories: CategoryType[];
 }
 
-const RoundedCategoriesCarousel: React.FC<RoundedCategoriesCarouselProps> = ({
-  categories,
+const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
+   categories,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -197,7 +197,7 @@ const RoundedCategoriesCarousel: React.FC<RoundedCategoriesCarouselProps> = ({
               onMouseLeave={handleEnd}
             >
               <div
-                className="flex transition-transform duration-500 ease-in-out"
+                className="flex justify-center transition-transform duration-500 ease-in-out"
                 style={{
                   transform: `translateX(-${(currentIndex / categories.length) * 100
                     }%)`,
@@ -208,22 +208,22 @@ const RoundedCategoriesCarousel: React.FC<RoundedCategoriesCarouselProps> = ({
                   <div
                     key={category.slug}
                     className="flex-shrink-0 px-2"
-                    style={{ width: `${100 / categories.length}%` }}
+                    style={{ width: `${70 / categories.length}%` }}
                   >
                     <Link href={`/products?category=${category.slug}`}>
                       <div className="group cursor-pointer">
-                        {/* Image Container with Enhanced Shadow */}
-                        <div className="relative mb-4 rounded-full aspect-square bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300 transform">
+                        {/* Image Container with Rectangle Border */}
+                        <div className="relative mb-3 border border-gray-200 rounded-lg aspect-square bg-gradient-to-br from-gray-100 to-gray-200 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
                           {/* Multiple layered shadows for depth */}
-                          <div className="absolute inset-0 rounded-full shadow-inner"></div>
-                          <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/10 via-transparent to-white/20"></div>
+                          <div className="absolute inset-0 shadow-inner"></div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-white/20"></div>
 
-                          <div className="overflow-hidden w-full h-full rounded-full">
+                          <div className="overflow-hidden w-full h-full">
                             {(category as any).image || category.image ? (
                               <img
                                 src={(category as any).image || category.image}
                                 alt={category.name}
-                                className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 loading="lazy"
                               />
                             ) : (
@@ -234,7 +234,7 @@ const RoundedCategoriesCarousel: React.FC<RoundedCategoriesCarouselProps> = ({
                           </div>
 
                           {/* Overlay for better text readability */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                           {/* Item count badge */}
                           <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full shadow-md">
@@ -243,13 +243,11 @@ const RoundedCategoriesCarousel: React.FC<RoundedCategoriesCarouselProps> = ({
                         </div>
 
                         {/* Category Info */}
-                        <div className="text-center space-y-1">
-                          <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-300 text-sm lg:text-base">
+                        <div className="text-center space-y-1 px-2">
+                          <h3 className="font-semibold text-gray-900 group-hover:text-theme-color transition-colors duration-300 text-sm">
                             {category.name}
                           </h3>
-                          <p className="text-xs text-gray-500 line-clamp-2 px-1">
-                            {category.description}
-                          </p>
+    
                         </div>
                       </div>
                     </Link>
@@ -300,4 +298,4 @@ const RoundedCategoriesCarousel: React.FC<RoundedCategoriesCarouselProps> = ({
   );
 };
 
-export default RoundedCategoriesCarousel;
+export default CategoriesCarousel;

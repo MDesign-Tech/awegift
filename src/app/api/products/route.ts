@@ -40,6 +40,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Active filter - only return active products
+    allDocs = allDocs.filter((doc) => {
+      const data = doc.data() as ProductType;
+      return data.isActive !== false;
+    });
+
     // Total number of matched products
     const totalCount = allDocs.length;
 

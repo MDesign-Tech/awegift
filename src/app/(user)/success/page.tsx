@@ -4,7 +4,7 @@ import Container from "@/components/Container";
 import OrderSummarySkeleton from "@/components/OrderSummarySkeleton";
 import PriceFormat from "@/components/PriceFormat";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { resetCart } from "@/redux/shofySlice";
+import { resetCart } from "@/redux/aweGiftSlice";
 import Link from "next/link";
 import { redirect, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";

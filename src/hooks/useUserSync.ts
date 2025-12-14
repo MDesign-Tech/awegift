@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useDispatch, useSelector } from "react-redux";
-import { addUser, removeUser } from "@/redux/shofySlice";
+import { addUser, removeUser } from "@/redux/aweGiftSlice";
 import { fetchUserFromFirestore } from "@/lib/firebase/userService";
 import type { RootState } from "@/redux/store";
 

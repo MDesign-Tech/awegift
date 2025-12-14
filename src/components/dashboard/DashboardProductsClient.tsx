@@ -76,6 +76,10 @@ export default function DashboardProductsClient() {
   // All categories state
   const [allCategories, setAllCategories] = useState<string[]>([]);
 
+  // Updating states for product toggles
+  const [updatingActive, setUpdatingActive] = useState<Set<string>>(new Set());
+  const [updatingFeatured, setUpdatingFeatured] = useState<Set<string>>(new Set());
+
   // Ref for scrollable container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -275,6 +279,83 @@ export default function DashboardProductsClient() {
     }
   };
 
+  const toggleProductActive = async (product: ProductType) => {
+    setUpdatingActive(prev => new Set(prev).add(product.id));
+    try {
+      const response = await fetch(`/api/admin/products/${String(product.id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !product.isActive }),
+      });
+
+      if (response.ok) {
+        toast.success(`Product ${!product.isActive ? 'activated' : 'deactivated'} successfully`);
+        await refetchProducts();
+      } else {
+        let errorMessage = "Failed to update product status";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // Response might not be JSON
+        }
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error("Error updating product status:", error);
+      if (error instanceof TypeError || (error as Error).message.includes('Failed to fetch')) {
+        toast.error('Network connection error');
+      } else {
+        toast.error("Error updating product status");
+      }
+    } finally {
+      setUpdatingActive(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(product.id);
+        return newSet;
+      });
+    }
+  };
+
+  const toggleProductFeatured = async (product: ProductType) => {
+    setUpdatingFeatured(prev => new Set(prev).add(product.id));
+    try {
+      const response = await fetch(`/api/admin/products/${String(product.id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isFeatured: !product.isFeatured }),
+      });
+
+      if (response.ok) {
+
+        toast.success(`Product ${!product.isFeatured ? 'marked as featured' : 'unmarked as featured'} successfully`);
+        await refetchProducts();
+      } else {
+        let errorMessage = "Failed to update product featured status";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // Response might not be JSON
+        }
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error("Error updating product featured status:", error);
+      if (error instanceof TypeError || (error as Error).message.includes('Failed to fetch')) {
+        toast.error('Network connection error');
+      } else {
+        toast.error("Error updating product featured status");
+      }
+    } finally {
+      setUpdatingFeatured(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(product.id);
+        return newSet;
+      });
+    }
+  };
+
   // Infinite scroll setup
   useInfiniteScroll(loadMore, hasMore, loadingMore || initialLoading, scrollContainerRef);
 
@@ -398,7 +479,7 @@ export default function DashboardProductsClient() {
                   type="checkbox"
                   checked={selectAll}
                   onChange={handleSelectAll}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                  className="rounded border-gray-300 text-theme-color focus:ring-theme-color disabled:opacity-50"
                   disabled={isRefreshing || allProducts.length === 0}
                 />
               </th>
@@ -415,7 +496,7 @@ export default function DashboardProductsClient() {
                 Stock
               </th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                Status
+                Statuses
               </th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                 Actions
@@ -430,7 +511,7 @@ export default function DashboardProductsClient() {
                     type="checkbox"
                     checked={selectedProducts.includes(product.id)}
                     onChange={() => handleSelectProduct(product.id)}
-                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                    className="rounded border-gray-300 text-theme-color focus:ring-theme-color disabled:opacity-50"
                     disabled={isRefreshing}
                   />
                 </td>
@@ -493,9 +574,9 @@ export default function DashboardProductsClient() {
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
                   <PriceFormat amount={product.price} />
-                  {product.discountPercentage > 0 && (
+                  {product.discount > 0 && (
                     <span className="text-green-600 ml-1">
-                      (-{product.discountPercentage}%)
+                      (-<PriceFormat amount={product.discount} />)
                     </span>
                   )}
                 </td>
@@ -511,23 +592,54 @@ export default function DashboardProductsClient() {
                   </span>
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    product.availabilityStatus === 'In Stock'
-                      ? 'bg-green-100 text-green-800'
-                      : product.availabilityStatus === 'Out of Stock'
-                      ? 'bg-red-100 text-red-800'
-                      : product.availabilityStatus === 'Low Stock'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {product.availabilityStatus}
-                  </span>
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      {updatingActive.has(product.id) ? (
+                        <>
+                          <FiLoader className="animate-spin w-4 h-4 text-theme-color" />
+                          <span className="ml-2 text-xs font-medium text-gray-700">updating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <input
+                            type="checkbox"
+                            checked={product.isActive}
+                            onChange={() => toggleProductActive(product)}
+                            className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 disabled:opacity-50"
+                            title="Toggle Active Status"
+                            disabled={isRefreshing || updatingFeatured.has(product.id)}
+                          />
+                          <span className="ml-2 text-xs font-medium text-gray-700">Active</span>
+                        </>
+                      )}
+                    </label>
+                    <label className="flex items-center">
+                      {updatingFeatured.has(product.id) ? (
+                        <>
+                          <FiLoader className="animate-spin w-4 h-4 text-theme-color" />
+                          <span className="ml-2 text-xs font-medium text-gray-700">updating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <input
+                            type="checkbox"
+                            checked={product.isFeatured}
+                            onChange={() => toggleProductFeatured(product)}
+                            className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 disabled:opacity-50"
+                            title="Toggle Featured Status"
+                            disabled={isRefreshing || updatingActive.has(product.id)}
+                          />
+                          <span className="ml-2 text-xs font-medium text-gray-700">Featured</span>
+                        </>
+                      )}
+                    </label>
+                  </div>
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex items-center space-x-1">
                     <button
                       onClick={() => setViewProductModal(product)}
-                      className="p-1 text-blue-600 hover:text-blue-900 transition-colors disabled:opacity-50"
+                      className="p-1 text-theme-color hover:text-theme-color/80 transition-colors disabled:opacity-50"
                       title="View"
                       disabled={isRefreshing}
                     >
@@ -732,9 +844,9 @@ export default function DashboardProductsClient() {
                     </dt>
                     <dd className="text-sm text-gray-900">
                       <PriceFormat amount={viewProductModal.price} />
-                      {viewProductModal.discountPercentage > 0 && (
+                      {viewProductModal.discount > 0 && (
                         <span className="text-green-600 ml-1">
-                          (-{viewProductModal.discountPercentage}%)
+                          (-<PriceFormat amount={viewProductModal.discount} />)
                         </span>
                       )}
                     </dd>
@@ -839,6 +951,11 @@ export default function DashboardProductsClient() {
                   <div>
                     <strong>Price:</strong>{" "}
                     <PriceFormat amount={deleteProductModal.price} />
+                    {deleteProductModal.discount > 0 && (
+                      <span className="text-green-600 ml-1">
+                        (-<PriceFormat amount={deleteProductModal.discount} />)
+                      </span>
+                    )}
                   </div>
                   <div>
                     <strong>Stock:</strong> {deleteProductModal.stock}

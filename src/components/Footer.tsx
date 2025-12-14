@@ -66,7 +66,7 @@ const Footer = () => {
                 <BsEnvelopeAt /> support@awegift.com
               </p>
               <p className="text-base flex items-center gap-x-3 text-gray-600">
-                <GrLocation /> Dhaka, Bangladesh
+                <GrLocation /> Gisozi, Kigali
               </p>
             </div>
           </div>
