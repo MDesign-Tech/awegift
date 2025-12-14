@@ -10,7 +10,7 @@ import {
   getProductsByCategory,
 } from "../helpers/productHelpers";
 import Link from "next/link";
-import { config } from "../../../../config";
+import { absoluteUrl } from "../../../../config";
 
 interface Props {
   searchParams: Promise<{
@@ -27,10 +27,7 @@ interface Props {
   }>;
 }
 
-export const absoluteUrl = (path: string) => {
-  // For server-side API calls, we need absolute URLs
-  return `${config.baseUrl}${path}`;
-};
+
 
 
 const ProductsPage = async ({ searchParams }: Props) => {
@@ -64,12 +61,6 @@ const ProductsPage = async ({ searchParams }: Props) => {
       switch (cat) {
         case "bestsellers":
           products = getBestSellers(products);
-          break;
-        case "new":
-          products = getNewArrivals(products);
-          break;
-        case "offers":
-          products = getOffers(products);
           break;
       }
     });
@@ -127,7 +118,7 @@ const ProductsPage = async ({ searchParams }: Props) => {
   const getPageTitle = () => {
     if (params.category) {
       const categories = Array.isArray(params.category) ? params.category : [params.category];
-      const specialCategories = ["bestsellers", "new", "offers"];
+      const specialCategories = ["bestsellers"];
       const regularCategories = categories.filter(cat => !specialCategories.includes(cat));
 
       // If only one special category is selected
@@ -136,10 +127,6 @@ const ProductsPage = async ({ searchParams }: Props) => {
         switch (singleCategory) {
           case "bestsellers":
             return "Best Sellers";
-          case "new":
-            return "New Arrivals";
-          case "offers":
-            return "Special Offers";
           default:
             return `${singleCategory.charAt(0).toUpperCase() + singleCategory.slice(1)} Products`;
         }

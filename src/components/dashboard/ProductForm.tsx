@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FiLoader, FiX, FiUpload, FiTrash2 } from "react-icons/fi";
+import { FiLoader, FiX, FiUpload, FiTrash2, FiPlus } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import { ProductType } from "../../../type";
 import { CldUploadWidget, CldImage } from 'next-cloudinary';
 
 const generateSKU = (product: { categories: string[]; brand: string; title: string; id: string | number }) => {
   const { categories, brand, title, id } = product;
-  const catCode = categories.length > 0 ? categories[0].substring(0, 3).toUpperCase() : 'GEN';
-  const brandCode = brand.substring(0, 3).toUpperCase();
-  const productCode = title.substring(0, 3).toUpperCase();
+  const catCode = (categories && categories.length > 0) ? categories[0].substring(0, 3).toUpperCase() : 'GEN';
+  const brandCode = (brand || '').substring(0, 3).toUpperCase() || 'BRD';
+  const productCode = (title || '').substring(0, 3).toUpperCase() || 'PRD';
   const uniqueId = id.toString().padStart(3, '0');
   return `${catCode}-${brandCode}-${productCode}-${uniqueId}`;
 };
@@ -378,9 +378,9 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
           <button
             type="button"
             onClick={() => setShowAddCategoryForm(true)}
-            className="text-sm text-blue-600 hover:text-blue-800 underline"
+            className="text-sm text-blue-600 hover:text-blue-800 underlin flex items-center mt-2 gap-2"
           >
-            ➕ Add New Category
+            <FiPlus /><span>Add New Category</span>
           </button>
         </div>
 
@@ -875,7 +875,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
         <button
           type="button"
           onClick={onCancel}
-          disabled={addingCategory || !product}
+          disabled={loading || addingCategory}
           className="w-full sm:w-auto px-4 sm:px-6 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
         >
           Cancel

@@ -23,10 +23,6 @@ interface CategoryGridProps {
   categories: CategoryType[];
   totalProducts?: number;
 }
-
-const DEFAULT_IMAGE =
-  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop";
-
 const CategoryCard: React.FC<{ category: CategoryType; index: number }> = ({
   category,
   index,
@@ -35,7 +31,7 @@ const CategoryCard: React.FC<{ category: CategoryType; index: number }> = ({
     .replace(/([A-Z])/g, " $1")
     .replace(/^./, (str) => str.toUpperCase());
   const categorySlug = category.slug;
-  const image = (category as any).image || category.image || DEFAULT_IMAGE;
+  const image = (category as any).image || category.image;
   const description = category.description || "Discover amazing products in this category";
   const productCount = (category as any).productCount || (category as any).count || 0;
 

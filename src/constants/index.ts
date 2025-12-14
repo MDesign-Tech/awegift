@@ -4,7 +4,7 @@ export const navigation = [
   { title: "Home", href: "/" },
   { title: "Products", href: "/products" },
   { title: "Categories", href: "/categories" },
-  { title: "About", href: "/about" },
+  { title: "About Us", href: "/about" },
   // { title: "Offers", href: "/offers" },
 ];
 export const InfoNavigation = [
@@ -17,7 +17,6 @@ export const InfoNavigation = [
 
 export const banner = {
   _id: 1001,
-  priceText: "Starting at Rwf20,000.00",
   title: "The best tablet Collection 2026",
   textOne: "Exclusive offer",
   offerPrice: "-30%",

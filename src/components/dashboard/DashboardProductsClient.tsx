@@ -20,9 +20,9 @@ import {
   FiLoader,
 } from "react-icons/fi";
 import ProductForm from './ProductForm';
-import Sidebar from '../account/Sidebar';
 import PriceFormat from "@/components/PriceFormat";
 import { ProductType } from '../../../type';
+import DashboardSidebar from "./DashboardSidebar";
 
 export default function DashboardProductsClient() {
   const router = useRouter();
@@ -86,7 +86,11 @@ export default function DashboardProductsClient() {
       await refetchProducts();
       toast.success("Products refreshed successfully");
     } catch (error) {
-      toast.error("Failed to refresh products");
+      if (error instanceof TypeError || (error as Error).message.includes('Failed to fetch')) {
+        toast.error('Network connection error');
+      } else {
+        toast.error("Failed to refresh products");
+      }
     } finally {
       setIsRefreshing(false);
     }
@@ -168,7 +172,11 @@ export default function DashboardProductsClient() {
       }
     } catch (error) {
       console.error("Error deleting product:", error);
-      toast.error("Error deleting product");
+      if (error instanceof TypeError || (error as Error).message.includes('Failed to fetch')) {
+        toast.error('Network connection error');
+      } else {
+        toast.error("Error deleting product");
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -191,7 +199,11 @@ export default function DashboardProductsClient() {
       }
     } catch (error) {
       console.error("Error deleting all products:", error);
-      toast.error("Error deleting all products");
+      if (error instanceof TypeError || (error as Error).message.includes('Failed to fetch')) {
+        toast.error('Network connection error');
+      } else {
+        toast.error("Error deleting all products");
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -253,7 +265,11 @@ export default function DashboardProductsClient() {
       }
     } catch (error) {
       console.error("Error deleting selected products:", error);
-      toast.error("Error deleting selected products");
+      if (error instanceof TypeError || (error as Error).message.includes('Failed to fetch')) {
+        toast.error('Network connection error');
+      } else {
+        toast.error("Error deleting selected products");
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -593,8 +609,8 @@ export default function DashboardProductsClient() {
         </div>
       </div>
 
-      {/* Add Product Sidebar */}
-      <Sidebar
+      {/* Add Product DashboardSidebar */}
+      <DashboardSidebar
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title="Add New Product"
@@ -606,10 +622,10 @@ export default function DashboardProductsClient() {
           }}
           refetchProducts={refetchProducts}
         />
-      </Sidebar>
+      </DashboardSidebar>
 
-      {/* Edit Product Sidebar */}
-      <Sidebar
+      {/* Edit Product DashboardSidebar */}
+      <DashboardSidebar
         isOpen={!!editingProduct}
         onClose={() => setEditingProduct(null)}
         title="Edit Product"
@@ -625,7 +641,7 @@ export default function DashboardProductsClient() {
             refetchProducts={refetchProducts}
           />
         )}
-      </Sidebar>
+      </DashboardSidebar>
 
       {/* View Product Modal */}
       {viewProductModal && (

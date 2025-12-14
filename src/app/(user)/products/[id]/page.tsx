@@ -11,8 +11,8 @@ import ProductFeatures from "@/components/ProductFeatures";
 import ProductSpecifications from "@/components/ProductSpecifications";
 import RelatedProducts from "@/components/RelatedProducts";
 import ProductActionsClient from "@/components/ProductActionsClient";
-import { absoluteUrl } from "../page";
 import { notFound } from "next/navigation";
+import { absoluteUrl } from "../../../../../config";
 
 interface Props {
   params: {

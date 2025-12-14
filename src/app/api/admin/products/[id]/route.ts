@@ -8,10 +8,10 @@ import { getToken } from "next-auth/jwt";
 // GET product
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } } // params is not a Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.role) {
@@ -41,10 +41,10 @@ export async function GET(
 // PUT (update) product
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.role) {
@@ -98,10 +98,10 @@ export async function PUT(
 // DELETE product
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.role) {

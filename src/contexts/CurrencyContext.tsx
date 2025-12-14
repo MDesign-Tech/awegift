@@ -1,158 +1,225 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+
+// --- 1. Type Definitions (Full List) ---
 
 type CurrencyCode =
-  | "USD"
-  | "EUR"
-  | "GBP"
-  | "JPY"
-  | "CAD"
-  | "AUD"
-  | "CHF"
-  | "CNY"
-  | "INR"
-  | "BDT"
-  | "PKR"
-  | "RWF"; // 👈 ADD THIS
+  | "USD"
+| "RWF";
+//   | "EUR"
+//   | "GBP"
+//   | "JPY"
+//   | "CAD"
+//   | "AUD"
+//   | "CHF"
+//   | "CNY"
+//   | "INR"
+//   | "BDT"
+//   | "PKR"
+  
+
+const currencyData: Record<CurrencyCode, { symbol: string; name: string; flag: string }> = {
+  USD: { symbol: "$", name: "US Dollar", flag: "🇺🇸" },
+RWF: { symbol: "FRw", name: "Rwandan Franc", flag: "🇷🇼" },
+//   EUR: { symbol: "€", name: "Euro", flag: "🇪🇺" },
+//   GBP: { symbol: "£", name: "British Pound", flag: "🇬🇧" },
+//   JPY: { symbol: "¥", name: "Japanese Yen", flag: "🇯🇵" },
+//   CAD: { symbol: "C$", name: "Canadian Dollar", flag: "🇨🇦" },
+//   AUD: { symbol: "A$", name: "Australian Dollar", flag: "🇦🇺" },
+//   CHF: { symbol: "CHF", name: "Swiss Franc", flag: "🇨🇭" },
+//   CNY: { symbol: "¥", name: "Chinese Yuan", flag: "🇨🇳" },
+//   INR: { symbol: "₹", name: "Indian Rupee", flag: "🇮🇳" },
+//   BDT: { symbol: "৳", name: "Bangladeshi Taka", flag: "🇧🇩" },
+//   PKR: { symbol: "₨", name: "Pakistani Rupee", flag: "🇵🇰" },
+  
+};
+
+// --- 2. API Configuration and Caching (Moved to outside function scope) ---
+
+const API_ENDPOINT = "https://v6.exchangerate-api.com/v6/42e9df5d934bb941cbe19c9e/latest/USD";
+
+interface ExchangeRateData {
+  conversion_rates: Record<string, number>;
+  time_next_update_unix: number;
+}
+
+let cachedExchangeData: ExchangeRateData | null = null;
+
+// Mock fallback rates for use until the API fetches (USD base)
+const FALLBACK_RATES: Record<CurrencyCode, number> = {
+    USD: 1, RWF: 1300 // Use a realistic RWF rate
+};
+
+// --- 3. Context Type and Definition ---
 
 interface CurrencyContextType {
-  selectedCurrency: CurrencyCode;
-  setCurrency: (currency: CurrencyCode) => void;
-  exchangeRates: Record<CurrencyCode, number>;
-  convertPrice: (amount: number, fromCurrency?: CurrencyCode) => number;
-  getCurrencySymbol: (currencyCode: CurrencyCode) => string;
-  getCurrencyName: (currencyCode: CurrencyCode) => string;
-  getCurrencyFlag: (currencyCode: CurrencyCode) => string;
+  selectedCurrency: CurrencyCode;
+  setCurrency: (currency: CurrencyCode) => void;
+  exchangeRates: Record<CurrencyCode, number>;
+  convertPrice: (amount: number, fromCurrency?: CurrencyCode) => number;
+  getCurrencySymbol: (currencyCode: CurrencyCode) => string;
+  getCurrencyName: (currencyCode: CurrencyCode) => string;
+  getCurrencyFlag: (currencyCode: CurrencyCode) => string;
+  isLoading: boolean; // Add loading state
+  error: string | null; // Add error state
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(
-  undefined
+  undefined
 );
 
-const currencyData: Record<CurrencyCode, { symbol: string; name: string; flag: string }> = {
-  USD: { symbol: "$", name: "US Dollar", flag: "🇺🇸" },
-  EUR: { symbol: "€", name: "Euro", flag: "🇪🇺" },
-  GBP: { symbol: "£", name: "British Pound", flag: "🇬🇧" },
-  JPY: { symbol: "¥", name: "Japanese Yen", flag: "🇯🇵" },
-  CAD: { symbol: "C$", name: "Canadian Dollar", flag: "🇨🇦" },
-  AUD: { symbol: "A$", name: "Australian Dollar", flag: "🇦🇺" },
-  CHF: { symbol: "CHF", name: "Swiss Franc", flag: "🇨🇭" },
-  CNY: { symbol: "¥", name: "Chinese Yuan", flag: "🇨🇳" },
-  INR: { symbol: "₹", name: "Indian Rupee", flag: "🇮🇳" },
-  BDT: { symbol: "৳", name: "Bangladeshi Taka", flag: "🇧🇩" },
-  PKR: { symbol: "₨", name: "Pakistani Rupee", flag: "🇵🇰" },
-  RWF: { symbol: "FRw", name: "Rwandan Franc", flag: "🇷🇼" },
-};
-
-// Mock exchange rates - in a real app, you'd fetch these from an API
-const mockExchangeRates: Record<CurrencyCode, number> = {
-  USD: 1,
-  EUR: 0.85,
-  GBP: 0.73,
-  JPY: 110,
-  CAD: 1.25,
-  AUD: 1.35,
-  CHF: 0.92,
-  CNY: 6.45,
-  INR: 83.25,
-  BDT: 109.5,
-  PKR: 278.5,
-  RWF: 1414,
-};
+// --- 4. Currency Provider Component ---
 
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
+  children,
 }) => {
-  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>("RWF");
-  const [exchangeRates, setExchangeRates] =
-    useState<Record<CurrencyCode, number>>(mockExchangeRates);
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>("RWF");
+  const [exchangeRates, setExchangeRates] =
+    useState<Record<CurrencyCode, number>>(FALLBACK_RATES); // Use fallback initially
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load saved currency from localStorage
-  useEffect(() => {
-    const savedCurrency = localStorage.getItem("selectedCurrency");
-    if (savedCurrency && currencyData[savedCurrency as CurrencyCode]) {
-      setSelectedCurrency(savedCurrency as CurrencyCode);
-    }
-  }, []);
+  // Load saved currency from localStorage
+  useEffect(() => {
+    const savedCurrency = localStorage.getItem("selectedCurrency");
+    if (savedCurrency && currencyData[savedCurrency as CurrencyCode]) {
+      setSelectedCurrency(savedCurrency as CurrencyCode);
+    }
+  }, []);
 
-  const setCurrency = (currency: CurrencyCode) => {
-    setSelectedCurrency(currency);
-    localStorage.setItem("selectedCurrency", currency);
-  };
-
-  const convertPrice = (
-    amount: number,
-    fromCurrency: CurrencyCode = "USD"
-  ): number => {
-    if (fromCurrency === selectedCurrency) return amount;
-
-    // Convert from source currency to USD first, then to target currency
-    const usdAmount = amount / exchangeRates[fromCurrency];
-    const convertedAmount = usdAmount * exchangeRates[selectedCurrency];
-
-    return convertedAmount;
-  };
-
-  const getCurrencySymbol = (currencyCode: CurrencyCode): string => {
-    return currencyData[currencyCode]?.symbol || "$";
-  };
-
-  const getCurrencyName = (currencyCode: CurrencyCode): string => {
-    return currencyData[currencyCode]?.name || "US Dollar";
-  };
-
-  const getCurrencyFlag = (currencyCode: CurrencyCode): string => {
-    return currencyData[currencyCode]?.flag || "🇺🇸";
-  };
-
-  // Simulate fetching exchange rates (in a real app, you'd call an API)
-  useEffect(() => {
-    const fetchExchangeRates = async () => {
-      // In a real app, you would fetch from an API like:
-      // const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-      // const data = await response.json();
-      // setExchangeRates(data.rates);
-
-      // For now, we'll use mock data with slight variations
-      const simulatedRates = { ...mockExchangeRates };
-      (Object.keys(simulatedRates) as CurrencyCode[]).forEach((currency) => {
-        if (currency !== "USD") {
-          // Add slight random variation to simulate real-time rates
-          const variation = (Math.random() - 0.5) * 0.02; // ±1% variation
-          simulatedRates[currency] *= 1 + variation;
+  // --- API Fetching Logic ---
+  const fetchAndCacheRates = useCallback(async () => {
+        const nowUnix = Math.floor(Date.now() / 1000);
+        setError(null);
+    
+        // 1. Check if cache is valid (next update time hasn't passed)
+        if (cachedExchangeData && cachedExchangeData.time_next_update_unix > nowUnix) {
+            console.log("Using cached exchange rates.");
+            setExchangeRates(cachedExchangeData.conversion_rates as Record<CurrencyCode, number>);
+            setIsLoading(false);
+            return;
         }
-      });
-      setExchangeRates(simulatedRates);
-    };
+    
+        // 2. Fetch new data
+        console.log("Fetching new exchange rates from API...");
+        try {
+            const response = await fetch(API_ENDPOINT);
+            if (!response.ok) {
+                throw new Error(`API call failed with status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.result !== 'success') {
+                throw new Error(`Exchange Rate API error: ${data['error-type'] || 'Unknown Error'}`);
+            }
+    
+            const rates = data.conversion_rates as Record<string, number>;
+            
+            // Filter and map rates to your CurrencyCode type
+            const filteredRates: Partial<Record<CurrencyCode, number>> = {};
+            (Object.keys(currencyData) as CurrencyCode[]).forEach(code => {
+                if (rates[code] !== undefined) { 
+                    filteredRates[code] = rates[code];
+                }
+            });
+            
+            // 3. Update cache and state
+            cachedExchangeData = {
+                conversion_rates: filteredRates as Record<CurrencyCode, number>,
+                time_next_update_unix: data.time_next_update_unix,
+            };
+    
+            setExchangeRates(cachedExchangeData.conversion_rates);
+            
+        } catch (err: any) {
+            console.error("Error fetching real-time exchange rates. Falling back to mock data.", err);
+            setError("Could not fetch real-time rates. Using last known/default rates.");
+            // If fetching fails, we keep the existing or FALLBACK_RATES
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
 
-    fetchExchangeRates();
-    // Update rates every 5 minutes
-    const interval = setInterval(fetchExchangeRates, 5 * 60 * 1000);
 
-    return () => clearInterval(interval);
-  }, []);
+  useEffect(() => {
+    // Initial fetch
+    fetchAndCacheRates();
+    
+    // Set up interval based on the API's next update time or a default (e.g., 24 hours, or 3600000 ms if we rely on a 1hr service)
+    // We'll use a conservative 1-hour interval (3600000 ms) if we don't have the exact 'time_next_update_unix' yet.
+    // NOTE: This interval polling is usually best avoided if the API supports webhooks or server-sent events.
+    const interval = setInterval(fetchAndCacheRates, 3600000); 
 
-  const contextValue: CurrencyContextType = {
-    selectedCurrency,
-    setCurrency,
-    exchangeRates,
-    convertPrice,
-    getCurrencySymbol,
-    getCurrencyName,
-    getCurrencyFlag,
-  };
+    return () => clearInterval(interval);
+  }, [fetchAndCacheRates]); // Dependency on useCallback
 
-  return (
-    <CurrencyContext.Provider value={contextValue}>
-      {children}
-    </CurrencyContext.Provider>
-  );
+  // --- Context Functions ---
+
+  const setCurrency = (currency: CurrencyCode) => {
+    setSelectedCurrency(currency);
+    localStorage.setItem("selectedCurrency", currency);
+  };
+
+  // convertPrice is now SYNCHRONOUS, relying on the state-managed rates
+  const convertPrice = (
+    amount: number,
+    fromCurrency: CurrencyCode = "USD"
+  ): number => {
+    
+    if (fromCurrency === selectedCurrency) return amount;
+
+    const rateFromUSD = exchangeRates[fromCurrency];
+    const rateToUSD = exchangeRates[selectedCurrency];
+
+    if (!rateFromUSD || !rateToUSD) {
+        // Fallback for missing rate, usually due to a temporary error
+        console.warn(`Missing rate for conversion ${fromCurrency} to ${selectedCurrency}. Returning original amount.`);
+        return amount;
+    }
+
+    // Convert from source currency to USD first, then to target currency
+    const usdAmount = amount / rateFromUSD;
+    const convertedAmount = usdAmount * rateToUSD;
+
+    return convertedAmount;
+  };
+
+  const getCurrencySymbol = (currencyCode: CurrencyCode): string => {
+    return currencyData[currencyCode]?.symbol || "$";
+  };
+
+  const getCurrencyName = (currencyCode: CurrencyCode): string => {
+    return currencyData[currencyCode]?.name || "US Dollar";
+  };
+
+  const getCurrencyFlag = (currencyCode: CurrencyCode): string => {
+    return currencyData[currencyCode]?.flag || "🇺🇸";
+  };
+
+  const contextValue: CurrencyContextType = {
+    selectedCurrency,
+    setCurrency,
+    exchangeRates,
+    convertPrice,
+    getCurrencySymbol,
+    getCurrencyName,
+    getCurrencyFlag,
+    isLoading,
+    error
+  };
+
+  return (
+    <CurrencyContext.Provider value={contextValue}>
+      {children}
+    </CurrencyContext.Provider>
+  );
 };
 
 export const useCurrency = (): CurrencyContextType => {
-  const context = useContext(CurrencyContext);
-  if (context === undefined) {
-    throw new Error("useCurrency must be used within a CurrencyProvider");
-  }
-  return context;
+  const context = useContext(CurrencyContext);
+  if (context === undefined) {
+    throw new Error("useCurrency must be used within a CurrencyProvider");
+  }
+  return context;
 };

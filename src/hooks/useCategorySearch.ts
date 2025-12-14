@@ -33,7 +33,7 @@ export const useCategorySearch = ({
   const [hasSearched, setHasSearched] = useState(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const API_BASE_URL = "/api/admin/categories";
+  const API_BASE_URL = "/api/categories";
 
   // Function to fetch categories
   const fetchCategories = async () => {

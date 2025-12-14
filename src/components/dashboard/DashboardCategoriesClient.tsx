@@ -18,9 +18,11 @@ import {
   FiSave,
   FiX,
   FiLoader,
+  FiTag,
 } from "react-icons/fi";
 import CategoryForm from './CategoryForm';
 import Sidebar from '../account/Sidebar';
+import InfiniteCategoryList from './InfiniteCategoryList';
 
 interface CategoryWithId extends CategoryType {
   productCount?: number;
@@ -47,9 +49,6 @@ export default function DashboardCategoriesClient() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryWithId | null>(null);
 
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [categoriesPerPage] = useState(20);
 
   // Modal states
   const [viewCategoryModal, setViewCategoryModal] = useState<CategoryWithId | null>(null);
@@ -86,34 +85,19 @@ export default function DashboardCategoriesClient() {
   // FIX: Determine which categories to display
   const displayCategories = hasSearched || searchTerm ? filteredCategories : categories;
 
-  // Calculate pagination
-  const indexOfLastCategory = currentPage * categoriesPerPage;
-  const indexOfFirstCategory = indexOfLastCategory - categoriesPerPage;
-  const currentCategories = displayCategories.slice(
-    indexOfFirstCategory,
-    indexOfLastCategory
-  );
-  const totalPages = Math.ceil(displayCategories.length / categoriesPerPage);
 
-  // Reset to first page when filters change
+  // Update selectAll state based on selected categories
   useEffect(() => {
-    setCurrentPage(1);
-    setSelectedCategories([]);
-    setSelectAll(false);
-  }, [searchTerm, hasSearched]);
-
-  // FIXED: Update selectAll state based on selected categories
-  useEffect(() => {
-    if (currentCategories.length > 0) {
-      // Check if all current page categories are selected
-      const allCurrentPageSelected = currentCategories.every(category =>
+    if (displayCategories.length > 0) {
+      // Check if all displayed categories are selected
+      const allDisplayedSelected = displayCategories.every(category =>
         selectedCategories.includes(category.id)
       );
-      setSelectAll(allCurrentPageSelected);
+      setSelectAll(allDisplayedSelected);
     } else {
       setSelectAll(false);
     }
-  }, [selectedCategories, currentCategories]);
+  }, [selectedCategories, displayCategories]);
 
   const handleDeleteCategory = async (category: CategoryWithId) => {
     setDeleteCategoryModal(category);
@@ -176,16 +160,16 @@ export default function DashboardCategoriesClient() {
     );
   };
 
-  // FIXED: Handle select all on current page only
+  // Handle select all for all displayed categories
   const handleSelectAll = () => {
     if (selectAll) {
-      // Deselect all categories from current page
-      const currentPageIds = currentCategories.map(category => category.id);
-      setSelectedCategories(prev => prev.filter(id => !currentPageIds.includes(id)));
+      // Deselect all displayed categories
+      const displayedIds = displayCategories.map(category => category.id);
+      setSelectedCategories(prev => prev.filter(id => !displayedIds.includes(id)));
     } else {
-      // Select all categories from current page
-      const currentPageIds = currentCategories.map(category => category.id);
-      const newSelected = [...new Set([...selectedCategories, ...currentPageIds])];
+      // Select all displayed categories
+      const displayedIds = displayCategories.map(category => category.id);
+      const newSelected = [...new Set([...selectedCategories, ...displayedIds])];
       setSelectedCategories(newSelected);
     }
   };
@@ -252,7 +236,7 @@ export default function DashboardCategoriesClient() {
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex items-center flex-wrap justify-between">
           <h2 className="text-xl font-semibold text-gray-900">
-            Categories Management ({displayCategories.length})
+            Categories Management ({categories.length})
           </h2>
           <div className="grid grid-cols-2 items-center sm:flex sm:grid-cols-none gap-2">
             {hasPermission(userRole as UserRole, "canDeleteProducts") && (
@@ -336,7 +320,7 @@ export default function DashboardCategoriesClient() {
                   checked={selectAll}
                   onChange={handleSelectAll}
                   className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
-                  disabled={isRefreshing || currentCategories.length === 0}
+                  disabled={isRefreshing || displayCategories.length === 0}
                 />
               </th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
@@ -353,114 +337,32 @@ export default function DashboardCategoriesClient() {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {currentCategories.map((category) => (
-              <tr key={category.id} className="hover:bg-gray-50">
-                <td className="px-3 py-4 whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    checked={selectedCategories.includes(category.id)}
-                    onChange={() => handleSelectCategory(category.id)}
-                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
-                    disabled={isRefreshing}
-                  />
-                </td>
-                <td className="px-3 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-12 w-12">
-                      {category.image ? (
-                        <img
-                          className="h-12 w-12 rounded-lg object-cover"
-                          src={category.image}
-                          alt={category.name}
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            if (e.currentTarget.nextElementSibling) {
-                              (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
-                            }
-                          }}
-                        />
-                      ) : null}
-                      <div
-                        className={`h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center ${
-                          category.image ? 'hidden' : 'flex'
-                        }`}
-                      >
-                        <svg
-                          className="h-6 w-6 text-gray-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="ml-4 min-w-0">
-                      <div className="text-sm font-medium text-gray-900 truncate">
-                        {category.name}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-3 py-4 whitespace-nowrap">
-                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                    {category.productCount || 0}
-                  </span>
-                </td>
-                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <div className="max-w-xs truncate">
-                    {category.description}
-                  </div>
-                </td>
-                <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex items-center space-x-1">
-                    <button
-                      onClick={() => setViewCategoryModal(category)}
-                      className="p-1 text-blue-600 hover:text-blue-900 transition-colors disabled:opacity-50"
-                      title="View"
-                      disabled={isRefreshing}
-                    >
-                      <FiEye className="h-4 w-4" />
-                    </button>
-                    {hasPermission(userRole as UserRole, "canUpdateProducts") && (
-                      <button
-                        onClick={() => setEditingCategory(category)}
-                        className="p-1 text-indigo-600 hover:text-indigo-900 transition-colors disabled:opacity-50"
-                        title="Edit"
-                        disabled={isRefreshing}
-                      >
-                        <FiEdit2 className="h-4 w-4" />
-                      </button>
-                    )}
-                    {hasPermission(userRole as UserRole, "canDeleteProducts") && (
-                      <button
-                        onClick={() => handleDeleteCategory(category)}
-                        className="p-1 text-red-600 hover:text-red-900 transition-colors disabled:opacity-50"
-                        title="Delete"
-                        disabled={isRefreshing}
-                      >
-                        <FiTrash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+          <InfiniteCategoryList
+            categories={displayCategories}
+            onView={setViewCategoryModal}
+            onEdit={setEditingCategory}
+            onDelete={handleDeleteCategory}
+            isRefreshing={isRefreshing}
+          />
         </table>
       </div>
 
       {/* Empty State */}
       {displayCategories.length === 0 && !searchLoading && !isRefreshing && (
         <div className="px-6 py-12 text-center">
-          <FiLoader className="mx-auto h-8 w-8 text-gray-400 animate-spin" />
-          <p className="mt-2 text-sm text-gray-500">Loading categories...</p>
+          {hasSearched || searchTerm ? (
+            <>
+              <FiSearch className="mx-auto h-8 w-8 text-gray-400" />
+              <p className="mt-2 text-sm text-gray-500">
+                No categories found matching your search.
+              </p>
+            </>
+          ) : (
+            <>
+              <FiTag className="mx-auto h-8 w-8 text-gray-400" />
+              <p className="mt-2 text-sm text-gray-500">No categories available.</p>
+            </>
+          )}
         </div>
       )}
 
@@ -472,42 +374,6 @@ export default function DashboardCategoriesClient() {
         </div>
       )}
 
-      {/* Pagination */}
-      {displayCategories.length > categoriesPerPage && (
-        <div className="px-6 py-3 border-t border-gray-200 bg-gray-50">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              Showing {indexOfFirstCategory + 1} to{" "}
-              {Math.min(indexOfLastCategory, displayCategories.length)} of{" "}
-              {displayCategories.length} results
-              {selectedCategories.length > 0 && (
-                <span className="ml-2 text-orange-600 font-medium">
-                  • {selectedCategories.length} selected
-                </span>
-              )}
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 1 || isRefreshing}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <span className="px-3 py-2 text-sm font-medium text-gray-700">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === totalPages || isRefreshing}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Add Category Sidebar */}
       <Sidebar

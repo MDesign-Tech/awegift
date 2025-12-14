@@ -502,7 +502,7 @@ export default function DashboardOrdersClient() {
                     <FiPackage className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
                     <div className="min-w-0">
                       <div className="text-sm font-medium text-gray-900 truncate">
-                        #{order.id.slice(-8)}
+                        #{order.id}
                       </div>
                       <div className="text-xs text-gray-500">
                         {order.items?.length || 0} items
@@ -709,7 +709,7 @@ export default function DashboardOrdersClient() {
                       Order ID
                     </dt>
                     <dd className="text-sm text-gray-900">
-                      #{viewOrderModal.id.slice(-8)}
+                      #{viewOrderModal.id}
                     </dd>
                   </div>
                   <div>
@@ -853,7 +853,7 @@ export default function DashboardOrdersClient() {
               <p className="mt-2 text-sm text-gray-600">
                 Are you sure you want to delete order{" "}
                 <strong>
-                  #{deleteOrderModal.id.slice(-8)}
+                  #{deleteOrderModal.id}
                 </strong>
                 ?
               </p>

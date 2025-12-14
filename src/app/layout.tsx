@@ -5,6 +5,8 @@ import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { UserSyncProvider } from "@/components/UserSyncProvider";
 import StateProvider from "@/components/auth/StateProvider";
 import NotificationProvider from "@/components/NotificationProvider";
+import { NetworkProvider } from "@/contexts/NetworkContext";
+import NetworkStatus from "@/components/NetworkStatus";
 
 export const metadata: Metadata = {
   title: "AweGift - Multipurpose eCommerce website",
@@ -24,15 +26,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <StateProvider>
-          <AuthProvider>
-            <UserSyncProvider>
-              <CurrencyProvider>
-                <NotificationProvider>{children}</NotificationProvider>
-              </CurrencyProvider>
-            </UserSyncProvider>
-          </AuthProvider>
-        </StateProvider>
+        <NetworkProvider>
+          <NetworkStatus />
+          <StateProvider>
+            <AuthProvider>
+              <UserSyncProvider>
+                <CurrencyProvider>
+                  <NotificationProvider>{children}</NotificationProvider>
+                </CurrencyProvider>
+              </UserSyncProvider>
+            </AuthProvider>
+          </StateProvider>
+        </NetworkProvider>
       </body>
     </html>
   );

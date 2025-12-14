@@ -27,7 +27,7 @@ const CheckoutPage = () => {
 
   const [loading, setLoading] = useState(true);
   const [existingOrder, setExistingOrder] = useState<OrderData | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "mtn" | "airtel" | null>(
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "MTN" | "AIRTEL" | null>(
     null
   );
   const [paymentProcessing, setPaymentProcessing] = useState(false);
@@ -115,14 +115,14 @@ const CheckoutPage = () => {
         body: JSON.stringify({
           orderId: existingOrder.id,
           paymentStatus: PAYMENT_STATUSES.PENDING,
-          paymentMethod: paymentMethod,
+          paymentMethod: paymentMethod.toUpperCase(),
           paymentScreenshot: screenshotUrl,
         }),
       });
 
       if (response.ok) {
         // Redirect to order details page
-        router.push(`/account/orders`);
+        router.push(`/account/orders/${existingOrder.id}`);
       } else {
         throw new Error("Failed to update order");
       }
@@ -332,7 +332,7 @@ const CheckoutPage = () => {
                         {item.title}
                       </h4>
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span>Quantity: {item.quantity}</span>
+                        <span>Qty: {item.quantity}</span>
                         <span>
                           <PriceFormat amount={item.price} />
                         </span>
@@ -425,13 +425,13 @@ const CheckoutPage = () => {
                   </div>
                 </div>
 
-                {/* MTN */}
+                {/* MTN Momo */}
                 <div
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${paymentMethod === "mtn"
+                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${paymentMethod === "MTN"
                       ? "border-theme-color bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
                     }`}
-                  onClick={() => setPaymentMethod("mtn")}
+                  onClick={() => setPaymentMethod("MTN")}
                 >
                   <div className="flex items-center">
                     <div className="w-5 h-5 mr-3 bg-yellow-500 rounded text-white text-xs flex items-center justify-center font-bold">
@@ -446,25 +446,25 @@ const CheckoutPage = () => {
                       </p>
                     </div>
                     <div
-                      className={`w-4 h-4 rounded-full border-2 ${paymentMethod === "mtn"
+                      className={`w-4 h-4 rounded-full border-2 ${paymentMethod === "MTN"
                           ? "border-theme-color bg-theme-color"
                           : "border-gray-300"
                         }`}
                     >
-                      {paymentMethod === "mtn" && (
+                      {paymentMethod === "MTN" && (
                         <div className="w-full h-full rounded-full bg-white scale-50"></div>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Airtel */}
+                {/* AIRTEL */}
                 <div
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${paymentMethod === "airtel"
+                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${paymentMethod === "AIRTEL"
                       ? "border-theme-color bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
                     }`}
-                  onClick={() => setPaymentMethod("airtel")}
+                  onClick={() => setPaymentMethod("AIRTEL")}
                 >
                   <div className="flex items-center">
                     <div className="w-5 h-5 mr-3 bg-red-500 rounded text-white text-xs flex items-center justify-center font-bold">
@@ -479,12 +479,12 @@ const CheckoutPage = () => {
                       </p>
                     </div>
                     <div
-                      className={`w-4 h-4 rounded-full border-2 ${paymentMethod === "airtel"
+                      className={`w-4 h-4 rounded-full border-2 ${paymentMethod === "AIRTEL"
                           ? "border-theme-color bg-theme-color"
                           : "border-gray-300"
                         }`}
                     >
-                      {paymentMethod === "airtel" && (
+                      {paymentMethod === "AIRTEL" && (
                         <div className="w-full h-full rounded-full bg-white scale-50"></div>
                       )}
                     </div>
@@ -509,14 +509,14 @@ const CheckoutPage = () => {
                       "Pay Online"
                     )}
                   </button>
-                ) : (paymentMethod === "mtn" || paymentMethod === "airtel") ? (
+                ) : (paymentMethod === "MTN" || paymentMethod === "AIRTEL") ? (
                   <div className="space-y-4">
                     <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <h4 className="font-medium text-blue-900 mb-2">
                         Payment Instructions
                       </h4>
                       <div className="text-sm text-blue-800 space-y-1">
-                        {paymentMethod === "mtn" ? (
+                        {paymentMethod === "MTN" ? (
                           <>
                           <p>
                           Pay via Mobile Money (*182*1*1*0790651889*{existingOrder?.totalAmount || 0}#)
@@ -527,7 +527,7 @@ const CheckoutPage = () => {
                           </>
                         ) : (
                           <p>
-                            Pay via airtel Money (*180*1*1*0790651889*{existingOrder?.totalAmount || 0}#)
+                            Pay via AIRTEL Money (*180*1*1*0790651889*{existingOrder?.totalAmount || 0}#)
                           </p>
                         )}
                         <p className="mt-2">

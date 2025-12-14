@@ -23,3 +23,9 @@ const checkConfig = (server: string): Config | {} => {
 
 export const selectServer = "local";
 export const config = checkConfig(selectServer) as Config;
+
+
+export const absoluteUrl = (path: string) => {
+  // For server-side API calls, we need absolute URLs
+  return `${config.baseUrl}${path}`;
+};

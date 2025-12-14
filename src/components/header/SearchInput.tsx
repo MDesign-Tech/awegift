@@ -6,6 +6,7 @@ import { ProductType } from "../../../type";
 import Link from "next/link";
 import { CiSearch } from "react-icons/ci";
 import { useProductSearch } from "@/hooks/useProductSearch";
+import PriceFormat from "../PriceFormat";
 
 const SearchInput = () => {
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -123,9 +124,10 @@ const SearchInput = () => {
                       )}
                     </div>
                     {item?.price && (
-                      <span className="text-sm font-semibold text-theme-color">
-                        ${item.price}
-                      </span>
+                      <PriceFormat
+                        amount={item.price}
+                        className="text-sm font-semibold text-theme-color"
+                      />
                     )}
                   </Link>
                 ))}
@@ -177,9 +179,10 @@ const SearchInput = () => {
                       )}
                     </div>
                     {item?.price && (
-                      <span className="text-sm font-semibold text-[#ed4c07]">
-                        ${item.price}
-                      </span>
+                      <PriceFormat
+                        amount={item.price}
+                        className="text-sm font-semibold text-[#ed4c07]"
+                      />
                     )}
                   </Link>
                 ))}
