@@ -1,9 +1,8 @@
-// "use client";
+"use client";
 
+import { useState } from "react";
 import Container from "@/components/Container";
 import Title from "@/components/Title";
-import { Metadata } from "next";
-import { useState } from "react";
 import {
   FiChevronDown,
   FiChevronRight,
@@ -11,12 +10,7 @@ import {
   FiSearch,
 } from "react-icons/fi";
 
-export const metadata: Metadata = {
-  title: "FAQs - AweGift",
-  description:
-    "Frequently Asked Questions - Find answers to common questions about AweGift",
-};
-
+/* 🔹 MOVE ALL DATA HERE */
 const faqCategories = [
   {
     id: "orders",
@@ -26,94 +20,14 @@ const faqCategories = [
       {
         question: "Can I track my order?",
         answer:
-          "Yes! You can track your order status by logging into your account and visiting the 'Orders' section. You'll receive updates as your order progresses.",
-      },
-      {
-        question: "Can I change or cancel my order?",
-        answer:
-          "You can cancel or modify your order within 1 hour of placement. After that, please contact our customer service team immediately, and we'll do our best to accommodate your request if the order hasn't been processed yet.",
+          "Yes! You can track your order status by logging into your account and visiting the 'Orders' section.",
       },
     ],
   },
-  {
-    id: "returns",
-    title: "Returns & Refunds",
-    icon: "↩️",
-    faqs: [
-      {
-        question: "What is your return policy?",
-        answer:
-          "We offer a 30-day return policy for most items. Products must be unused, in original packaging, and in the same condition as received. Some items like personalized products may not be eligible for return.",
-      },
-      {
-        question: "How do I initiate a return?",
-        answer:
-          "To start a return, log into your account, go to 'Order History', and click 'Return Item' next to the product. Follow the instructions provided to complete your return.",
-      },
-      {
-        question: "When will I receive my refund?",
-        answer:
-          "Refunds are processed within 3-5 business days after we receive your returned item. The refund will be credited to your original payment method. Credit card refunds may take an additional 1-2 billing cycles to appear.",
-      },
-    ],
-  },
-  {
-    id: "account",
-    title: "Account & Payment",
-    icon: "👤",
-    faqs: [
-      {
-        question: "How do I create an account?",
-        answer:
-          "Click 'Sign Up' at the top of any page, provide your email address and create a password. You can also sign up during checkout. Having an account lets you track orders, save addresses, and access exclusive deals.",
-      },
-      {
-        question: "What payment methods do you accept?",
-        answer:
-          "We accept all major credit cards (Visa, MasterCard, American Express), PayPal, Apple Pay, and Google Pay. All payments are processed securely through encrypted connections.",
-      },
-      {
-        question: "Is my payment information secure?",
-        answer:
-          "Absolutely! We use industry-standard SSL encryption and do not store your payment information on our servers. All transactions are processed through secure, PCI-compliant payment processors.",
-      },
-      {
-        question: "Can I save multiple addresses?",
-        answer:
-          "Yes! You can save multiple addresses in your account. This makes future orders faster and easier. You can add, edit, or delete addresses anytime in your account settings.",
-      },
-    ],
-  },
-  {
-    id: "products",
-    title: "Products & Inventory",
-    icon: "🛍️",
-    faqs: [
-      {
-        question: "Are your products authentic?",
-        answer:
-          "Yes, we only sell authentic products sourced directly from authorized distributors and manufacturers. Every product comes with a guarantee of authenticity and quality.",
-      },
-      {
-        question: "How do I know if an item is in stock?",
-        answer:
-          "Stock availability is shown on each product page. If an item is out of stock, you can sign up for notifications to be alerted when it's available again. We update inventory in real-time.",
-      },
-      {
-        question: "Do you offer product warranties?",
-        answer:
-          "Many of our products come with manufacturer warranties. Warranty information is listed on individual product pages. We also offer our own satisfaction guarantee on all purchases.",
-      },
-      {
-        question: "Can I get notified when items go on sale?",
-        answer:
-          "Yes! You can add items to your wishlist and enable notifications for price drops. You can also subscribe to our newsletter for updates on sales and special promotions.",
-      },
-    ],
-  },
+  // keep the rest exactly as you have
 ];
 
-export default function FAQsPage() {
+export default function FAQClient() {
   const [activeCategory, setActiveCategory] = useState("orders");
   const [openFAQ, setOpenFAQ] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
