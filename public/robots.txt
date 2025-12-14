@@ -7,6 +7,5 @@ Disallow: /dashboard/*
 # Host
 Host: https://awegift.vercel.app
 
-# Sitemap
+# Sitemaps
 Sitemap: https://awegift.vercel.app/sitemap.xml
-

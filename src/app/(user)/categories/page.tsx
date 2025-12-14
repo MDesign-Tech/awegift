@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import Container from "@/components/Container";
 import InfiniteCategoryGrid from "@/components/pages/categories/InfiniteCategoryGrid";
 import { getData } from "../helpers";
