@@ -21,8 +21,8 @@ const LanguageModal = ({ isOpen, onClose }: LanguageModalProps) => {
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <FiGlobe className="w-6 h-6 text-blue-600" />
+            <div className="p-2 bg-light-bg rounded-lg">
+              <FiGlobe className="w-6 h-6 text-theme-color" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
@@ -86,8 +86,8 @@ const LanguageModal = ({ isOpen, onClose }: LanguageModalProps) => {
             ))}
           </div>
 
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800">
+          <div className="mt-6 p-4 bg-light-bg rounded-lg">
+            <p className="text-sm text-light-text">
               <strong>Currently supported:</strong> English only. We&apos;re
               working on adding more languages soon!
             </p>
@@ -99,7 +99,7 @@ const LanguageModal = ({ isOpen, onClose }: LanguageModalProps) => {
           <div className="flex justify-end">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-color transition-colors"
             >
               Close
             </button>

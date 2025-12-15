@@ -237,7 +237,7 @@ const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                           {/* Item count badge */}
-                          <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full shadow-md">
+                          <div className="absolute top-2 right-2 bg-theme-color text-white text-xs px-2 py-1 rounded-full shadow-md">
                             {(category as any).productCount || (category as any).itemCount || (category as any).count || 0}
                           </div>
                         </div>
@@ -266,7 +266,7 @@ const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
                       setCurrentIndex(index);
                     }}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentIndex
-                        ? "bg-blue-600 w-8"
+                        ? "bg-theme-color w-8"
                         : "bg-gray-300 hover:bg-gray-400"
                       }`}
                     aria-label={`Go to slide ${index + 1}`}
@@ -287,7 +287,7 @@ const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
         <div className="text-center mt-8">
           <Link
             href="/categories"
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-300 shadow-md hover:shadow-lg"
+            className="inline-flex items-center px-6 py-3 bg-theme-color text-white rounded-full hover:bg-accent-color transition-colors duration-300 shadow-md hover:shadow-lg"
           >
             View All Categories
             <FaArrowRight className="ml-2" />

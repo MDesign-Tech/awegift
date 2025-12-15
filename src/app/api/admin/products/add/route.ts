@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         barcode: "",
         qrCode: "",
       },
-      id: productData.id || "", // Use provided id or empty for generation
+      id: "", // Use provided id or empty for generation
     };
 
     // Extract colors using Imagga API if images exist
@@ -84,15 +84,16 @@ export async function POST(request: NextRequest) {
       productWithMeta.tags = [...new Set([...(productWithMeta.tags || []), ...productWithMeta.colors])];
     }
 
-    // Save to Firestore
+    // Save to Firestore (exclude id from stored data)
+    const { id, ...dataToStore } = productWithMeta;
     let docRef;
-    if (productWithMeta.id) {
+    if (id) {
       // Use provided id
-      await setDoc(doc(db, "products", productWithMeta.id), productWithMeta);
-      docRef = { id: productWithMeta.id };
+      await setDoc(doc(db, "products", id), dataToStore);
+      docRef = { id };
     } else {
       // Generate id
-      docRef = await addDoc(collection(db, "products"), productWithMeta);
+      docRef = await addDoc(collection(db, "products"), dataToStore);
       productWithMeta.id = docRef.id;
     }
 

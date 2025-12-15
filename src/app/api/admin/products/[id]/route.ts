@@ -30,7 +30,9 @@ export async function GET(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    const product = { id: docSnap.id, ...docSnap.data() } as ProductType & { id: string };
+    const data = docSnap.data() as any;
+    const { id: _, ...productData } = data;
+    const product = { id: docSnap.id, ...productData } as ProductType;
     return NextResponse.json(product);
   } catch (error) {
     console.error("Error fetching product:", error);
@@ -91,7 +93,9 @@ export async function PUT(
     await updateDoc(docRef, updatedData);
     console.log("Product updated successfully:", id);
 
-    return NextResponse.json({ id, ...docSnap.data(), ...updatedData });
+    const data = docSnap.data() as any;
+    const { id: _, ...docProductData } = data;
+    return NextResponse.json({ id, ...docProductData, ...updatedData });
   } catch (error) {
     console.error("Error updating product:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

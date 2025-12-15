@@ -409,7 +409,7 @@ export default function DashboardProductsClient() {
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="flex items-center px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm disabled:opacity-50"
+              className="flex items-center px-3 py-2 bg-theme-color text-white rounded-lg hover:bg-accent-color transition-colors text-sm disabled:opacity-50"
             >
               <FiRefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               {isRefreshing ? 'Refreshing...' : 'Refresh'}
@@ -479,7 +479,7 @@ export default function DashboardProductsClient() {
                   type="checkbox"
                   checked={selectAll}
                   onChange={handleSelectAll}
-                  className="rounded border-gray-300 text-theme-color focus:ring-theme-color disabled:opacity-50"
+                  className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color disabled:opacity-50"
                   disabled={isRefreshing || allProducts.length === 0}
                 />
               </th>
@@ -487,7 +487,7 @@ export default function DashboardProductsClient() {
                 Product
               </th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                Category
+                Categories
               </th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                 Price
@@ -511,7 +511,7 @@ export default function DashboardProductsClient() {
                     type="checkbox"
                     checked={selectedProducts.includes(product.id)}
                     onChange={() => handleSelectProduct(product.id)}
-                    className="rounded border-gray-300 text-theme-color focus:ring-theme-color disabled:opacity-50"
+                    className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color disabled:opacity-50"
                     disabled={isRefreshing}
                   />
                 </td>
@@ -563,7 +563,7 @@ export default function DashboardProductsClient() {
                   <div className="flex flex-wrap gap-1">
                     {product.categories && product.categories.length > 0 ? (
                       product.categories.map((cat, index) => (
-                        <span key={index} className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                        <span key={index} className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-light-bg text-light-text">
                           {cat}
                         </span>
                       ))
@@ -605,7 +605,7 @@ export default function DashboardProductsClient() {
                             type="checkbox"
                             checked={product.isActive}
                             onChange={() => toggleProductActive(product)}
-                            className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 disabled:opacity-50"
+                            className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color disabled:opacity-50"
                             title="Toggle Active Status"
                             disabled={isRefreshing || updatingFeatured.has(product.id)}
                           />
@@ -625,7 +625,7 @@ export default function DashboardProductsClient() {
                             type="checkbox"
                             checked={product.isFeatured}
                             onChange={() => toggleProductFeatured(product)}
-                            className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 disabled:opacity-50"
+                            className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color disabled:opacity-50"
                             title="Toggle Featured Status"
                             disabled={isRefreshing || updatingActive.has(product.id)}
                           />
@@ -648,7 +648,7 @@ export default function DashboardProductsClient() {
                     {hasPermission(userRole as UserRole, "canUpdateProducts") && (
                       <button
                         onClick={() => setEditingProduct(product)}
-                        className="p-1 text-indigo-600 hover:text-indigo-900 transition-colors disabled:opacity-50"
+                        className="p-1 text-theme-color hover:text-accent-color transition-colors disabled:opacity-50"
                         title="Edit"
                         disabled={isRefreshing}
                       >

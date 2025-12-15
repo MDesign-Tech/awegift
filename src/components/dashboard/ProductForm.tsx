@@ -374,7 +374,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
                       : formData.categories.filter(c => c !== categoryName);
                     handleInputChange("categories", newCategories);
                   }}
-                  className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2"
+                  className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
                 />
                 <span className="ml-2 text-sm text-gray-900">{cat.name}</span>
               </label>
@@ -790,7 +790,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
             <p className="text-sm font-medium text-gray-700 mb-3">
               Product Images ({formData.images.length})
               {uploadingImages && (
-                <span className="ml-2 text-blue-600 text-xs">(Uploading...)</span>
+                <span className="ml-2 text-theme-color text-xs">(Uploading...)</span>
               )}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -811,7 +811,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
                         name="thumbnail"
                         checked={formData.thumbnail === img}
                         onChange={() => handleInputChange("thumbnail", img)}
-                        className="mr-1 w-3 h-3 text-theme-color"
+                        className="mr-1 w-3 h-3 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
                       />
                       Set as thumbnail
                     </label>
@@ -869,7 +869,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
               type="checkbox"
               checked={formData.isActive}
               onChange={(e) => handleInputChange("isActive", e.target.checked)}
-              className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2"
+              className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
             />
             <span className="ml-2 text-sm font-medium text-gray-700">Active</span>
           </label>
@@ -878,7 +878,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
               type="checkbox"
               checked={formData.isFeatured}
               onChange={(e) => handleInputChange("isFeatured", e.target.checked)}
-              className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2"
+              className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
             />
             <span className="ml-2 text-sm font-medium text-gray-700">Featured</span>
           </label>
@@ -890,7 +890,6 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
         <button
           type="button"
           onClick={onCancel}
-          disabled={loading || addingCategory}
           className="w-full sm:w-auto px-4 sm:px-6 py-2 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
         >
           Cancel
@@ -911,3 +910,4 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
     </form>
   );
 }
+

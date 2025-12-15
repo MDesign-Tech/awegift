@@ -32,15 +32,10 @@ const Price = ({ allProducts = [] }: PriceProps) => {
       .map((product: any) => product.price)
       .sort((a: number, b: number) => a - b);
     const minPrice = Math.floor(prices[0] || 0);
-    const maxPrice = Math.ceil(prices[prices.length - 1] || 1000);
+    const maxPrice = Math.ceil(prices[prices.length - 1]);
 
     const ranges = [
-      { min: 0, max: 50 },
-      { min: 50, max: 100 },
-      { min: 100, max: 200 },
-      { min: 200, max: 400 },
-      { min: 400, max: 600 },
-      { min: 600, max: maxPrice },
+      { min: minPrice, max: maxPrice },
     ];
 
     return ranges.filter((range) => range.max <= maxPrice + 100);
@@ -56,7 +51,7 @@ const Price = ({ allProducts = [] }: PriceProps) => {
         className="w-full flex items-center justify-between py-3 px-0 text-left focus:outline-none group"
       >
         <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-          Shop by Price
+          Price
         </h3>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}

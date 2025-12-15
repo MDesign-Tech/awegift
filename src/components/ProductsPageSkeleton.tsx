@@ -88,7 +88,7 @@ const ProductsPageSkeleton = () => {
 
           {/* Products Grid Skeleton */}
           {isGridView && (
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
+            <div className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
               {[...Array(12)].map((_, index) => (
                 <ProductCardSkeleton key={index} />
               ))}

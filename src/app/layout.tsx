@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import AuthProvider from "@/components/auth/AuthProvider";
+import { AuthProvider } from "@/lib/auth/AuthContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { UserSyncProvider } from "@/components/UserSyncProvider";
 import StateProvider from "@/components/auth/StateProvider";

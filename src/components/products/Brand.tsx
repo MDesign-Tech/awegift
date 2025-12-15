@@ -29,8 +29,8 @@ const Brand = ({ brands = [] }: BrandProps) => {
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between py-3 px-0 text-left focus:outline-none group"
       >
-        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-          Shop by Brand
+        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-theme-color transition-colors">
+          Brand
         </h3>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
@@ -62,11 +62,11 @@ const Brand = ({ brands = [] }: BrandProps) => {
                         name="brand"
                         checked={isActive}
                         onChange={() => {}}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                        className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
                       />
                       <button
                         onClick={() => handleBrandClick(brand)}
-                        className="ml-2 text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors flex-1 text-left"
+                        className="ml-2 text-sm font-medium text-gray-900 hover:text-theme-color transition-colors flex-1 text-left"
                       >
                         {brand}
                       </button>

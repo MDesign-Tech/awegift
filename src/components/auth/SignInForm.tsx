@@ -1,32 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FaGoogle, FaGithub, FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 export default function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { signInWithEmailAndPassword, signInWithGoogle, signInWithGithub } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
+      const { error } = await signInWithEmailAndPassword(email, password, rememberMe);
 
-      if (result?.error) {
-        toast.error(result.error);
+      if (error) {
+        toast.error(error.message || "Sign in failed");
       } else {
         toast.success("Sign in successful!");
         router.push("/");
@@ -41,7 +39,20 @@ export default function SignInForm() {
 
   const handleOAuthSignIn = async (provider: "google" | "github") => {
     try {
-      await signIn(provider, { callbackUrl: "/" });
+      let result;
+      if (provider === "google") {
+        result = await signInWithGoogle(rememberMe);
+      } else {
+        result = await signInWithGithub(rememberMe);
+      }
+
+      if (result.error) {
+        toast.error(result.error.message || "OAuth sign in failed");
+      } else {
+        toast.success("Sign in successful!");
+        router.push("/");
+        router.refresh();
+      }
     } catch (error) {
       toast.error("OAuth sign in failed");
     }
@@ -66,7 +77,7 @@ export default function SignInForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-theme-color focus:border-theme-color"
               placeholder="Enter your email"
             />
           </div>
@@ -88,7 +99,7 @@ export default function SignInForm() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-theme-color focus:border-theme-color"
               placeholder="Enter your password"
             />
             <button
@@ -111,7 +122,9 @@ export default function SignInForm() {
               id="remember-me"
               name="remember-me"
               type="checkbox"
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="h-4 w-4 text-theme-color focus:ring-theme-color border-gray-300 rounded accent-theme-color"
             />
             <label
               htmlFor="remember-me"
@@ -124,7 +137,7 @@ export default function SignInForm() {
           <div className="text-sm">
             <Link
               href="/auth/forgot-password"
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className="font-medium text-theme-color hover:text-accent-color"
             >
               Forgot your password?
             </Link>
@@ -135,7 +148,7 @@ export default function SignInForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-theme-color hover:bg-accent-color focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-color disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "Signing in..." : "Sign in"}
           </button>
@@ -178,7 +191,7 @@ export default function SignInForm() {
           Don&apos;t have an account?{" "}
           <Link
             href="/auth/register"
-            className="font-medium text-blue-600 hover:text-blue-500"
+            className="font-medium text-theme-color hover:text-accent-color"
           >
             Sign up
           </Link>

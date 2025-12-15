@@ -8,7 +8,7 @@ interface ProductSpecificationsProps {
 const ProductSpecifications = ({ product }: ProductSpecificationsProps) => {
   const specifications = [
     {
-      icon: <FiPackage className="w-5 h-5 text-blue-600" />,
+      icon: <FiPackage className="w-5 h-5 text-theme-color" />,
       label: "Weight",
       value: `${product?.weight || "N/A"} kg`,
     },
@@ -26,7 +26,6 @@ const ProductSpecifications = ({ product }: ProductSpecificationsProps) => {
 
   const additionalSpecs = [
     { label: "SKU", value: product?.sku || "N/A" },
-    { label: "Availability", value: product?.availabilityStatus || "In Stock" },
     {
       label: "Minimum Order",
       value: `${product?.minimumOrderQuantity || 1} unit(s)`,
@@ -74,7 +73,7 @@ const ProductSpecifications = ({ product }: ProductSpecificationsProps) => {
 
       {/* Dimensions if available */}
       {product?.dimensions && (
-        <div className="mt-6 bg-blue-50 rounded-lg p-6">
+        <div className="mt-6 bg-light-bg rounded-lg p-6">
           <h4 className="font-semibold text-gray-900 mb-4">Dimensions</h4>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
@@ -87,12 +86,6 @@ const ProductSpecifications = ({ product }: ProductSpecificationsProps) => {
               <p className="text-sm text-gray-600">Height</p>
               <p className="font-semibold text-gray-900">
                 {product.dimensions.height}&quot;
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Depth</p>
-              <p className="font-semibold text-gray-900">
-                {product.dimensions.depth}&quot;
               </p>
             </div>
           </div>

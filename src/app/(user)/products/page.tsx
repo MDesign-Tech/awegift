@@ -186,7 +186,7 @@ const ProductsPage = async ({ searchParams }: Props) => {
       {/* Main Content */}
       <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
         {/* Sidebar Filters */}
-        <div className="w-full lg:w-1/5 order-2 lg:order-1">
+        <div className="w-full lg:w-1/5 order-1 lg:order-1">
           <EnhancedProductsSideNav
             categories={categoriesData}
             brands={uniqueBrands}
@@ -195,7 +195,7 @@ const ProductsPage = async ({ searchParams }: Props) => {
         </div>
 
         {/* Products Section */}
-        <div className="flex-1 min-w-0 order-1 lg:order-2">
+        <div className="flex-1 min-w-0 order-2 lg:order-2">
           <InfiniteProductList
             products={products}
             currentSort={params.sort || "default"}

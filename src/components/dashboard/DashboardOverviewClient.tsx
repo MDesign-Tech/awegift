@@ -106,7 +106,7 @@ export default function DashboardOverviewClient() {
           <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-500">Total Users</h3>
-              <FiUsers className="h-6 w-6 text-indigo-600" />
+              <FiUsers className="h-6 w-6 text-theme-color" />
             </div>
             <div className="text-2xl font-bold text-gray-900">
               {stats?.totalUsers || 0}
@@ -171,7 +171,7 @@ export default function DashboardOverviewClient() {
               <h3 className="text-sm font-medium text-gray-500">
                 Completed Orders
               </h3>
-              <FiTrendingUp className="h-6 w-6 text-blue-600" />
+              <FiTrendingUp className="h-6 w-6 text-theme-color" />
             </div>
             <div className="text-2xl font-bold text-gray-900">
               {stats?.completedOrders || 0}

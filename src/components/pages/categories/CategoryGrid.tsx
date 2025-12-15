@@ -56,7 +56,7 @@ const CategoryCard: React.FC<{ category: CategoryType; index: number }> = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           {/* Product Count Badge */}
-          <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+          <div className="absolute top-2 left-2 bg-theme-color text-white text-xs font-bold px-2 py-1 rounded-full">
             {productCount} items
           </div>
 
@@ -68,7 +68,7 @@ const CategoryCard: React.FC<{ category: CategoryType; index: number }> = ({
 
         {/* Content */}
         <div className="p-3 lg:p-4">
-          <h3 className="text-sm lg:text-base font-bold text-gray-900 mb-1 lg:mb-2 group-hover:text-blue-600 transition-colors duration-200 line-clamp-1">
+          <h3 className="text-sm lg:text-base font-bold text-gray-900 mb-1 lg:mb-2 group-hover:text-theme-color transition-colors duration-200 line-clamp-1">
             {categoryName}
           </h3>
           <p className="text-gray-600 text-xs lg:text-sm mb-2 lg:mb-3 line-clamp-2">
@@ -80,14 +80,14 @@ const CategoryCard: React.FC<{ category: CategoryType; index: number }> = ({
             <span className="text-xs font-medium text-gray-500">
               View Products
             </span>
-            <div className="flex items-center text-blue-600 group-hover:text-blue-700 transition-colors duration-200">
+            <div className="flex items-center text-theme-color group-hover:text-accent-color transition-colors duration-200">
               <FiArrowRight className="w-3 h-3 lg:w-4 lg:h-4 transform group-hover:translate-x-1 transition-transform duration-200" />
             </div>
           </div>
         </div>
 
         {/* Hover Border Effect */}
-        <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-200 rounded-xl transition-colors duration-300" />
+        <div className="absolute inset-0 border-2 border-transparent group-hover:border-accent-color rounded-xl transition-colors duration-300" />
       </div>
     </Link>
   );
@@ -107,7 +107,7 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({
       <div className="text-center bg-gray-50 rounded-xl p-6">
         <div className="flex flex-col sm:flex-row justify-center items-center gap-8">
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-3xl font-bold text-theme-color">
               {displayCategories.length}
             </div>
             <div className="text-gray-600">Categories</div>
@@ -135,7 +135,7 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({
       </div>
 
       {/* Call to Action */}
-      <div className="text-center mt-12 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8">
+      <div className="text-center mt-12 bg-gradient-to-r from-light-bg to-accent-color/20 rounded-2xl p-8">
         <h3 className="text-2xl font-bold text-gray-900 mb-2">
           Can&apos;t find what you&apos;re looking for?
         </h3>
@@ -146,7 +146,7 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/products"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
+            className="bg-theme-color hover:bg-accent-color text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
           >
             View All Products
           </Link>

@@ -110,13 +110,13 @@ const AddToCartButton = ({
   const getVariantStyles = () => {
     switch (variant) {
       case "primary":
-        return "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700";
+        return "bg-theme-color hover:bg-accent-color text-white border-theme-color hover:border-accent-color";
       case "outline":
-        return "bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white";
+        return "bg-transparent border-2 border-theme-color text-theme-color hover:bg-theme-color hover:text-white";
       case "minimal":
         return "bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-300";
       default:
-        return "bg-transparent border border-sky-500 text-sky-600 hover:bg-sky-500 hover:text-white";
+        return "bg-transparent border border-theme-color text-theme-color hover:bg-theme-color hover:text-white";
     }
   };
 

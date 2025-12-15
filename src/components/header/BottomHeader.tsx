@@ -1,22 +1,32 @@
+"use client";
+
 import Container from "../Container";
 import Link from "next/link";
 import { navigation } from "@/constants";
-import { auth } from "../../../auth";
-import SignOutButton from "./SignOutButton";
 import { FaWhatsapp } from "react-icons/fa";
+import { usePathname } from "next/navigation";
 
-const BottomHeader = async () => {
-  const session = await auth();
+const BottomHeader = () => {
+  const pathname = usePathname();
 
   return (
     <div className="border-b border-b-gray-400">
       <Container className="flex items-center justify-between py-1">
         <div className="text-xs md:text-sm font-medium flex items-center gap-5">
-          {navigation?.map((item) => (
-            <Link key={item?.title} href={item?.href}>
-              {item?.title}
-            </Link>
-          ))}
+          {navigation?.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item?.title}
+                href={item?.href}
+                className={`transition-colors duration-200 ${
+                  isActive ? 'text-theme-color' : 'text-gray-700 hover:text-theme-color'
+                }`}
+              >
+                {item?.title}
+              </Link>
+            );
+          })}
         </div>
         <p className="text-xs text-gray-400 font-medium hidden md:inline-flex items-center gap-3">
           Tel: <span className="text-[#ed4c07]">+250 781 990 310</span>
