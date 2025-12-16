@@ -1,7 +1,6 @@
 // src/app/api/admin/products/add/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, addDoc, setDoc, doc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { ProductType } from "../../../../../../type";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
@@ -89,11 +88,11 @@ export async function POST(request: NextRequest) {
     let docRef;
     if (id) {
       // Use provided id
-      await setDoc(doc(db, "products", id), dataToStore);
+      await adminDb.collection("products").doc(id).set(dataToStore);
       docRef = { id };
     } else {
       // Generate id
-      docRef = await addDoc(collection(db, "products"), dataToStore);
+      docRef = await adminDb.collection("products").add(dataToStore);
       productWithMeta.id = docRef.id;
     }
 

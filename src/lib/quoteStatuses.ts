@@ -1,4 +1,4 @@
-// ------------------------ QUOTE STATUS MANAGEMENT ------------------------
+// ------------------------ QUOTATION STATUS MANAGEMENT ------------------------
 
 export const QUOTE_STATUSES = {
   PENDING: "pending",                     // user requested, waiting for admin
@@ -11,10 +11,10 @@ export const QUOTE_STATUSES = {
 } as const;
 
 // ------------------------ TYPES ------------------------
-export type QuoteStatus = (typeof QUOTE_STATUSES)[keyof typeof QUOTE_STATUSES];
+export type QuotationStatus = (typeof QUOTE_STATUSES)[keyof typeof QUOTE_STATUSES];
 
 // ------------------------ ROLE-BASED VISIBILITY ------------------------
-export const getVisibleQuoteStatuses = (userRole: string): QuoteStatus[] => {
+export const getVisibleQuoteStatuses = (userRole: string): QuotationStatus[] => {
   switch (userRole) {
     case "admin":
       return Object.values(QUOTE_STATUSES); // Admin sees all
@@ -36,8 +36,8 @@ export const getVisibleQuoteStatuses = (userRole: string): QuoteStatus[] => {
 // ------------------------ ROLE-BASED STATUS UPDATE ------------------------
 export const canUpdateQuoteStatus = (
   userRole: string,
-  currentStatus: QuoteStatus,
-  newStatus: QuoteStatus
+  currentStatus: QuotationStatus,
+  newStatus: QuotationStatus
 ): boolean => {
   switch (userRole) {
     case "admin":
@@ -60,9 +60,9 @@ export const canUpdateQuoteStatus = (
 // ------------------------ NEXT POSSIBLE STATUS ------------------------
 export const getNextPossibleStatuses = (
   userRole: string,
-  currentStatus: QuoteStatus
-): QuoteStatus[] => {
-  const possibleStatuses: QuoteStatus[] = [];
+  currentStatus: QuotationStatus
+): QuotationStatus[] => {
+  const possibleStatuses: QuotationStatus[] = [];
   Object.values(QUOTE_STATUSES).forEach((status) => {
     if (canUpdateQuoteStatus(userRole, currentStatus, status) && status !== currentStatus) {
       possibleStatuses.push(status);
@@ -72,7 +72,7 @@ export const getNextPossibleStatuses = (
 };
 
 // ------------------------ DISPLAY INFO ------------------------
-export const getStatusDisplayInfo = (status: QuoteStatus) => {
+export const getStatusDisplayInfo = (status: QuotationStatus) => {
   switch (status) {
     case QUOTE_STATUSES.PENDING:
       return { label: "Pending", color: "bg-yellow-100 text-yellow-800", icon: "⏳", description: "Quote requested, awaiting response" };
@@ -95,10 +95,10 @@ export const getStatusDisplayInfo = (status: QuoteStatus) => {
 
 // ------------------------ VALID STATUS TRANSITION ------------------------
 export const isValidStatusTransition = (
-  currentStatus: QuoteStatus,
-  newStatus: QuoteStatus
+  currentStatus: QuotationStatus,
+  newStatus: QuotationStatus
 ): boolean => {
-  const validTransitions: Record<QuoteStatus, QuoteStatus[]> = {
+  const validTransitions: Record<QuotationStatus, QuotationStatus[]> = {
     [QUOTE_STATUSES.PENDING]: [QUOTE_STATUSES.RESPONDED, QUOTE_STATUSES.WAITING_CUSTOMER, QUOTE_STATUSES.REJECTED],
     [QUOTE_STATUSES.RESPONDED]: [QUOTE_STATUSES.ACCEPTED, QUOTE_STATUSES.REJECTED, QUOTE_STATUSES.NEGOTIATION],
     [QUOTE_STATUSES.WAITING_CUSTOMER]: [QUOTE_STATUSES.NEGOTIATION, QUOTE_STATUSES.RESPONDED, QUOTE_STATUSES.REJECTED],

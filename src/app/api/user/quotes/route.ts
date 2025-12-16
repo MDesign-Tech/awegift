@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { QuoteType } from "../../../../../type";
-import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
-import { auth } from "../../../../../auth";
+import { QuotationType } from "../../../../../type";
+import { adminDb } from "@/lib/firebase/admin";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 import { fetchUserFromFirestore } from "@/lib/firebase/userService";
 
 // GET - Fetch user's quotes
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -26,12 +21,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Users can only see their own quotes
-    const quotesQuery = query(
-      collection(db, "quotes"),
-      where("userId", "==", user.id)
-    );
-
-    const quotesSnapshot = await getDocs(quotesQuery);
+    const quotesSnapshot = await adminDb.collection("quotes").where("userId", "==", user.id).get();
 
     const quotes = quotesSnapshot.docs
       .map((doc) => ({
@@ -41,7 +31,7 @@ export async function GET(request: NextRequest) {
         updatedAt: doc.data().updatedAt?.toDate?.() || new Date(doc.data().updatedAt),
         expirationDate: doc.data().expirationDate?.toDate?.() || new Date(doc.data().expirationDate),
         validUntil: doc.data().validUntil?.toDate?.() || new Date(doc.data().validUntil),
-      }) as QuoteType)
+      }) as QuotationType)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()); // Sort by createdAt desc
 
     return NextResponse.json({ quotes });

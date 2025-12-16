@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, writeBatch } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { hasPermission } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
@@ -17,19 +16,15 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const productsRef = collection(db, "products");
-    const snapshot = await getDocs(productsRef);
+    const snapshot = await adminDb.collection("products").limit(5000).get();
 
     if (snapshot.empty) {
       return NextResponse.json({ message: "No products to delete", deletedCount: 0 });
     }
 
-    const batch = writeBatch(db);
-    snapshot.docs.forEach((doc) => {
-      batch.delete(doc.ref);
-    });
-
-    await batch.commit();
+    // For admin SDK, delete individually or use batch
+    const deletePromises = snapshot.docs.map(doc => doc.ref.delete());
+    await Promise.all(deletePromises);
 
     return NextResponse.json({
       message: "All products deleted successfully",

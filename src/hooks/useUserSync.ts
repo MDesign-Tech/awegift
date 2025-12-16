@@ -1,31 +1,21 @@
 import { useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser, removeUser } from "@/redux/aweGiftSlice";
 import { fetchUserFromFirestore } from "@/lib/firebase/userService";
 import type { RootState } from "@/redux/store";
 
 export function useUserSync() {
-  const { data: session, status, update: updateSession } = useSession();
+  const { user, loading } = useAuth();
   const dispatch = useDispatch();
   const userInfo = useSelector((state: RootState) => state.aweGift.userInfo);
 
   const refreshUserData = async () => {
-    if (session?.user?.id) {
+    if (user?.id) {
       try {
-        const firestoreUser = await fetchUserFromFirestore(session.user.id);
+        const firestoreUser = await fetchUserFromFirestore(user.id);
         if (firestoreUser) {
           dispatch(addUser(firestoreUser));
-          // Also update session if role changed
-          if (firestoreUser.role !== session.user.role) {
-            await updateSession({
-              ...session,
-              user: {
-                ...session.user,
-                role: firestoreUser.role,
-              },
-            });
-          }
         }
       } catch (error) {
         console.error("Error refreshing user data:", error);
@@ -35,30 +25,30 @@ export function useUserSync() {
 
   useEffect(() => {
     const syncUserData = async () => {
-      if (status === "loading") return;
+      if (loading) return;
 
-      if (session?.user?.id) {
+      if (user?.id) {
         // If we don't have user data in store, the session ID doesn't match, or the role changed
-        if (!userInfo || userInfo.id !== session.user.id || userInfo.role !== session.user.role) {
+        if (!userInfo || userInfo.id !== user.id || userInfo.role !== (user as any).role) {
           try {
-            const firestoreUser = await fetchUserFromFirestore(session.user.id);
+            const firestoreUser = await fetchUserFromFirestore(user.id);
             if (firestoreUser) {
               dispatch(addUser(firestoreUser));
             } else {
-              // If no Firestore data, create minimal user from session
-              const sessionUser = {
-                id: session.user.id,
-                name: session.user.name || "",
-                email: session.user.email || "",
-                image: session.user.image || "",
-                role: session.user.role || "user",
+              // If no Firestore data, create minimal user from auth user
+              const authUser = {
+                id: user.id,
+                name: user.name || "",
+                email: user.email || "",
+                image: user.image || "",
+                role: (user as any).role || "user",
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 emailVerified: true,
                 profile: {
-                  firstName: session.user.name?.split(" ")[0] || "",
+                  firstName: user.name?.split(" ")[0] || "",
                   lastName:
-                    session.user.name?.split(" ").slice(1).join(" ") || "",
+                    user.name?.split(" ").slice(1).join(" ") || "",
                   phone: "",
                   addresses: [],
                 },
@@ -69,13 +59,13 @@ export function useUserSync() {
                 cart: [],
                 wishlist: [],
               };
-              dispatch(addUser(sessionUser));
+              dispatch(addUser(authUser));
             }
           } catch (error) {
             console.error("Error syncing user data:", error);
           }
         }
-      } else if (status === "unauthenticated") {
+      } else {
         // Clear user data when logged out
         if (userInfo) {
           dispatch(removeUser());
@@ -84,13 +74,13 @@ export function useUserSync() {
     };
 
     syncUserData();
-  }, [session, status, dispatch, userInfo?.id, userInfo?.role]);
+  }, [user, loading, dispatch, userInfo?.id, userInfo?.role]);
 
   return {
     user: userInfo,
-    session,
-    isLoading: status === "loading",
-    isAuthenticated: !!session?.user,
+    session: user,
+    isLoading: loading,
+    isAuthenticated: !!user,
     refreshUserData,
   };
 }

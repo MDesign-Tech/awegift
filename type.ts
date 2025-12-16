@@ -181,8 +181,8 @@ export interface NotificationType {
   readAt?: Date | null;
 }
 
-// ---------------------- QUOTE PRODUCT -----------------------
-export interface QuoteProductType {
+// ---------------------- QUOTATION PRODUCT -----------------------
+export interface QuotationProductType {
   productId: string | null;     // If not found, treat as custom product
   name: string;
   quantity: number;
@@ -192,21 +192,21 @@ export interface QuoteProductType {
 }
 
 // ---------------------- MESSAGE THREAD (NEGOTIATION CHAT) ----
-export interface QuoteMessage {
+export interface QuotationMessage {
   sender: "user" | "admin";
   message: string;
   timestamp: Date;
   attachments?: string[];
 }
 
-// ---------------------- MAIN QUOTE TYPE -----------------------
-export interface QuoteType {
+// ---------------------- MAIN QUOTATION TYPE -----------------------
+export interface QuotationType {
   id: string;
   userId: string;
   email: string;
   phone?: string | null;
 
-  products: QuoteProductType[];
+  products: QuotationProductType[];
 
   subtotal: number;                 // products total before discounts
   discount?: number;                // admin can add discount if giving offer
@@ -222,7 +222,7 @@ export interface QuoteType {
   | "rejected"                    // user or admin rejected
   | "expired";                    // price expired
 
-  messages: QuoteMessage[];         // negotiation history
+  messages: QuotationMessage[];         // negotiation history
   userNotes?: string;               // user extra info
   adminNote?: string;               // admin-only notes (private)
 

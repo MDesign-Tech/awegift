@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
@@ -18,8 +17,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch all orders from orders collection (primary source)
-    const ordersRef = collection(db, "orders");
-    const ordersSnapshot = await getDocs(ordersRef);
+    const ordersRef = adminDb.collection("orders");
+    const ordersSnapshot = await ordersRef.get();
 
     const rawOrders = ordersSnapshot.docs.map((doc) => ({
       id: doc.id,

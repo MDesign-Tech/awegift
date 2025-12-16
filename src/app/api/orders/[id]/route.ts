@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "../../../../../auth"
-import { db } from "@/lib/firebase/config";
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
+import { adminDb } from "@/lib/firebase/admin";
 import { fetchUserFromFirestore } from "@/lib/firebase/userService";
 import { OrderData } from "../../../../../type";
 
@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -33,9 +33,9 @@ export async function GET(
     }
 
     // Get the order by document ID
-    const orderDoc = await getDoc(doc(db, "orders", orderId));
+    const orderDoc = await adminDb.collection("orders").doc(orderId).get();
 
-    if (!orderDoc.exists()) {
+    if (!orderDoc.exists) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 

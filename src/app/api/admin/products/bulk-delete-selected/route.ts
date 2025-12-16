@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, writeBatch, doc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
@@ -23,7 +22,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Product IDs array required" }, { status: 400 });
     }
 
-    const batch = writeBatch(db);
     const validProductIds: string[] = [];
 
     productIds.forEach((productId: any) => {
@@ -37,12 +35,11 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No valid product IDs provided" }, { status: 400 });
     }
 
-    validProductIds.forEach((productId) => {
-      const productRef = doc(db, "products", productId);
-      batch.delete(productRef);
-    });
+    const deletePromises = validProductIds.map(productId =>
+      adminDb.collection("products").doc(productId).delete()
+    );
 
-    await batch.commit();
+    await Promise.all(deletePromises);
 
     return NextResponse.json({
       message: "Products deleted successfully",

@@ -105,10 +105,7 @@ const SearchInput = () => {
                 {filteredProducts?.map((item: ProductType, index: number) => (
                   <Link
                     key={`${item?.id}-${index}`}
-                    href={{
-                      pathname: `/products/${item?.id}`,
-                      query: { id: item?.id },
-                    }}
+                    href={`/products/${item?.id}`}
                     onClick={handleProductClick}
                     className="flex items-center gap-x-2 text-base font-medium hover:bg-light-text/30 px-3 py-1.5 border-b border-gray-100 last:border-b-0"
                   >
@@ -158,10 +155,7 @@ const SearchInput = () => {
                 {suggestedProducts?.map((item: ProductType, index: number) => (
                   <Link
                     key={`${item?.id}-${index}`}
-                    href={{
-                      pathname: `/products/${item?.id}`,
-                      query: { id: item?.id },
-                    }}
+                    href={`/products/${item?.id}`}
                     onClick={handleProductClick}
                     className="flex items-center gap-x-2 text-base font-medium hover:bg-light-text/30 px-3 py-1.5 border-b border-gray-100 last:border-b-0"
                   >

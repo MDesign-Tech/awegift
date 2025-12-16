@@ -5,19 +5,19 @@ import Container from "@/components/Container";
 import Title from "@/components/Title";
 import { FiMessageSquare, FiCheckCircle, FiTrash2, FiSearch, FiPlus, FiEye } from "react-icons/fi";
 import Link from "next/link";
-import { QuoteProductType, ProductType } from "../../../../type";
+import { QuotationProductType, ProductType } from "../../../../type";
 import PriceFormat from "@/components/PriceFormat";
 
-interface QuoteFormData {
+interface QuotationFormData {
   email?: string;
   phone?: string;
-  products: QuoteProductType[];
+  products: QuotationProductType[];
   userNotes: string;
 }
 
 export default function QuotePage() {
   const { data: session } = useSession();
-  const [formData, setFormData] = useState<QuoteFormData>({
+  const [formData, setFormData] = useState<QuotationFormData>({
     email: "",
     phone: "",
     products: [{ productId: null, name: "", quantity: 1 }],
@@ -66,7 +66,7 @@ export default function QuotePage() {
       newErrors.products = "Please add at least one product";
     } else {
       const bad = formData.products.find(
-        (p: QuoteProductType) => !p.name || !p.name.trim() || !p.quantity || p.quantity <= 0
+        (p: QuotationProductType) => !p.name || !p.name.trim() || !p.quantity || p.quantity <= 0
       );
       if (bad) {
         newErrors.products = "Please provide product name and a valid quantity";
@@ -167,27 +167,27 @@ export default function QuotePage() {
   };
 
   const handleUserNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFormData((prev: QuoteFormData) => ({ ...prev, userNotes: e.target.value }));
+    setFormData((prev: QuotationFormData) => ({ ...prev, userNotes: e.target.value }));
     if (errors.userNotes) setErrors((prev) => ({ ...prev, userNotes: undefined }));
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev: QuoteFormData) => ({ ...prev, email: e.target.value }));
+    setFormData((prev: QuotationFormData) => ({ ...prev, email: e.target.value }));
     if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev: QuoteFormData) => ({ ...prev, phone: e.target.value }));
+    setFormData((prev: QuotationFormData) => ({ ...prev, phone: e.target.value }));
     if (errors.phone) setErrors((prev) => ({ ...prev, phone: undefined }));
   };
 
   const handleProductChange = (
     index: number,
-    field: keyof QuoteProductType,
+    field: keyof QuotationProductType,
     value: string | number
   ) => {
-    setFormData((prev: QuoteFormData) => {
-      const products = prev.products.map((p: QuoteProductType, i: number) =>
+    setFormData((prev: QuotationFormData) => {
+      const products = prev.products.map((p: QuotationProductType, i: number) =>
         i === index ? { ...p, [field]: field === "quantity" ? Number(value) : value } : p
       );
       return { ...prev, products };
@@ -196,7 +196,7 @@ export default function QuotePage() {
   };
 
   const addProductRow = () => {
-    setFormData((prev: QuoteFormData) => ({ ...prev, products: [...prev.products, { productId: null, name: "", quantity: 1 }] }));
+    setFormData((prev: QuotationFormData) => ({ ...prev, products: [...prev.products, { productId: null, name: "", quantity: 1 }] }));
   };
 
   const removeProductRow = (index: number) => {
@@ -210,8 +210,8 @@ export default function QuotePage() {
       });
     }
 
-    setFormData((prev: QuoteFormData) => {
-      const products = prev.products.filter((_: QuoteProductType, i: number) => i !== index);
+    setFormData((prev: QuotationFormData) => {
+      const products = prev.products.filter((_: QuotationProductType, i: number) => i !== index);
       return { ...prev, products: products.length ? products : [{ productId: null, name: "", quantity: 1 }] };
     });
   };
@@ -242,8 +242,8 @@ export default function QuotePage() {
       const exactMatch = filtered.find(product => product.title.toLowerCase() === value.toLowerCase());
       if (!exactMatch) {
         // If no exact match, set productId to null (custom product)
-        setFormData((prev: QuoteFormData) => {
-          const products = prev.products.map((p: QuoteProductType, i: number) =>
+        setFormData((prev: QuotationFormData) => {
+          const products = prev.products.map((p: QuotationProductType, i: number) =>
             i === index ? { ...p, productId: null } : p
           );
           return { ...prev, products };
@@ -253,8 +253,8 @@ export default function QuotePage() {
       setProductSuggestions(prev => ({ ...prev, [index]: [] }));
       setShowSuggestions(prev => ({ ...prev, [index]: false }));
       // Empty value also means custom product
-      setFormData((prev: QuoteFormData) => {
-        const products = prev.products.map((p: QuoteProductType, i: number) =>
+      setFormData((prev: QuotationFormData) => {
+        const products = prev.products.map((p: QuotationProductType, i: number) =>
           i === index ? { ...p, productId: null } : p
         );
         return { ...prev, products };
@@ -282,8 +282,8 @@ export default function QuotePage() {
     // Add the new product ID to selected set
     setSelectedProductIds(prev => new Set(prev).add(product.id));
 
-    setFormData((prev: QuoteFormData) => {
-      const products = prev.products.map((p: QuoteProductType, i: number) =>
+    setFormData((prev: QuotationFormData) => {
+      const products = prev.products.map((p: QuotationProductType, i: number) =>
         i === index ? { ...p, productId: product.id, name: product.title } : p
       );
       return { ...prev, products };
@@ -304,7 +304,7 @@ export default function QuotePage() {
         <div className="max-w-2xl mx-auto text-center">
           <div className="bg-green-50 border border-green-200 rounded-lg p-8">
             <FiCheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">Quote Request Submitted!</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">Quotation Request Submitted!</h1>
             <p className="text-lg text-gray-600 mb-6">Thank you for your interest! Our team will review your request and get back to you soon.</p>
             <p className="text-gray-500 mb-6">Please allow 1-2 business days for our team to process your request.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -319,7 +319,7 @@ export default function QuotePage() {
                   href="/account/quotes"
                   className="bg-theme-white border-1 border-theme-color text-theme-color px-6 py-3 rounded-lg hover:bg-blue-600/90 transition-colors"
                 >
-                  Go to Your Quotes
+                  Go to Your Quotations
                 </Link>
               )}
             </div>
@@ -334,7 +334,7 @@ export default function QuotePage() {
       <div className="mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <Title className="text-3xl lg:text-4xl font-bold mb-4">Request a Quote</Title>
+          <Title className="text-3xl lg:text-4xl font-bold mb-4">Request a Quotation</Title>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
@@ -391,7 +391,7 @@ export default function QuotePage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {formData.products.map((product: QuoteProductType, idx: number) => {
+                      {formData.products.map((product: QuotationProductType, idx: number) => {
                         const isDuplicate = errors.duplicates?.includes(idx);
                         return (
                         <tr key={idx} className="border-b border-gray-300">
@@ -492,7 +492,7 @@ export default function QuotePage() {
                 disabled={isSubmitting}
                 className="w-full bg-theme-color text-theme-white py-3 px-6 rounded-lg hover:bg-theme-color/90 transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? "Submitting..." : "Request Quote"}
+                {isSubmitting ? "Submitting..." : "Request Quotation"}
               </button>
             </form>
           </div>

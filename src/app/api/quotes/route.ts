@@ -1,22 +1,15 @@
 import{ NextRequest, NextResponse } from "next/server";
-import { QuoteType, QuoteProductType } from "../../../../type";
+import { QuotationType, QuotationProductType } from "../../../../type";
 import { QUOTE_STATUSES } from "@/lib/quoteStatuses";
-import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  setDoc,
-  doc,
-  serverTimestamp,
-} from "firebase/firestore";
-import { auth } from "../../../../auth";
+import { adminDb } from "@/lib/firebase/admin";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 import { fetchUserFromFirestore } from "@/lib/firebase/userService";
 
 // POST - Create new quote request
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
     let user = null;
 
     // If user is logged in, fetch their data
@@ -28,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { products, userNotes, email, phone }: {
-      products: QuoteProductType[];
+      products: QuotationProductType[];
       userNotes: string;
       email?: string;
       phone?: string;
@@ -72,7 +65,7 @@ export async function POST(request: NextRequest) {
     const validUntil = new Date(expirationDate);
 
     // Create new quote
-    const newQuote: QuoteType = {
+    const newQuote: QuotationType = {
       id: quoteId,
       userId: user?.id || `guest_${Date.now()}`, // Use guest ID for non-logged-in users
       email: user?.email || email!,
@@ -94,10 +87,10 @@ export async function POST(request: NextRequest) {
     };
 
     // Add to quotes collection with custom ID
-    await setDoc(doc(db, "quotes", quoteId), {
+    await adminDb.collection("quotes").doc(quoteId).set({
       ...newQuote,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     return NextResponse.json({

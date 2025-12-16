@@ -1,13 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
@@ -25,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch real users from Firebase
-    const usersSnapshot = await getDocs(collection(db, "users"));
+    const usersSnapshot = await adminDb.collection("users").get();
     const users = usersSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -33,7 +25,7 @@ export async function GET(request: NextRequest) {
     })) as any[];
 
     // Get order counts for each user
-    const ordersSnapshot = await getDocs(collection(db, "orders"));
+    const ordersSnapshot = await adminDb.collection("orders").get();
     const orders = ordersSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -101,7 +93,7 @@ export async function PUT(request: NextRequest) {
     if (role !== undefined) updateData.role = role;
 
     // Update user in Firebase
-    await updateDoc(doc(db, "users", userId), updateData);
+    await adminDb.collection("users").doc(userId).update(updateData);
 
     return NextResponse.json({
       success: true,
@@ -136,18 +128,17 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Prevent deletion of admin users
-    const userRef = doc(db, "users", userId);
-    const userSnapshot = await getDoc(userRef);
+    const userDoc = await adminDb.collection("users").doc(userId).get();
 
-    if (userSnapshot.exists()) {
-      const userData = userSnapshot.data();
-      if (userData.role === "admin") {
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      if (userData?.role === "admin") {
         return NextResponse.json({ error: "Cannot delete admin users" }, { status: 403 });
       }
     }
 
     // Delete user from Firebase
-    await deleteDoc(doc(db, "users", userId));
+    await adminDb.collection("users").doc(userId).delete();
 
     return NextResponse.json({ success: true });
   } catch (error) {

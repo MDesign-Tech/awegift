@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { UserRole, getDefaultDashboardRoute } from "@/lib/rbac/roles";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
+import { adminDb } from "@/lib/firebase/admin";
 
 // ------------------------ PROTECTED ROUTES ------------------------
 // Only use roles defined in your simplified system: "admin" and "user"
@@ -28,11 +27,11 @@ export async function withRoleAuth(
 
   try {
     // Fetch user role from Firestore
-    const userDoc = await getDoc(doc(db, "users", token.sub));
+    const userDoc = await adminDb.collection("users").doc(token.sub).get();
     let userRole: UserRole = "user";
 
-    if (userDoc.exists()) {
-      userRole = (userDoc.data().role as UserRole) || "user";
+    if (userDoc.exists) {
+      userRole = (userDoc.data()?.role as UserRole) || "user";
     }
 
     // Role check
@@ -61,11 +60,11 @@ export async function checkRouteAccess(
   pathname: string
 ): Promise<boolean> {
   try {
-    const userDoc = await getDoc(doc(db, "users", userId));
+    const userDoc = await adminDb.collection("users").doc(userId).get();
     let userRole: UserRole = "user";
 
-    if (userDoc.exists()) {
-      userRole = (userDoc.data().role as UserRole) || "user";
+    if (userDoc.exists) {
+      userRole = (userDoc.data()?.role as UserRole) || "user";
     }
 
     for (const { route, roles } of PROTECTED_ROUTES) {

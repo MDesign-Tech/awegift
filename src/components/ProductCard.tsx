@@ -36,12 +36,7 @@ const ProductCard = ({ product }: Props) => {
     <div className="bg-white border border-gray-200 rounded-xl hover:shadow-xl hover:shadow-black/10 transition-all duration-300 overflow-hidden group transform hover:-translate-y-1 relative">
       {/* Image Section */}
       <div className="relative aspect-square overflow-hidden bg-gray-50">
-        <Link
-          href={{
-            pathname: `/products/${product?.id}`,
-            query: { id: product?.id },
-          }}
-        >
+        <Link href={`/products/${product?.id}`}>
           {product?.thumbnail ? (
             <img
               src={product.thumbnail}
@@ -118,12 +113,7 @@ const ProductCard = ({ product }: Props) => {
           </div>
         </div>
 
-        <Link
-          href={{
-            pathname: `/products/${product?.id}`,
-            query: { id: product?.id },
-          }}
-        >
+        <Link href={`/products/${product?.id}`}>
           <h3 className="font-semibold text-gray-900 hover:text-theme-color transition-colors line-clamp-1 mb-3 leading-tight">
             {product?.title}
           </h3>

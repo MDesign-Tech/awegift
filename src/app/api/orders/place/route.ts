@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import {
-  doc,
-  setDoc,
-} from "firebase/firestore";
-import { auth } from "../../../../../auth";
+import { adminDb } from "@/lib/firebase/admin";
+import auth from "@/auth";
 import { OrderData } from "../../../../../type";
 
 
@@ -21,7 +17,7 @@ export async function POST(request: NextRequest) {
     orderData.userId = userId;
 
     // Save the order to the orders collection with custom ID
-    await setDoc(doc(db, "orders", orderData.id), orderData);
+    await adminDb.collection("orders").doc(orderData.id).set(orderData);
 
     return NextResponse.json({
       message: "Order placed successfully",

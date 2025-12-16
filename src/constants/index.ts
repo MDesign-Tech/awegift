@@ -17,10 +17,8 @@ export const InfoNavigation = [
 
 export const banner = {
   _id: 1001,
-  title: "The best tablet Collection 2026",
-  textOne: "Exclusive offer",
-  offerPrice: "-30%",
-  textTwo: "off this week",
+  title: "The best products from AweGift in 2026",
   buttonLink: "/products",
   image: { src: bannerImageOne },
 };
+

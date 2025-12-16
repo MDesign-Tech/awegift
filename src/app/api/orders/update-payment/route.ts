@@ -1,27 +1,18 @@
 
 
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  doc,
-  getDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { OrderData, OrderStatusHistory } from "../../../../../type";
 import { OrderStatus } from "@/lib/orderStatus";
 import { UserRole } from "@/lib/rbac/roles";
 import { PaymentStatus, canUpdatePaymentStatus } from "@/lib/orderStatus";
-import { auth } from "../../../../../auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 import { fetchUserFromFirestore } from "@/lib/firebase/userService";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -48,10 +39,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Users can only update their own orders
-    const orderRef = doc(db, "orders", orderId);
-    const orderDoc = await getDoc(orderRef);
+    const orderRef = adminDb.collection("orders").doc(orderId);
+    const orderDoc = await orderRef.get();
 
-    if (!orderDoc.exists()) {
+    if (!orderDoc.exists) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
@@ -70,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     const updateData: any = {
-      updatedAt: serverTimestamp(),
+      updatedAt: new Date(),
       updatedBy: session.user.email,
     };
 
@@ -103,7 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update the order
-    await updateDoc(orderRef, updateData);
+    await orderRef.update(updateData);
 
     return NextResponse.json({
       message: "Order updated successfully",

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerUser } from "@/lib/auth/serverAuth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 import { checkRouteAccess } from "@/lib/rbac/middleware";
 import { UserRole, getDefaultDashboardRoute } from "@/lib/rbac/roles";
 
@@ -20,7 +21,8 @@ const authRoutes = ["/auth/signin", "/auth/register"];
 
 export async function middleware(request: any) {
   const { pathname } = request.nextUrl;
-  const user = await getServerUser();
+  const session = await getServerSession(authOptions);
+  const user = session?.user ? { id: session.user.id, role: (session.user as any).role } : null;
 
   // Restrict protected routes to logged-in users
   if (protectedRoutes.some((route) => pathname.startsWith(route))) {

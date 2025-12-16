@@ -1,34 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FaGoogle, FaGithub, FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
+import { signIn } from "next-auth/react";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 export default function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { signInWithEmailAndPassword, signInWithGoogle, signInWithGithub } = useAuth();
+
+ useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  const params = new URLSearchParams(window.location.search);
+  const error = params.get("error");
+
+  if (!error) return;
+
+  const errorMessages: Record<string, string> = {
+    CredentialsSignin: "Invalid email or password",
+    OAuthSignin: "OAuth sign-in failed",
+    OAuthCallback: "OAuth authentication failed",
+    AccessDenied: "Access denied",
+    SessionRequired: "Please sign in to continue",
+  };
+
+  toast.error(errorMessages[error] || "Authentication failed");
+
+  params.delete("error");
+  const newUrl = `${window.location.pathname}${
+    params.toString() ? `?${params.toString()}` : ""
+  }`;
+
+  window.history.replaceState({}, "", newUrl);
+}, []);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { error } = await signInWithEmailAndPassword(email, password, rememberMe);
+      const { error } = await signInWithEmailAndPassword(email, password);
 
       if (error) {
         toast.error(error.message || "Sign in failed");
       } else {
         toast.success("Sign in successful!");
-        router.push("/");
-        router.refresh();
+        // Force full page reload to ensure session data is applied
+        window.location.href = "/";
       }
     } catch (error) {
       toast.error("Something went wrong");
@@ -39,20 +66,10 @@ export default function SignInForm() {
 
   const handleOAuthSignIn = async (provider: "google" | "github") => {
     try {
-      let result;
-      if (provider === "google") {
-        result = await signInWithGoogle(rememberMe);
-      } else {
-        result = await signInWithGithub(rememberMe);
-      }
-
-      if (result.error) {
-        toast.error(result.error.message || "OAuth sign in failed");
-      } else {
-        toast.success("Sign in successful!");
-        router.push("/");
-        router.refresh();
-      }
+      await signIn(provider, { callbackUrl: "/" });
+      toast.success("Sign in successful!");
+      // Force full page reload to ensure session data is applied
+      window.location.href = "/";
     } catch (error) {
       toast.error("OAuth sign in failed");
     }
@@ -60,7 +77,7 @@ export default function SignInForm() {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
         <div>
           <label
             htmlFor="email"
@@ -73,7 +90,7 @@ export default function SignInForm() {
               id="email"
               name="email"
               type="email"
-              autoComplete="email"
+              autoComplete="off"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -95,7 +112,7 @@ export default function SignInForm() {
               id="password"
               name="password"
               type={showPassword ? "text" : "password"}
-              autoComplete="current-password"
+              autoComplete="off"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -116,24 +133,7 @@ export default function SignInForm() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <input
-              id="remember-me"
-              name="remember-me"
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 text-theme-color focus:ring-theme-color border-gray-300 rounded accent-theme-color"
-            />
-            <label
-              htmlFor="remember-me"
-              className="ml-2 block text-sm text-gray-900"
-            >
-              Remember me
-            </label>
-          </div>
-
+        <div className="flex items-center justify-end">
           <div className="text-sm">
             <Link
               href="/auth/forgot-password"

@@ -22,12 +22,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
         <div className="flex">
           {/* Image Section */}
           <div className="w-48 h-48 flex-shrink-0 relative group/image">
-            <Link
-              href={{
-                pathname: `/products/${product?.id}`,
-                query: { id: product?.id },
-              }}
-            >
+            <Link href={`/products/${product?.id}`}>
               {product?.thumbnail ? (
                 <img
                   src={product.thumbnail}
@@ -99,12 +94,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
                   </div>
                 </div>
 
-                <Link
-                  href={{
-                    pathname: `/products/${product?.id}`,
-                    query: { id: product?.id },
-                  }}
-                >
+                <Link href={`/products/${product?.id}`}>
                   <h3 className="text-lg font-semibold text-gray-900 hover:text-theme-color transition-colors line-clamp-2 mb-3">
                     {product?.title}
                   </h3>
@@ -187,12 +177,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
     <div className="bg-white border border-gray-200 rounded-xl hover:shadow-xl hover:shadow-black/10 transition-all duration-300 overflow-hidden group transform hover:-translate-y-1">
       {/* Image Section */}
       <div className="relative aspect-square overflow-hidden bg-gray-50">
-        <Link
-          href={{
-            pathname: `/products/${product?.id}`,
-            query: { id: product?.id },
-          }}
-        >
+        <Link href={`/products/${product?.id}`}>
           {product?.thumbnail ? (
             <img
               src={product.thumbnail}
@@ -270,12 +255,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
           </div>
         </div>
 
-        <Link
-          href={{
-            pathname: `/products/${product?.id}`,
-            query: { id: product?.id },
-          }}
-        >
+        <Link href={`/products/${product?.id}`}>
           <h3 className="font-semibold text-gray-900 hover:text-theme-color transition-colors truncate mb-3 leading-tight text-sm">
             {product?.title}
           </h3>

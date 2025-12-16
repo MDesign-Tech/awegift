@@ -84,12 +84,6 @@ const SettingsDropdown = () => {
       description: "Manage delivery addresses",
     },
     {
-      icon: FiCreditCard,
-      label: "Payment Methods",
-      path: "/account/payment",
-      description: "Manage payment options",
-    },
-    {
       icon: FiBell,
       label: unreadCount > 0 ? `Notifications (${unreadCount})` : "Notifications",
       path: "/account/notifications",

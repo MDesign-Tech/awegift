@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasPermission } from "@/lib/rbac/roles";
-import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  getDocs,
-  doc,
-  deleteDoc,
-  writeBatch,
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -23,29 +16,29 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Use batch delete for better performance
-    const batch = writeBatch(db);
+    const batch = adminDb.batch();
 
     // Delete orders from the orders collection
     for (const orderId of orderIds) {
-      const orderRef = doc(db, "orders", orderId);
+      const orderRef = adminDb.collection("orders").doc(orderId);
       batch.delete(orderRef);
     }
 
     // Also need to remove these orders from user documents
     // First find all users who might have these orders
-    const usersRef = collection(db, "users");
-    const usersSnapshot = await getDocs(usersRef);
+    const usersRef = adminDb.collection("users");
+    const usersSnapshot = await usersRef.get();
 
     usersSnapshot.docs.forEach((userDoc) => {
       const userData = userDoc.data();
-      if (userData.orders && Array.isArray(userData.orders)) {
+      if (userData?.orders && Array.isArray(userData.orders)) {
         const filteredOrders = userData.orders.filter(
           (order: any) => !orderIds.includes(order.id)
         );
 
         if (filteredOrders.length !== userData.orders.length) {
           // This user had some of the deleted orders
-          const userRef = doc(db, "users", userDoc.id);
+          const userRef = adminDb.collection("users").doc(userDoc.id);
           batch.update(userRef, { orders: filteredOrders });
         }
       }

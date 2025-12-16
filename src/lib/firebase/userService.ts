@@ -1,42 +1,10 @@
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase";
-
-export interface FirestoreUser {
-  id: string;
-  name: string;
-  email: string;
-  image?: string;
-  role: string;
-  createdAt: string;
-  updatedAt: string;
-  emailVerified: boolean;
-  provider?: string;
-  profile: {
-    firstName: string;
-    lastName: string;
-    phone: string;
-    addresses: Array<{
-      id: string;
-      type: string;
-      street: string;
-      city: string;
-      state: string;
-      zipCode: string;
-      country: string;
-      isDefault: boolean;
-    }>;
-  };
-  preferences: {
-    newsletter: boolean;
-    notifications: boolean;
-  };
-  cart: any[];
-  wishlist: any[];
-}
+import { UserData } from "../../../type";
 
 export async function fetchUserFromFirestore(
   userId: string
-): Promise<FirestoreUser | null> {
+): Promise<UserData | null> {
   try {
     const userDoc = await getDoc(doc(db, "users", userId));
 
@@ -45,7 +13,7 @@ export async function fetchUserFromFirestore(
       return {
         id: userId,
         ...userData,
-      } as FirestoreUser;
+      } as UserData;
     }
 
     return null;
@@ -57,7 +25,7 @@ export async function fetchUserFromFirestore(
 
 export async function getCurrentUserData(
   session: any
-): Promise<FirestoreUser | null> {
+): Promise<UserData | null> {
   if (!session?.user?.id) {
     return null;
   }

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { storage } from "@/lib/firebase/config";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { adminStorage } from "@/lib/firebase/admin";
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,23 +34,27 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now();
     const fileName = `profile-images/${email}-${timestamp}`;
 
-    // Create storage reference
-    const storageRef = ref(storage, fileName);
+    // Get bucket
+    const bucket = adminStorage.bucket();
+
+    // Create file reference
+    const fileRef = bucket.file(fileName);
 
     // Convert file to buffer
-    const buffer = await file.arrayBuffer();
+    const buffer = Buffer.from(await file.arrayBuffer());
 
     // Upload file
-    await uploadBytes(storageRef, buffer, {
+    await fileRef.save(buffer, {
       contentType: file.type,
+      public: true, // Make it publicly accessible
     });
 
-    // Get download URL
-    const downloadURL = await getDownloadURL(storageRef);
+    // Get public URL
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
 
     return NextResponse.json({
       success: true,
-      imageUrl: downloadURL,
+      imageUrl: publicUrl,
     });
   } catch (error) {
     console.error("Image upload error:", error);
