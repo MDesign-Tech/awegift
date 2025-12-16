@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import { FiAlertCircle, FiLoader } from "react-icons/fi";
 import { FaSignInAlt } from "react-icons/fa";
 import Link from "next/link";
-import { resetCart } from "@/redux/shofySlice";
+import { resetCart } from "@/redux/aweGiftSlice";
 
 interface Props {
   cart: ProductType[];

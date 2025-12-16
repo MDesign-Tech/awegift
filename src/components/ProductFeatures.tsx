@@ -11,15 +11,15 @@ import PriceFormat from "./PriceFormat";
 const ProductFeatures = () => {
   const features = [
     {
-      icon: <FiTruck className="w-8 h-8 text-blue-600" />,
+      icon: <FiTruck className="w-8 h-8 text-theme-color" />,
       title: "Free Shipping",
       description: (
         <span>
           Free delivery on orders over <PriceFormat amount={1000} />
         </span>
       ),
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-200",
+      bgColor: "bg-light-bg",
+      borderColor: "border-border-color",
     },
     {
       icon: <FiShield className="w-8 h-8 text-green-600" />,

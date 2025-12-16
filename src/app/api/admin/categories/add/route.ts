@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, addDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { CategoryType } from "../../../../../../type";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
@@ -38,7 +37,7 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    const docRef = await addDoc(collection(db, "categories"), categoryWithMeta);
+    const docRef = await adminDb.collection("categories").add(categoryWithMeta);
 
     return NextResponse.json({
       ...categoryWithMeta,

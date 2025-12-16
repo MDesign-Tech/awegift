@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
-import { FirestoreUser, fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { adminDb } from "@/lib/firebase/admin";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,9 +23,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", email));
-    const existingUser = await getDocs(q);
+    const usersRef = adminDb.collection("users");
+    const existingUser = await usersRef.where("email", "==", email).get();
 
     if (!existingUser.empty) {
       return NextResponse.json(
@@ -43,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create user in Firestore
-    const userDoc = await addDoc(usersRef, {
+    const userDoc = await usersRef.add({
       name,
       email,
       password: hashedPassword,
@@ -65,6 +62,7 @@ export async function POST(request: NextRequest) {
       },
       cart: [],
       wishlist: [],
+      orders: [],
     });
 
     return NextResponse.json(

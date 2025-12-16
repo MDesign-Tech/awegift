@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { CategoryType } from "../../../../../../type";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
@@ -11,10 +10,10 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const docRef = doc(db, "categories", id);
-    const docSnap = await getDoc(docRef);
+    const docRef = adminDb.collection("categories").doc(id);
+    const docSnap = await docRef.get();
 
-    if (!docSnap.exists()) {
+    if (!docSnap.exists) {
       return NextResponse.json(
         { error: "Category not found" },
         { status: 404 }
@@ -71,8 +70,8 @@ export async function PUT(
       },
     };
 
-    const docRef = doc(db, "categories", id);
-    await updateDoc(docRef, updatedData);
+    const docRef = adminDb.collection("categories").doc(id);
+    await docRef.update(updatedData);
 
     return NextResponse.json({
       id,
@@ -104,8 +103,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const docRef = doc(db, "categories", id);
-    await deleteDoc(docRef);
+    const docRef = adminDb.collection("categories").doc(id);
+    await docRef.delete();
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -116,3 +115,4 @@ export async function DELETE(
     );
   }
 }
+

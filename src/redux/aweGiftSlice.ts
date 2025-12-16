@@ -1,11 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { ProductType } from "../../type";
-import { FirestoreUser } from "@/lib/firebase/userService";
+import { ProductType, UserData } from "../../type";
 
 interface InitialState {
   cart: ProductType[];
   favorite: ProductType[];
-  userInfo: FirestoreUser | null;
+  userInfo: UserData | null;
 }
 
 const initialState: InitialState = {

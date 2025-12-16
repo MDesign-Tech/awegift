@@ -58,14 +58,15 @@ export default async function CategoriesPage() {
   return (
     <Container className="py-10">
       {/* Page Header */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Shop by Categories
+      <div className="flex justify-between mb-6">
+       <div>
+         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          Categories
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Discover our wide range of product categories. Find exactly what
-          you&apos;re looking for with our carefully curated collections.
+          Discover our wide range of product categories.
         </p>
+       </div>
 
         {/* Breadcrumb */}
         <nav className="mt-6 text-sm">

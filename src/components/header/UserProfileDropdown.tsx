@@ -88,10 +88,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
 
   // Check if user has any admin role
   const isAdminUser = currentUser?.role && [
-    "admin",
-    "accountant",
-    "packer",
-    "deliveryman"
+    "admin"
   ].includes(currentUser.role as any);
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -195,11 +192,6 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
                 {user?.name}
               </p>
               <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-              {currentUser?.role && (
-                <p className="text-xs text-blue-600 font-medium mt-1">
-                  {getRoleDisplayName(currentUser.role as any)}
-                </p>
-              )}
             </div>
 
             {/* Menu Items */}

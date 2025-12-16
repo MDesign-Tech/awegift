@@ -22,12 +22,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
         <div className="flex">
           {/* Image Section */}
           <div className="w-48 h-48 flex-shrink-0 relative group/image">
-            <Link
-              href={{
-                pathname: `/products/${product?.id}`,
-                query: { id: product?.id },
-              }}
-            >
+            <Link href={`/products/${product?.id}`}>
               {product?.thumbnail ? (
                 <img
                   src={product.thumbnail}
@@ -81,7 +76,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
                   <p className="text-sm text-gray-500 uppercase tracking-wide">
                     {product?.categories && product.categories.length > 0 ? product.categories[0] : "No category"}
                   </p>
-                  <div className="flex bg-blue-50 px-2 py-1 rounded-full items-center gap-1">
+                  <div className="flex bg- px-2 py-1 rounded-full items-center gap-1">
                     <a
                       href={`https://wa.me/250781990310?text=Hi%20I%20need%20more%20about%20this%20product%20(${encodeURIComponent(product?.title || "this product")})`}
                       target="_blank"
@@ -92,20 +87,15 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
                       <FaWhatsapp />
                     </a>
                     {product?.brand && (
-                      <span className="text-xs text-blue-600 font-medium">
+                      <span className="text-xs text-theme-color font-medium">
                         {product.brand}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <Link
-                  href={{
-                    pathname: `/products/${product?.id}`,
-                    query: { id: product?.id },
-                  }}
-                >
-                  <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors line-clamp-2 mb-3">
+                <Link href={`/products/${product?.id}`}>
+                  <h3 className="text-lg font-semibold text-gray-900 hover:text-theme-color transition-colors line-clamp-2 mb-3">
                     {product?.title}
                   </h3>
                 </Link>
@@ -187,12 +177,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
     <div className="bg-white border border-gray-200 rounded-xl hover:shadow-xl hover:shadow-black/10 transition-all duration-300 overflow-hidden group transform hover:-translate-y-1">
       {/* Image Section */}
       <div className="relative aspect-square overflow-hidden bg-gray-50">
-        <Link
-          href={{
-            pathname: `/products/${product?.id}`,
-            query: { id: product?.id },
-          }}
-        >
+        <Link href={`/products/${product?.id}`}>
           {product?.thumbnail ? (
             <img
               src={product.thumbnail}
@@ -252,7 +237,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
           <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">
             {product?.categories && product.categories.length > 0 ? product.categories[0] : "No category"}
           </p>
-          <div className="flex bg-blue-50 px-2 py-1 rounded-full items-center gap-1">
+          <div className="flex bg-light-bg px-2 py-1 rounded-full items-center gap-1">
             <a
               href={`https://wa.me/250781990310?text=Hi%20I%20need%20more%20about%20this%20product%20(${encodeURIComponent(product?.title || "this product")})`}
               target="_blank"
@@ -263,20 +248,15 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
               <FaWhatsapp />
             </a>
             {product?.brand && (
-              <span className="text-xs text-blue-600 font-medium">
+              <span className="text-xs text-theme-color font-medium">
                 {product.brand}
               </span>
             )}
           </div>
         </div>
 
-        <Link
-          href={{
-            pathname: `/products/${product?.id}`,
-            query: { id: product?.id },
-          }}
-        >
-          <h3 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors truncate mb-3 leading-tight text-sm">
+        <Link href={`/products/${product?.id}`}>
+          <h3 className="font-semibold text-gray-900 hover:text-theme-color transition-colors truncate mb-3 leading-tight text-sm">
             {product?.title}
           </h3>
         </Link>

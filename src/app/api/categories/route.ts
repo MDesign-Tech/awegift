@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, addDoc, query, orderBy, getCountFromServer, where } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { CategoryType } from "../../../../type";
 
 export async function GET(request: NextRequest) {
   try {
-    const categoriesRef = collection(db, "categories");
-    const q = query(categoriesRef, orderBy("name"));
-    const snapshot = await getDocs(q);
+    const categoriesRef = adminDb.collection("categories");
+    const q = categoriesRef.orderBy("name");
+    const snapshot = await q.get();
 
     // Get all categories first
     const categories = snapshot.docs.map(doc => ({
@@ -19,10 +18,10 @@ export async function GET(request: NextRequest) {
     const categoriesWithCounts = await Promise.all(
       categories.map(async (category) => {
         try {
-          const productsRef = collection(db, "products");
-          const productsQuery = query(productsRef, where("categories", "array-contains", category.name));
-          const productsSnapshot = await getCountFromServer(productsQuery);
-          const productCount = productsSnapshot.data().count;
+          const productsRef = adminDb.collection("products");
+          const productsQuery = productsRef.where("categories", "array-contains", category.name);
+          const productsSnapshot = await productsQuery.get();
+          const productCount = productsSnapshot.size;
 
           return {
             ...category,

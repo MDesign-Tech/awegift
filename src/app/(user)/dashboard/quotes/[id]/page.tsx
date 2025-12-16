@@ -16,15 +16,15 @@ import {
   FiEdit2,
 } from "react-icons/fi";
 import Link from "next/link";
-import { QuoteType, QuoteMessage, QuoteProductType } from "../../../../../../type";
+import { QuotationType, QuotationMessage, QuotationProductType } from "../../../../../../type";
 import { toast } from "react-hot-toast";
 
 export default function AdminQuoteDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const { data: session } = useSession();
-  const [quote, setQuote] = useState<QuoteType | null>(null);
-  const [editableQuote, setEditableQuote] = useState<QuoteType | null>(null);
+  const [quote, setQuote] = useState<QuotationType | null>(null);
+  const [editableQuote, setEditableQuote] = useState<QuotationType | null>(null);
   const [productsData, setProductsData] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -44,8 +44,8 @@ export default function AdminQuoteDetailPage() {
     if (editableQuote) {
       const fetchProductData = async () => {
         const productIds: string[] = editableQuote.products
-          .filter((p: QuoteProductType) => p.productId)
-          .map((p: QuoteProductType) => p.productId!)
+          .filter((p: QuotationProductType) => p.productId)
+          .map((p: QuotationProductType) => p.productId!)
           .filter((id): id is string => id !== null);
 
         if (productIds.length === 0) return;
@@ -92,7 +92,7 @@ export default function AdminQuoteDetailPage() {
   };
 
   // Calculate totals
-  const calculateTotals = (products: QuoteProductType[], discount = 0, deliveryFee = 0) => {
+  const calculateTotals = (products: QuotationProductType[], discount = 0, deliveryFee = 0) => {
     const subtotal = products.reduce((sum, product) => {
       return sum + (product.unitPrice || 0) * product.quantity;
     }, 0);
@@ -103,7 +103,7 @@ export default function AdminQuoteDetailPage() {
   };
 
   // Update product field
-  const updateProduct = (index: number, field: keyof QuoteProductType, value: any) => {
+  const updateProduct = (index: number, field: keyof QuotationProductType, value: any) => {
     if (!editableQuote) return;
 
     const updatedProducts = [...editableQuote.products];
@@ -130,7 +130,7 @@ export default function AdminQuoteDetailPage() {
   };
 
   // Update quote fields
-  const updateQuoteField = (field: keyof QuoteType, value: any) => {
+  const updateQuoteField = (field: keyof QuotationType, value: any) => {
     if (!editableQuote) return;
 
     const updatedQuote = { ...editableQuote, [field]: value };
@@ -179,7 +179,7 @@ export default function AdminQuoteDetailPage() {
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !editableQuote) return;
 
-    const message: QuoteMessage = {
+    const message: QuotationMessage = {
       sender: 'admin',
       message: newMessage,
       timestamp: new Date(),
@@ -251,7 +251,7 @@ export default function AdminQuoteDetailPage() {
           <div className="text-center">
             <div className="text-red-600 mb-2">⚠️</div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Quote not found
+              Quotation not found
             </h3>
             <Link
               href="/dashboard/quotes"
@@ -276,12 +276,12 @@ export default function AdminQuoteDetailPage() {
             className="inline-flex items-center text-theme-color hover:text-theme-color/80 mb-4"
           >
             <FiArrowLeft className="w-4 h-4 mr-2" />
-            Back to Quotes
+            Back to Quotations
           </Link>
           <div className="flex items-center justify-between">
             <div>
               <Title className="text-2xl font-bold mb-2">
-                Edit Quote {quote.id}
+                Edit Quotation {quote.id}
               </Title>
               <p className="text-gray-600">
                 Customer: {quote.email}
@@ -335,7 +335,7 @@ export default function AdminQuoteDetailPage() {
                 }`}
               >
                 <FiEdit2 className="inline mr-2 h-4 w-4" />
-                Edit Quote
+                Edit Quotation
               </button>
               <button
                 onClick={() => setActiveTab('messages')}
@@ -382,7 +382,7 @@ export default function AdminQuoteDetailPage() {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {editableQuote.products.map((product: QuoteProductType, index: number) => {
+                        {editableQuote.products.map((product: QuotationProductType, index: number) => {
                           const productData = product.productId ? productsData[product.productId] : null;
                           return (
                             <tr key={index}>
@@ -508,7 +508,7 @@ export default function AdminQuoteDetailPage() {
                 <h3 className="text-lg font-semibold mb-4">Message History</h3>
                 <div className="space-y-4 max-h-96 overflow-y-auto mb-6">
                   {editableQuote.messages && editableQuote.messages.length > 0 ? (
-                    editableQuote.messages.map((message: QuoteMessage, index: number) => (
+                    editableQuote.messages.map((message: QuotationMessage, index: number) => (
                       <div
                         key={index}
                         className={`p-4 rounded-lg ${
@@ -596,7 +596,7 @@ export default function AdminQuoteDetailPage() {
           <div className="space-y-6">
             {/* Quote Info */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Quote Information</h3>
+              <h3 className="text-lg font-semibold mb-4">Quotation Information</h3>
               <div className="space-y-3 text-sm">
                 <div>
                   <span className="font-medium">Status:</span>{" "}

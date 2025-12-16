@@ -262,7 +262,7 @@ export default function DashboardCategoriesClient() {
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="flex items-center px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm disabled:opacity-50"
+              className="flex items-center px-3 py-2 bg-theme-color text-white rounded-lg hover:bg-accent-color transition-colors text-sm disabled:opacity-50"
             >
               <FiRefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               {isRefreshing ? 'Refreshing...' : 'Refresh'}
@@ -319,7 +319,7 @@ export default function DashboardCategoriesClient() {
                   type="checkbox"
                   checked={selectAll}
                   onChange={handleSelectAll}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                  className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color disabled:opacity-50"
                   disabled={isRefreshing || displayCategories.length === 0}
                 />
               </th>

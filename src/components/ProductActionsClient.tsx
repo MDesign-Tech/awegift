@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useSession } from "next-auth/react";
-import { addToFavorite } from "@/redux/shofySlice";
+import { addToFavorite } from "@/redux/aweGiftSlice";
 import toast from "react-hot-toast";
 import { ProductType, StateType } from "../../type";
 

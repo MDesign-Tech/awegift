@@ -12,7 +12,7 @@ import { OrderData, OrderItem, Address } from "../../../../../type";
 import { ORDER_STATUSES, PAYMENT_STATUSES, PAYMENT_METHODS, PaymentStatus, PaymentMethod } from "@/lib/orderStatus";
 import { UserRole } from "@/lib/rbac/roles";
 import { fetchUserFromFirestore } from "@/lib/firebase/userService";
-import { auth } from "../../../../../auth";
+import  auth from "@/auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 

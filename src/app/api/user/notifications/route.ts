@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "../../../../../auth";
-import { collection, query, where, orderBy, getDocs, doc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
+import { adminDb } from "@/lib/firebase/admin";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -15,13 +15,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Get notifications for the current user
-    const notificationsRef = collection(db, "notifications");
-    const q = query(
-      notificationsRef,
-      where("userId", "==", session.user.id)
-    );
-
-    const querySnapshot = await getDocs(q);
+    const notificationsRef = adminDb.collection("notifications");
+    const querySnapshot = await notificationsRef.where("userId", "==", session.user.id).get();
     const notifications = querySnapshot.docs
       .map(doc => ({
         id: doc.id,
@@ -49,7 +44,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -68,10 +63,9 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update notification read status
-    const notificationRef = doc(db, "notifications", notificationId);
-    await updateDoc(notificationRef, {
+    await adminDb.collection("notifications").doc(notificationId).update({
       read: read ?? true,
-      updatedAt: serverTimestamp(),
+      updatedAt: new Date(),
     });
 
     return NextResponse.json({ message: "Notification updated" });

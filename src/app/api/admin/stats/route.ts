@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 import { ORDER_STATUSES, PAYMENT_STATUSES } from "@/lib/orderStatus";
@@ -10,17 +9,17 @@ export async function GET(request: NextRequest) {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     if (!token?.sub) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const userDoc = await getDoc(doc(db, "users", token.sub));
-    if (!userDoc.exists()) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const userDoc = await adminDb.collection("users").doc(token.sub).get();
+    if (!userDoc.exists) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     const userRole = (userDoc.data()?.role as UserRole) || "user";
     if (!hasPermission(userRole, "canViewAnalytics"))
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
 
     const [usersSnap, ordersSnap, productsSnap] = await Promise.all([
-      getDocs(collection(db, "users")),
-      getDocs(collection(db, "orders")),
-      getDocs(collection(db, "products")),
+      adminDb.collection("users").limit(5000).get(),
+      adminDb.collection("orders").limit(5000).get(),
+      adminDb.collection("products").limit(5000).get(),
     ]);
 
     const users = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -39,9 +38,9 @@ export async function GET(request: NextRequest) {
     // Pending Orders
     const pendingOrders = orders.filter(o => o.status === ORDER_STATUSES.PENDING).length;
 
-    // Completed Orders (DELIVERED + paid)
+    // Completed Orders (COMPLETED + paid)
     const completedOrders = orders.filter(
-      o => o.status === ORDER_STATUSES.DELIVERED && isPaid(o)
+      o => o.status === ORDER_STATUSES.COMPLETED && isPaid(o)
     ).length;
 
     // Cancelled Orders

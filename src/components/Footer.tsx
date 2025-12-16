@@ -63,7 +63,7 @@ const Footer = () => {
                 <BsEnvelopeAt /> support@awegift.com
               </p>
               <p className="text-base flex items-center gap-x-3 text-gray-600">
-                <GrLocation /> Jigali, Rwanda
+                <GrLocation />Kigali, Rwanda
               </p>
             </div>
           </div>

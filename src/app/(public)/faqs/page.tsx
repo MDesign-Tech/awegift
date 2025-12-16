@@ -1,8 +1,13 @@
-"use client";
+"use client"
 
 import { useState } from "react";
 import Container from "@/components/Container";
 import Title from "@/components/Title";
+<<<<<<< HEAD
+=======
+// import { Metadata } from "next";
+import { useState } from "react";
+>>>>>>> updates
 import {
   FiChevronDown,
   FiChevronRight,
@@ -10,7 +15,15 @@ import {
   FiSearch,
 } from "react-icons/fi";
 
+<<<<<<< HEAD
 /* 🔹 MOVE ALL DATA HERE */
+=======
+// export const metadata: Metadata = {
+//   title: "FAQs - AweGift",
+//   description: "Frequently Asked Questions - Find answers to common questions about AweGift",
+// };
+
+>>>>>>> updates
 const faqCategories = [
   {
     id: "orders",

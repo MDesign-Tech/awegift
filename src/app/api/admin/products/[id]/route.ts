@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { ProductType } from "../../../../../../type";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
@@ -23,14 +22,16 @@ export async function GET(
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const docRef = doc(db, "products", id);
-    const docSnap = await getDoc(docRef);
+    const docRef = adminDb.collection("products").doc(id);
+    const docSnap = await docRef.get();
 
-    if (!docSnap.exists()) {
+    if (!docSnap.exists) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    const product = { id: docSnap.id, ...docSnap.data() } as ProductType & { id: string };
+    const data = docSnap.data() as any;
+    const { id: _, ...productData } = data;
+    const product = { id: docSnap.id, ...productData } as ProductType;
     return NextResponse.json(product);
   } catch (error) {
     console.error("Error fetching product:", error);
@@ -58,15 +59,17 @@ export async function PUT(
 
     const productData: Partial<ProductType> = await request.json();
 
-    // Validate required fields only if present
-    if (productData.title === "" || productData.price == null || (productData.categories && (!Array.isArray(productData.categories) || productData.categories.length === 0))) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    // Validate provided fields
+    if ((productData.title !== undefined && productData.title === "") ||
+        (productData.price !== undefined && productData.price === null) ||
+        (productData.categories !== undefined && (!Array.isArray(productData.categories) || productData.categories.length === 0))) {
+      return NextResponse.json({ error: "Invalid field values" }, { status: 400 });
     }
 
-    const docRef = doc(db, "products", id);
-    const docSnap = await getDoc(docRef);
+    const docRef = adminDb.collection("products").doc(id);
+    const docSnap = await docRef.get();
 
-    if (!docSnap.exists()) {
+    if (!docSnap.exists) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
@@ -86,9 +89,12 @@ export async function PUT(
       qrCode: existingData.meta?.qrCode || "",
     };
 
-    await updateDoc(docRef, updatedData);
+    await docRef.update(updatedData);
+    console.log("Product updated successfully:", id);
 
-    return NextResponse.json({ id, ...docSnap.data(), ...updatedData });
+    const data = docSnap.data() as any;
+    const { id: _, ...docProductData } = data;
+    return NextResponse.json({ id, ...docProductData, ...updatedData });
   } catch (error) {
     console.error("Error updating product:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
@@ -113,14 +119,14 @@ export async function DELETE(
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const docRef = doc(db, "products", id);
-    const docSnap = await getDoc(docRef);
+    const docRef = adminDb.collection("products").doc(id);
+    const docSnap = await docRef.get();
 
-    if (!docSnap.exists()) {
+    if (!docSnap.exists) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    await deleteDoc(docRef);
+    await docRef.delete();
     return NextResponse.json({ success: true, message: "Product deleted successfully" });
   } catch (error) {
     console.error("Error deleting product:", error);

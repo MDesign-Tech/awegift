@@ -29,6 +29,14 @@ export async function GET(
       ...docSnap.data(),
     } as ProductType & { id: string };
 
+    // Check if product is active
+    if (!product.isActive) {
+      return NextResponse.json(
+        { error: "Product not found" },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json(product);
   } catch (error) {
     console.error("Error fetching product:", error);

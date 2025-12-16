@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
@@ -17,9 +16,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const notificationsRef = collection(db, "notifications");
-    const q = query(notificationsRef, orderBy("createdAt", "desc"));
-    const snapshot = await getDocs(q);
+    const snapshot = await adminDb.collection("notifications").orderBy("createdAt", "desc").limit(5000).get();
 
     const notifications = snapshot.docs.map(doc => ({
       id: doc.id,

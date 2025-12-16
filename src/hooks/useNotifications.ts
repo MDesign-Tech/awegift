@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { collection, query, where, orderBy, onSnapshot, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 interface Notification {
   id: string;
@@ -23,13 +23,13 @@ interface NotificationPopdown {
 }
 
 export const useNotifications = () => {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [newNotification, setNewNotification] = useState<NotificationPopdown | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!session?.user?.id) {
+    if (!user?.uid) {
       setLoading(false);
       return;
     }
@@ -37,7 +37,7 @@ export const useNotifications = () => {
     const notificationsRef = collection(db, "notifications");
     const q = query(
       notificationsRef,
-      where("userId", "==", session.user.id),
+      where("userId", "==", user.uid),
       orderBy("createdAt", "desc")
     );
 
@@ -93,7 +93,7 @@ export const useNotifications = () => {
     });
 
     return () => unsubscribe();
-  }, [session?.user?.id, notifications.length]);
+  }, [user?.uid, notifications.length]);
 
   const clearNewNotification = () => {
     setNewNotification(null);

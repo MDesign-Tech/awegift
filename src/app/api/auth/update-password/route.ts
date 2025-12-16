@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hash, compare } from "bcryptjs";
-import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  doc,
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 
 export async function PUT(request: NextRequest) {
   try {
@@ -32,9 +24,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Find user in Firestore
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", email));
-    const querySnapshot = await getDocs(q);
+    const usersRef = adminDb.collection("users");
+    const querySnapshot = await usersRef.where("email", "==", email).get();
 
     if (querySnapshot.empty) {
       return NextResponse.json(
@@ -68,8 +59,7 @@ export async function PUT(request: NextRequest) {
     const hashedPassword = await hash(newPassword, 12);
 
     // Update password in Firestore
-    const userDocRef = doc(db, "users", userDoc.id);
-    await updateDoc(userDocRef, {
+    await userDoc.ref.update({
       password: hashedPassword,
       updatedAt: new Date().toISOString(),
     });

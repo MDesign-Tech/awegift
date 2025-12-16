@@ -14,12 +14,12 @@ import {
   FiClock,
 } from "react-icons/fi";
 import Link from "next/link";
-import { QuoteType, QuoteProductType } from "../../../type";
-import { getStatusDisplayInfo } from "@/lib/quoteStatuses";
+import { QuotationType, QuotationProductType } from "../../../type";
+import { getStatusDisplayInfo, QuotationStatus } from "@/lib/quoteStatuses";
 
 interface QuotesListProps {
   showHeader?: boolean;
-  onQuotesChange?: (quotes: QuoteType[]) => void;
+  onQuotesChange?: (quotes: QuotationType[]) => void;
 }
 
 export default function QuotesList({
@@ -27,10 +27,10 @@ export default function QuotesList({
   onQuotesChange,
 }: QuotesListProps) {
   const { data: session } = useSession();
-  const [quotes, setQuotes] = useState<QuoteType[]>([]);
+  const [quotes, setQuotes] = useState<QuotationType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedQuote, setSelectedQuote] = useState<QuoteType | null>(null);
+  const [selectedQuote, setSelectedQuote] = useState<QuotationType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function QuotesList({
       const data = await response.json();
       if (data.quotes && Array.isArray(data.quotes)) {
         const sortedQuotes = data.quotes.sort(
-          (a: QuoteType, b: QuoteType) =>
+          (a: QuotationType, b: QuotationType) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         setQuotes(sortedQuotes);
@@ -94,7 +94,7 @@ export default function QuotesList({
   };
 
 
-  const getProductSummary = (products: QuoteProductType[]) => {
+  const getProductSummary = (products: QuotationProductType[]) => {
     if (products.length === 0) return { name: "No products", quantity: 0, image: null };
 
     if (products.length === 1) {
@@ -112,14 +112,14 @@ export default function QuotesList({
     };
   };
 
-  const getEstimatedPrice = (quote: QuoteType) => {
+  const getEstimatedPrice = (quote: QuotationType) => {
     if (quote.finalAmount > 0) {
       return `${quote.finalAmount.toLocaleString()} RWF`;
     }
     return "Waiting for seller response";
   };
 
-  const openQuoteModal = (quote: QuoteType) => {
+  const openQuoteModal = (quote: QuotationType) => {
     setSelectedQuote(quote);
     setIsModalOpen(true);
   };
@@ -148,7 +148,7 @@ export default function QuotesList({
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
-                Quote Details - {selectedQuote.id}
+                Quotation Details - {selectedQuote.id}
               </h3>
               <p className="text-sm text-gray-600">
                 Submitted on {formatDate(selectedQuote.createdAt)}
@@ -171,7 +171,7 @@ export default function QuotesList({
                   <FiPackage className="w-5 h-5 text-theme-color" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Status</p>
+                  <p className="text-sm text-gray-600">Quotation Status</p>
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-medium rounded-full capitalize ${getStatusDisplayInfo(selectedQuote.status).color}`}
                   >
@@ -185,7 +185,7 @@ export default function QuotesList({
                   <FiMessageSquare className="w-5 h-5 text-theme-color" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Estimated Price</p>
+                  <p className="text-sm text-gray-600">Estimated Quotation Price</p>
                   <p className="font-semibold text-gray-900">
                     {getEstimatedPrice(selectedQuote)}
                   </p>
@@ -208,7 +208,7 @@ export default function QuotesList({
             {/* Products */}
             <div>
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Products ({selectedQuote.products.length})
+                Quotation Products ({selectedQuote.products.length})
               </h4>
               <div className="overflow-x-auto">
                 <table className="w-full border border-gray-300 min-w-full">
@@ -232,7 +232,7 @@ export default function QuotesList({
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedQuote.products.map((product: QuoteProductType, index: number) => (
+                    {selectedQuote.products.map((product: QuotationProductType, index: number) => (
                       <tr key={`${product.productId || 'custom'}-${index}`} className="border-b border-gray-200 hover:bg-gray-50">
                         <td className="py-3 px-4 text-sm text-gray-900">
                           {product.productId ? (
@@ -276,7 +276,7 @@ export default function QuotesList({
                       <span className="text-theme-white text-xs">ℹ</span>
                     </div>
                     <div>
-                      <h4 className="text-sm font-medium text-gray-900 mb-1">Quote Status: Pending</h4>
+                      <h4 className="text-sm font-medium text-gray-900 mb-1">Quotation Status: Pending</h4>
                       <p className="text-sm text-light-text">
                         Unit prices and total prices will be provided by our team after reviewing your quote request.
                       </p>
@@ -312,7 +312,7 @@ export default function QuotesList({
                 href={`/account/quotes/${selectedQuote.id}`}
                 className="px-4 py-2 text-sm font-medium text-white bg-theme-color rounded-md hover:bg-theme-color/90 transition-colors"
               >
-                View Full Quote
+                View Full Quotation
               </Link>
             </div>
           </div>
@@ -326,8 +326,8 @@ export default function QuotesList({
       <div className="space-y-4">
         {showHeader && (
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Quote History</h2>
-            <p className="text-gray-600">Track and manage your quotes</p>
+            <h2 className="text-2xl font-bold text-gray-900">Quotation History</h2>
+            <p className="text-gray-600">Track and manage your quotations</p>
           </div>
         )}
         {[...Array(3)].map((_, i) => (
@@ -351,7 +351,7 @@ export default function QuotesList({
       <div className="text-center py-12">
         <div className="text-red-600 mb-2">⚠️</div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">
-          Error Loading Quotes
+          Error Loading Quotations
         </h3>
         <p className="text-gray-600 mb-4">{error}</p>
         <button
@@ -369,16 +369,16 @@ export default function QuotesList({
       <div className="text-center py-12">
         <div className="text-6xl mb-4">💬</div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">
-          No Quotes Yet
+          No Quotations Yet
         </h3>
         <p className="text-gray-600 mb-6">
-          Looks like you haven't requested any quotes yet. Start by requesting a quote for products you're interested in.
+          Looks like you haven't requested any quotations yet. Start by requesting a quotation for products you're interested in.
         </p>
         <Link
           href="/quote"
           className="inline-block px-6 py-3 bg-theme-color text-white rounded-lg hover:bg-theme-color/90 transition-colors"
         >
-          Request a Quote
+          Request a Quotation
         </Link>
       </div>
     );
@@ -388,9 +388,9 @@ export default function QuotesList({
     <div className="w-full min-w-0">
       {showHeader && (
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Quote History</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Quotation History</h2>
           <p className="text-gray-600">
-            {quotes.length} quote{quotes.length !== 1 ? "s" : ""} found
+            {quotes.length} quotation{quotes.length !== 1 ? "s" : ""} found
           </p>
         </div>
       )}
@@ -402,7 +402,7 @@ export default function QuotesList({
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                  Quote ID
+                  Quotation ID
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                   Status
@@ -411,16 +411,16 @@ export default function QuotesList({
                   Product Summary
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                  Estimated Price
+                  Estimated Quotation Price
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                  Date Submitted
+                  Date Requested
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                   Last Update
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                  Actions
+                  Quotation Actions
                 </th>
               </tr>
             </thead>
@@ -482,9 +482,9 @@ export default function QuotesList({
                         <Link
                           href={`/account/quotes/${quote.id}`}
                           className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-                          title="View Full Quote"
+                          title="View Full Quotation"
                         >
-                          Track
+                          Track Quotation
                         </Link>
                       </div>
                     </td>

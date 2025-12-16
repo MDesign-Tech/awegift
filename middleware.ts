@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "./auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 import { checkRouteAccess } from "@/lib/rbac/middleware";
 import { UserRole, getDefaultDashboardRoute } from "@/lib/rbac/roles";
 
@@ -20,16 +21,17 @@ const authRoutes = ["/auth/signin", "/auth/register"];
 
 export async function middleware(request: any) {
   const { pathname } = request.nextUrl;
-  const session = await auth();
+  const session = await getServerSession(authOptions);
+  const user = session?.user ? { id: session.user.id, role: (session.user as any).role } : null;
 
   // Restrict protected routes to logged-in users
   if (protectedRoutes.some((route) => pathname.startsWith(route))) {
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.redirect(new URL("/auth/signin", request.url));
     }
 
     // Check role-based access using database role
-    const hasAccess = await checkRouteAccess(session.user.id, pathname);
+    const hasAccess = await checkRouteAccess(user.id, pathname);
 
     if (!hasAccess) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
@@ -37,21 +39,20 @@ export async function middleware(request: any) {
   }
 
   if (pathname.startsWith("/dashboard")) {
-  const session = await auth();
-  const userRole = session?.user?.role;
-  const dashboardRoute = getDefaultDashboardRoute(userRole as UserRole);
+    const userRole = user?.role;
+    const dashboardRoute = getDefaultDashboardRoute(userRole as UserRole);
 
-  if (!pathname.startsWith(dashboardRoute)) {
-    return NextResponse.redirect(new URL(dashboardRoute, request.url));
+    if (!pathname.startsWith(dashboardRoute)) {
+      return NextResponse.redirect(new URL(dashboardRoute, request.url));
+    }
   }
-}
 
 
   // Prevent access to auth pages for logged-in users
   if (authRoutes.some((route) => pathname.startsWith(route))) {
-    if (session?.user) {
+    if (user) {
       // For auth routes, we can use session role since it's just for redirect
-      const userRole = session.user.role as UserRole;
+      const userRole = user.role as UserRole;
       const dashboardRoute = getDefaultDashboardRoute(userRole);
       return NextResponse.redirect(new URL(dashboardRoute, request.url));
     }
@@ -59,7 +60,7 @@ export async function middleware(request: any) {
 
   // Handle success page - ensure user is logged in and has session_id
   if (pathname.startsWith("/success")) {
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.redirect(new URL("/auth/signin", request.url));
     }
 
@@ -71,7 +72,7 @@ export async function middleware(request: any) {
 
   // Handle checkout page - ensure user is logged in
   if (pathname.startsWith("/checkout")) {
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.redirect(new URL("/auth/signin", request.url));
     }
   }

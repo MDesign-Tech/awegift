@@ -20,24 +20,23 @@ export interface ProductType {
   price: number;
   stock: number;
   minimumOrderQuantity: number;
-  availabilityStatus: string;
-  discountPercentage: number;
+  discount: number;
+  currency: string;
+  isActive: boolean;
+  isFeatured: boolean;
   weight: number;
   dimensions: {
     width: number;
     height: number;
-    depth: number;
   };
   images: string[];
   thumbnail: string;
   tags: string[];
+  colors: string[];
   returnPolicy: string;
   reviews: Review[];
   rating: number;
   warrantyInformation: string;
-
-  // Removed shippingInformation
-  // Local trading doesn't use shipping
 
   quantity?: number;
 
@@ -167,14 +166,14 @@ export interface NotificationType {
   userId?: string;
   title: string;
   message: string;
- 
+
   // Local trading notification types
   type:
-    | "order"
-    | "payment"
-    | "quote"
-    | "system"
-    | "promotion";
+  | "order"
+  | "payment"
+  | "quote"
+  | "system"
+  | "promotion";
 
   read: boolean;
   createdAt: Date;
@@ -182,8 +181,8 @@ export interface NotificationType {
   readAt?: Date | null;
 }
 
-// ---------------------- QUOTE PRODUCT -----------------------
-export interface QuoteProductType {
+// ---------------------- QUOTATION PRODUCT -----------------------
+export interface QuotationProductType {
   productId: string | null;     // If not found, treat as custom product
   name: string;
   quantity: number;
@@ -193,21 +192,21 @@ export interface QuoteProductType {
 }
 
 // ---------------------- MESSAGE THREAD (NEGOTIATION CHAT) ----
-export interface QuoteMessage {
+export interface QuotationMessage {
   sender: "user" | "admin";
   message: string;
   timestamp: Date;
   attachments?: string[];
 }
 
-// ---------------------- MAIN QUOTE TYPE -----------------------
-export interface QuoteType {
+// ---------------------- MAIN QUOTATION TYPE -----------------------
+export interface QuotationType {
   id: string;
   userId: string;
   email: string;
   phone?: string | null;
 
-  products: QuoteProductType[];
+  products: QuotationProductType[];
 
   subtotal: number;                 // products total before discounts
   discount?: number;                // admin can add discount if giving offer
@@ -215,15 +214,15 @@ export interface QuoteType {
   finalAmount: number;              // subtotal - discount + delivery
 
   status:
-    | "pending"                     // user requested, waiting for admin
-    | "responded"                   // admin sent price
-    | "waiting_customer"            // admin asked user more info
-    | "negotiation"                 // back-and-forth messaging
-    | "accepted"                    // user accepted price
-    | "rejected"                    // user or admin rejected
-    | "expired";                    // price expired
+  | "pending"                     // user requested, waiting for admin
+  | "responded"                   // admin sent price
+  | "waiting_customer"            // admin asked user more info
+  | "negotiation"                 // back-and-forth messaging
+  | "accepted"                    // user accepted price
+  | "rejected"                    // user or admin rejected
+  | "expired";                    // price expired
 
-  messages: QuoteMessage[];         // negotiation history
+  messages: QuotationMessage[];         // negotiation history
   userNotes?: string;               // user extra info
   adminNote?: string;               // admin-only notes (private)
 

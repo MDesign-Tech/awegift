@@ -5,7 +5,7 @@ import PriceFormat from "../PriceFormat";
 import AddToCartButton from "../AddToCartButton";
 import { IoClose } from "react-icons/io5";
 import { useDispatch } from "react-redux";
-import { removeFromCart } from "@/redux/shofySlice";
+import { removeFromCart } from "@/redux/aweGiftSlice";
 import toast from "react-hot-toast";
 import { FaCheck } from "react-icons/fa";
 
@@ -18,10 +18,7 @@ const CartProduct = ({ product }: { product: ProductType }) => {
   return (
     <div className="flex py-6 sm:py-10">
       <Link
-        href={{
-          pathname: `/products/${product?.id}`,
-          query: { id: product?.id },
-        }}
+        href={`/products/${product?.id}`}
         className="h-24 w-24 sm:h-48 sm:w-48 border border-sky-color/30 hover:border-sky-color overflow-hidden flex items-center justify-center rounded-md"
       >
         {product?.images?.[0] ? (
@@ -79,14 +76,6 @@ const CartProduct = ({ product }: { product: ProductType }) => {
               </button>
             </div>
           </div>
-        </div>
-        <div>
-          {product?.availabilityStatus && (
-            <p className="mt-4 flex space-x-2 text-sm text-gray-700">
-              <FaCheck className="text-lg text-green-500" />{" "}
-              <span>In Stock</span>
-            </p>
-          )}
         </div>
       </div>
     </div>

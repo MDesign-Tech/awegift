@@ -1,15 +1,17 @@
+"use client";
+
 import Container from "../Container";
 import { LiaUser } from "react-icons/lia";
 import Link from "next/link";
 import SearchInput from "./SearchInput";
-import { auth } from "../../../auth";
+import { useAuth } from "@/lib/auth/AuthContext";
 import MobileNavigation from "./MobileNavigation";
 import HeaderIcons from "./HeaderIcons";
 import Logo from "../Logo";
 import UserProfileDropdown from "./UserProfileDropdown";
 
-const MiddleHeader = async () => {
-  const session = await auth();
+const MiddleHeader = () => {
+  const { user } = useAuth();
 
   return (
     <div className="border-b border-b-gray-400">
@@ -18,8 +20,8 @@ const MiddleHeader = async () => {
         <SearchInput />
         <div className="hidden md:inline-flex items-center gap-3">
           {/* User */}
-          {session?.user ? (
-            <UserProfileDropdown user={session.user} />
+          {user ? (
+            <UserProfileDropdown user={user} />
           ) : (
             <div
               // href={"/auth/signin"}

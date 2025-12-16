@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { ProductType } from "../../../../type";
 
 export async function GET(request: NextRequest) {
@@ -14,9 +13,9 @@ export async function GET(request: NextRequest) {
     const categoryFilters = searchParams.getAll("category").map(cat => cat.trim()).filter(Boolean);
 
     // Fetch products ordered by creation date
-    const productsRef = collection(db, "products");
-    const productsQuery = query(productsRef, orderBy("meta.createdAt", "desc"));
-    const snapshot = await getDocs(productsQuery);
+    const productsRef = adminDb.collection("products");
+    const productsQuery = productsRef.orderBy("meta.createdAt", "desc");
+    const snapshot = await productsQuery.get();
 
     let allDocs = snapshot.docs;
 
@@ -40,6 +39,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Active filter - only return active products
+    allDocs = allDocs.filter((doc) => {
+      const data = doc.data() as ProductType;
+      return data.isActive !== false;
+    });
+
     // Total number of matched products
     const totalCount = allDocs.length;
 
@@ -47,10 +52,14 @@ export async function GET(request: NextRequest) {
 
     // ✔ limit=0 → return ALL products
     if (limitParam === 0) {
-      products = allDocs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as ProductType[];
+      products = allDocs.map((doc) => {
+        const data = doc.data() as any;
+        const { id: _, ...productData } = data;
+        return {
+          id: doc.id,
+          ...productData,
+        };
+      }) as ProductType[];
     } else {
       // Normal pagination
       const paginatedDocs = allDocs.slice(
@@ -58,10 +67,14 @@ export async function GET(request: NextRequest) {
         offsetParam + limitParam
       );
 
-      products = paginatedDocs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as ProductType[];
+      products = paginatedDocs.map((doc) => {
+        const data = doc.data() as any;
+        const { id: _, ...productData } = data;
+        return {
+          id: doc.id,
+          ...productData,
+        };
+      }) as ProductType[];
     }
 
     return NextResponse.json({

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, addDoc, query, orderBy, getCountFromServer, where } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { CategoryType } from "../../../../../type";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
@@ -10,9 +9,7 @@ export async function GET(request: NextRequest) {
     // Allow unauthenticated access for public product browsing
     // Authentication is only required for admin operations (POST, PUT, DELETE)
 
-    const categoriesRef = collection(db, "categories");
-    const q = query(categoriesRef, orderBy("name"));
-    const snapshot = await getDocs(q);
+    const snapshot = await adminDb.collection("categories").orderBy("name").get();
 
     // Get all categories first
     const categories = snapshot.docs.map(doc => ({
@@ -24,10 +21,8 @@ export async function GET(request: NextRequest) {
     const categoriesWithCounts = await Promise.all(
       categories.map(async (category) => {
         try {
-          const productsRef = collection(db, "products");
-          const productsQuery = query(productsRef, where("categories", "array-contains", category.name));
-          const productsSnapshot = await getCountFromServer(productsQuery);
-          const productCount = productsSnapshot.data().count;
+          const productsSnapshot = await adminDb.collection("products").where("categories", "array-contains", category.name).get();
+          const productCount = productsSnapshot.size;
 
           return {
             ...category,
@@ -86,7 +81,7 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    const docRef = await addDoc(collection(db, "categories"), categoryWithMeta);
+    const docRef = await adminDb.collection("categories").add(categoryWithMeta);
 
     return NextResponse.json({
       id: docRef.id,
