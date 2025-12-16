@@ -2,14 +2,13 @@ import{ NextRequest, NextResponse } from "next/server";
 import { QuotationType, QuotationProductType } from "../../../../type";
 import { QUOTE_STATUSES } from "@/lib/quoteStatuses";
 import { adminDb } from "@/lib/firebase/admin";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { auth } from "@/auth";
+import { fetchUserFromFirestore } from "@/lib/firebase/userService.server";
 
 // POST - Create new quote request
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     let user = null;
 
     // If user is logged in, fetch their data

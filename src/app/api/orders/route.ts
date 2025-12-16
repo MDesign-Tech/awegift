@@ -10,14 +10,13 @@ import {
   PaymentMethod,
 } from "@/lib/orderStatus";
 import { adminDb } from "@/lib/firebase/admin";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { auth } from "@/auth";
+import { fetchUserFromFirestore } from "@/lib/firebase/userService.server";
 
 // GET - Fetch orders based on user role
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -58,7 +57,7 @@ export async function GET(request: NextRequest) {
 // POST - Create new order (from checkout)
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

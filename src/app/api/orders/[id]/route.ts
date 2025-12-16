@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth";
+import { auth } from "@/auth";
 import { adminDb } from "@/lib/firebase/admin";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { fetchUserFromFirestore } from "@/lib/firebase/userService.server";
 import { OrderData } from "../../../../../type";
 
 export async function GET(
@@ -10,7 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

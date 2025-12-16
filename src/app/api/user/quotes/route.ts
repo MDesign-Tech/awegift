@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { QuotationType } from "../../../../../type";
 import { adminDb } from "@/lib/firebase/admin";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { auth } from "@/auth";
+import { fetchUserFromFirestore } from "@/lib/firebase/userService.server";
 
 // GET - Fetch user's quotes
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

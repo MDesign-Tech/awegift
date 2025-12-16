@@ -2,12 +2,12 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
-import type { NextAuthOptions } from "next-auth";
+import type { NextAuthConfig } from "next-auth";
 import { compare } from "bcryptjs";
 import { adminDb } from "@/lib/firebase/admin";
 import { UserRole } from "@/lib/rbac/roles";
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthConfig = {
   session: {
     strategy: "jwt",
     maxAge: 60 * 60 * 24 * 7, // 7 days
@@ -31,7 +31,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email) return null;
+        if (!credentials?.email || typeof credentials.email !== 'string') return null;
 
         const snapshot = await adminDb
           .collection("users")
@@ -44,9 +44,11 @@ export const authOptions: NextAuthOptions = {
         const doc = snapshot.docs[0];
         const user = doc.data();
 
+        if (!user.password || typeof user.password !== 'string') return null;
+
         // If password is "authenticated", skip password check (used for custom login)
         if (credentials.password !== "authenticated") {
-          if (!credentials.password) return null;
+          if (!credentials.password || typeof credentials.password !== 'string') return null;
           const isValid = await compare(credentials.password, user.password);
           if (!isValid) return null;
         }
@@ -118,16 +120,21 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      // Check if user still exists in database
-      const userDoc = await adminDb.collection("users").doc(token.id as string).get();
-      if (!userDoc.exists) {
-        // User has been deleted, invalidate session
-        return { ...session, user: null } as any;
-      }
+      try {
+        // Check if user still exists in database
+        const userDoc = await adminDb.collection("users").doc(token.id as string).get();
+        if (!userDoc.exists) {
+          // User has been deleted, invalidate session
+          return { ...session, user: null } as any;
+        }
 
-      // User exists, set session data
-      (session.user as any).id = token.id as string;
-      (session.user as any).role = (userDoc.data()?.role as UserRole) || "user";
+        // User exists, set session data
+        (session.user as any).id = token.id as string;
+        (session.user as any).role = (userDoc.data()?.role as UserRole) || "user";
+      } catch (error) {
+        console.error("Session callback error:", error);
+        // In case of error, return session without custom fields
+      }
       return session;
     },
   },
@@ -138,4 +145,7 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
+const { auth } = NextAuth(authOptions);
+
+export { auth };
 export default NextAuth(authOptions);

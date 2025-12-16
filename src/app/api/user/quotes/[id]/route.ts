@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { QuotationType } from "../../../../../../type";
 import { adminDb } from "@/lib/firebase/admin";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { auth } from "@/auth";
+import { fetchUserFromFirestore } from "@/lib/firebase/userService.server";
 
 // GET - Fetch single quote by ID
 export async function GET(
@@ -11,7 +10,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
