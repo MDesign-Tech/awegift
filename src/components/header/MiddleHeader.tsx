@@ -18,7 +18,7 @@ const MiddleHeader = () => {
       <Container className="py-5 flex items-center gap-4 md:gap-6 lg:gap-20 justify-between ">
         <Logo />
         <SearchInput />
-        <div className="hidden md:inline-flex items-center gap-3">
+        <div className="flex items-center gap-3">
           {/* User */}
           {user ? (
             <UserProfileDropdown user={user} />
@@ -58,7 +58,6 @@ const MiddleHeader = () => {
           {/* Cart & Favorite Icons */}
           <HeaderIcons />
         </div>
-        <MobileNavigation />
       </Container>
     </div>
   );

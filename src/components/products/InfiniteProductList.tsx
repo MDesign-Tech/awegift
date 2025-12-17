@@ -151,22 +151,20 @@ const InfiniteProductList = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-2 rounded ${
-                viewMode === "grid"
+              className={`p-2 rounded ${viewMode === "grid"
                   ? "bg-accent-color text-white"
                   : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-              }`}
+                }`}
               title="Grid View"
             >
               <BsGridFill className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-2 rounded ${
-                viewMode === "list"
+              className={`p-2 rounded ${viewMode === "list"
                   ? "bg-accent-color text-white"
                   : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-              }`}
+                }`}
               title="List View"
             >
               <ImList className="w-4 h-4" />
@@ -179,7 +177,7 @@ const InfiniteProductList = ({
       <div
         className={
           viewMode === "grid"
-            ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+            ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
             : "space-y-4"
         }
       >
