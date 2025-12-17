@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, writeBatch, doc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
@@ -23,9 +22,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Category IDs array required" }, { status: 400 });
     }
 
-    const batch = writeBatch(db);
+    const batch = adminDb.batch();
     categoryIds.forEach((categoryId: string) => {
-      const categoryRef = doc(db, "categories", categoryId);
+      const categoryRef = adminDb.collection("categories").doc(categoryId);
       batch.delete(categoryRef);
     });
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import auth from "@/auth";
+import { auth } from "@/auth";
 import { OrderData } from "../../../../../type";
 
 

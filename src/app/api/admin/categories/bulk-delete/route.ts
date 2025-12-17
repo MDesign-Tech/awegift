@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, writeBatch, doc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 
 export async function DELETE(request: Request) {
   try {
@@ -13,11 +12,12 @@ export async function DELETE(request: Request) {
       categoryIds = body.categoryIds;
     }
 
+    const batch = adminDb.batch();
+
     if (categoryIds && categoryIds.length > 0) {
       // Delete selected categories
-      const batch = writeBatch(db);
       categoryIds.forEach((id) => {
-        const docRef = doc(db, "categories", id);
+        const docRef = adminDb.collection("categories").doc(id);
         batch.delete(docRef);
       });
 
@@ -29,14 +29,12 @@ export async function DELETE(request: Request) {
       });
     } else {
       // Delete all categories
-      const categoriesRef = collection(db, "categories");
-      const snapshot = await getDocs(categoriesRef);
+      const snapshot = await adminDb.collection("categories").get();
 
       if (snapshot.empty) {
         return NextResponse.json({ message: "No categories to delete", deletedCount: 0 });
       }
 
-      const batch = writeBatch(db);
       snapshot.docs.forEach((doc) => {
         batch.delete(doc.ref);
       });

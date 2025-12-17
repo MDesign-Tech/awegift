@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { ProductType } from "../../../../../type";
-import { hasPermission, UserRole } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
 
 export async function GET(
   request: NextRequest,
@@ -14,10 +11,9 @@ export async function GET(
     // For GET requests, allow unauthenticated access for viewing products
     // Check authentication only for other operations if needed
 
-    const docRef = doc(db, "products", id);
-    const docSnap = await getDoc(docRef);
+    const docSnap = await adminDb.collection("products").doc(id).get();
 
-    if (!docSnap.exists()) {
+    if (!docSnap.exists) {
       return NextResponse.json(
         { error: "Product not found" },
         { status: 404 }

@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasPermission } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
-import { db } from "@/lib/firebase/config";
-import {
-  doc,
-  updateDoc,
-  getDoc,
-  deleteDoc,
-  collection,
-  getDocs,
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 
 export async function PUT(
   request: NextRequest,
@@ -38,15 +30,11 @@ export async function PUT(
 
     // Try to update order in orders collection first
     try {
-      const orderRef = doc(db, "orders", orderId);
-      const orderDoc = await getDoc(orderRef);
+      const orderRef = adminDb.collection("orders").doc(orderId);
+      const orderDoc = await orderRef.get();
 
-      if (orderDoc.exists()) {
-        const currentOrderData = orderDoc.data();
-        const oldStatus = currentOrderData.status;
-        const newStatus = updates.status;
-
-        await updateDoc(orderRef, {
+      if (orderDoc.exists) {
+        await orderRef.update({
           ...updates,
           updatedAt: new Date().toISOString(),
         });
@@ -65,12 +53,12 @@ export async function PUT(
 
     // If userId provided, update the order in user's orders array
     if (userId) {
-      const userRef = doc(db, "users", userId);
-      const userDoc = await getDoc(userRef);
+      const userRef = adminDb.collection("users").doc(userId);
+      const userDoc = await userRef.get();
 
-      if (userDoc.exists()) {
+      if (userDoc.exists) {
         const userData = userDoc.data();
-        const orders = userData.orders || [];
+        const orders = userData?.orders || [];
 
         const orderIndex = orders.findIndex(
           (order: any) => order.id === orderId
@@ -82,7 +70,7 @@ export async function PUT(
             updatedAt: new Date().toISOString(),
           };
 
-          await updateDoc(userRef, { orders });
+          await userRef.update({ orders });
           return NextResponse.json({
             success: true,
             updated: "user_orders",
@@ -130,11 +118,11 @@ export async function DELETE(
 
     // Try to delete from orders collection first
     try {
-      const orderRef = doc(db, "orders", orderId);
-      const orderDoc = await getDoc(orderRef);
+      const orderRef = adminDb.collection("orders").doc(orderId);
+      const orderDoc = await orderRef.get();
 
-      if (orderDoc.exists()) {
-        await deleteDoc(orderRef);
+      if (orderDoc.exists) {
+        await orderRef.delete();
         deleted = true;
         deletedFrom.push("orders_collection");
       }
@@ -143,8 +131,8 @@ export async function DELETE(
     }
 
     // Search through all users and remove the order from any user's orders array
-    const usersRef = collection(db, "users");
-    const usersSnapshot = await getDocs(usersRef);
+    const usersRef = adminDb.collection("users");
+    const usersSnapshot = await usersRef.get();
 
     for (const userDoc of usersSnapshot.docs) {
       const userData = userDoc.data();
@@ -156,8 +144,7 @@ export async function DELETE(
 
         // If order was found and removed
         if (filteredOrders.length !== originalOrdersLength) {
-          const userRef = doc(db, "users", userDoc.id);
-          await updateDoc(userRef, {
+          await userDoc.ref.update({
             orders: filteredOrders,
             updatedAt: new Date().toISOString(),
           });
@@ -211,10 +198,10 @@ export async function GET(
 
     // Try to get order from orders collection first
     try {
-      const orderRef = doc(db, "orders", orderId);
-      const orderDoc = await getDoc(orderRef);
+      const orderRef = adminDb.collection("orders").doc(orderId);
+      const orderDoc = await orderRef.get();
 
-      if (orderDoc.exists()) {
+      if (orderDoc.exists) {
         return NextResponse.json({
           order: { id: orderDoc.id, ...orderDoc.data() },
           source: "orders_collection",
@@ -225,8 +212,7 @@ export async function GET(
     }
 
     // Search in all users' orders
-    const usersRef = collection(db, "users");
-    const usersSnapshot = await getDocs(usersRef);
+    const usersSnapshot = await adminDb.collection("users").get();
 
     for (const userDoc of usersSnapshot.docs) {
       const userData = userDoc.data();

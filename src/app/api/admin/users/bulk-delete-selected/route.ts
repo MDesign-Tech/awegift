@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, writeBatch, doc, getDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
@@ -26,11 +25,10 @@ export async function DELETE(request: NextRequest) {
     // Check for admin users and prevent their deletion
     const adminUserIds: string[] = [];
     for (const userId of userIds) {
-      const userRef = doc(db, "users", userId);
-      const userSnapshot = await getDoc(userRef);
-      if (userSnapshot.exists()) {
+      const userSnapshot = await adminDb.collection("users").doc(userId).get();
+      if (userSnapshot.exists) {
         const userData = userSnapshot.data();
-        if (userData.role === "admin") {
+        if (userData?.role === "admin") {
           adminUserIds.push(userId);
         }
       }
@@ -42,9 +40,9 @@ export async function DELETE(request: NextRequest) {
       }, { status: 403 });
     }
 
-    const batch = writeBatch(db);
+    const batch = adminDb.batch();
     userIds.forEach((userId: string) => {
-      const userRef = doc(db, "users", userId);
+      const userRef = adminDb.collection("users").doc(userId);
       batch.delete(userRef);
     });
 

@@ -1,14 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  doc,
-  deleteDoc,
-  getDocs,
-  query,
-  where,
-  writeBatch,
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 
@@ -35,11 +26,11 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Create a batch for efficient deletion
-    const batch = writeBatch(db);
+    const batch = adminDb.batch();
 
     // Delete users only (preserve orders for analytics)
     for (const userId of userIds) {
-      const userRef = doc(db, "users", userId);
+      const userRef = adminDb.collection("users").doc(userId);
       batch.delete(userRef);
     }
 

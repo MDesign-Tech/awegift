@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  getDocs,
-  addDoc,
-  serverTimestamp,
-  updateDoc,
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { OrderData, OrderItem, Address } from "../../../../../type";
-import { ORDER_STATUSES, PAYMENT_STATUSES, PAYMENT_METHODS, PaymentStatus, PaymentMethod } from "@/lib/orderStatus";
+import { ORDER_STATUSES, PAYMENT_STATUSES, PAYMENT_METHODS } from "@/lib/orderStatus";
 import { UserRole } from "@/lib/rbac/roles";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
-import  auth from "@/auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -39,11 +30,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch user from Firestore using the new function
-    const user = await fetchUserFromFirestore(email);
-    if (!user) {
+    // Fetch user from Firestore using Admin SDK
+    // The previous fetchUserFromFirestore was client-side, so we query directly here
+    const userSnapshot = await adminDb.collection("users").where("email", "==", email).limit(1).get();
+
+    if (userSnapshot.empty) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+
+    const userDoc = userSnapshot.docs[0];
+    const user = { id: userDoc.id, ...userDoc.data() } as any;
 
     // Extract order adress from session metadata
     let orderAddress: Address | undefined;
@@ -93,13 +89,11 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date().toISOString(),
     };
 
-    // Add to orders collection with auto-generated ID
-    const docRef = await addDoc(collection(db, "orders"), {
-      ...orderData
-    });
+    // Add to orders collection via Admin SDK
+    const docRef = await adminDb.collection("orders").add(orderData);
 
     // Update doc to set id field to docRef.id
-    await updateDoc(docRef, { id: docRef.id });
+    await docRef.update({ id: docRef.id });
 
     return NextResponse.json({
       success: true,
