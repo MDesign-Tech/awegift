@@ -29,3 +29,4 @@ export const absoluteUrl = (path: string) => {
   // For server-side API calls, we need absolute URLs
   return `${config.baseUrl}${path}`;
 };
+console.log("API Base URL:", config.baseUrl);

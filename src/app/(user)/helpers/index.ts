@@ -1,19 +1,15 @@
 import { absoluteUrl } from "../../../../config";
 
-export const getData = async (endpoint: string) => {
-  const response = await fetch(absoluteUrl(endpoint), {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+export const getData = async (path: string) => {
+  const url = absoluteUrl(path);
+
+  const res = await fetch(url, {
+    cache: "no-store",
   });
 
-  if (!response.ok) {
-    const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
-    (error as any).status = response.status;
-    throw error;
+  if (!res.ok) {
+    throw new Error(`Failed to fetch ${url}`);
   }
 
-  const data = await response.json();
-  return data;
+  return res.json();
 };
