@@ -7,7 +7,7 @@ const checkConfig = (server: string): Config | {} => {
   switch (server) {
     case "production":
       config = {
-        baseUrl: "https://awegift.vercel.app",
+        baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "https://awegift.vercel.app",
       };
       break;
     case "local":
@@ -21,7 +21,7 @@ const checkConfig = (server: string): Config | {} => {
   return config;
 };
 
-export const selectServer = "local";
+export const selectServer = process.env.NODE_ENV === "production" ? "production" : "local";
 export const config = checkConfig(selectServer) as Config;
 
 

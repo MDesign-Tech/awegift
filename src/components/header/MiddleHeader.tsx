@@ -5,7 +5,6 @@ import { LiaUser } from "react-icons/lia";
 import Link from "next/link";
 import SearchInput from "./SearchInput";
 import { useAuth } from "@/lib/auth/AuthContext";
-import MobileNavigation from "./MobileNavigation";
 import HeaderIcons from "./HeaderIcons";
 import Logo from "../Logo";
 import UserProfileDropdown from "./UserProfileDropdown";

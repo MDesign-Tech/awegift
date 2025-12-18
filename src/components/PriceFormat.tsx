@@ -12,7 +12,7 @@ interface Props {
   fromCurrency?: CurrencyCode;
 }
 
-const PriceFormat = ({ amount, className, fromCurrency = "USD" }: Props) => {
+const PriceFormat = ({ amount, className, fromCurrency = "RWF" }: Props) => {
   const { selectedCurrency, convertPrice } = useCurrency();
 
   if (!amount)
