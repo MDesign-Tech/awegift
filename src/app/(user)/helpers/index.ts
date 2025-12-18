@@ -1,5 +1,7 @@
+import { absoluteUrl } from "../../../../config";
+
 export const getData = async (endpoint: string) => {
-  const response = await fetch(endpoint, {
+  const response = await fetch(absoluteUrl(endpoint), {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

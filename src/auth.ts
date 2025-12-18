@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import Auth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
@@ -7,8 +7,12 @@ import { adminDb } from "@/lib/firebase/admin";
 import { authConfig } from "./auth.config";
 import { UserRole } from "@/lib/rbac/roles";
 
-export const { auth, handlers, signIn, signOut } = NextAuth({
+export const { auth, handlers } = Auth({
   ...authConfig,
+  session: {
+    strategy: "jwt",
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -64,7 +68,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     ...authConfig.callbacks,
-    async signIn({ user, account }) {
+    async signIn({ user, account }: any) {
       if (account?.provider === "google" || account?.provider === "github") {
         try {
           // Check if user exists
@@ -112,7 +116,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }
       return true;
     },
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       // Use config implementation first to set basic props from token
       if (authConfig.callbacks?.session) {
         session = await authConfig.callbacks.session({ session, token } as any);

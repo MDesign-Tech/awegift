@@ -1,4 +1,5 @@
 import { ProductType } from "../../../../type";
+import { absoluteUrl } from "../../../../config";
 
 // Helper function to get best sellers (products with high rating and good reviews)
 export const getBestSellers = (products: ProductType[]): ProductType[] => {
@@ -147,6 +148,6 @@ export const getCategoriesWithCounts = (products: ProductType[]) => {
     name: category,
     slug: category.replace(/\s+/g, "-").toLowerCase(),
     count,
-    url: `/products?category=${category.replace(/\s+/g, "-").toLowerCase()}`,
+    url: absoluteUrl(`/products?category=${category.replace(/\s+/g, "-").toLowerCase()}`),
   }));
 };

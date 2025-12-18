@@ -10,7 +10,6 @@ import {
   getProductsByCategory,
 } from "../helpers/productHelpers";
 import Link from "next/link";
-import { absoluteUrl } from "../../../../config";
 
 interface Props {
   searchParams: Promise<{
@@ -37,8 +36,8 @@ const ProductsPage = async ({ searchParams }: Props) => {
 
   // Fetch all products and categories from local API
   const [productsData, categoriesData] = await Promise.all([
-    getData(absoluteUrl(`/api/products?limit=0`)), // Get all products
-    getData(absoluteUrl(`/api/categories`)), // Get categories from admin API
+    getData(`/api/products?limit=0`), // Get all products
+    getData(`/api/categories`), // Get categories from admin API
   ]);
 
   let products = productsData.products || [];
@@ -52,7 +51,7 @@ const ProductsPage = async ({ searchParams }: Props) => {
   // Apply filters
   if (params.category) {
     const categories = Array.isArray(params.category) ? params.category : [params.category];
-    const specialCategories = ["bestsellers", "new", "offers"];
+    const specialCategories = ["bestsellers"];
     const regularCategories = categories.filter(cat => !specialCategories.includes(cat));
     const specialCats = categories.filter(cat => specialCategories.includes(cat));
 
