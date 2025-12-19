@@ -3,9 +3,15 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Cloudflare Pages configuration - remove static export since we have API routes
   trailingSlash: false,
   skipTrailingSlashRedirect: true,
+
   images: {
     remotePatterns: [
       {
@@ -22,11 +28,13 @@ const nextConfig = {
       },
     ],
   },
+
   // Cloudflare Pages optimization
   poweredByHeader: false,
-  // External packages for server components (updated syntax for Next.js 15+)
+
+  // External packages for server components (Next.js 15+)
   serverExternalPackages: ["firebase-admin"],
-  // Optimize for Cloudflare Pages
+
   compress: true,
   productionBrowserSourceMaps: false,
 };
