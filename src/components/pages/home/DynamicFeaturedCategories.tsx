@@ -1,88 +1,25 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getCategoriesWithCounts } from "@/app/(user)/helpers/productHelpers";
 import CategoriesCarousel from "./CategoriesCarousel";
 import CategoriesSkeleton from "@/components/skeletons/CategoriesSkeleton";
 import type { CategoryType } from "../../../../type";
 
-
 const DynamicFeaturedCategories: React.FC = () => {
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        setError(null);
-
-        // Fetch categories and all products data
-        const [categoriesResponse, productsResponse] = await Promise.all([
-          fetch(`/api/categories`),
-          fetch(`/api/products?limit=0`),
-        ]);
-
-        if (!categoriesResponse.ok) {
-          throw new Error(`Failed to fetch categories: ${categoriesResponse.statusText}`);
+        const response = await fetch("/api/categories/featured");
+        if (response.ok) {
+          const featuredCategories = await response.json();
+          setCategories(featuredCategories);
         }
-
-        const categoriesData = await categoriesResponse.json();
-        const productsData = productsResponse.ok ? await productsResponse.json() : {};
-
-        // Get categories with product counts
-        const categoriesWithCounts = getCategoriesWithCounts(
-          productsData?.products || []
-        );
-
-        // API returns CategoryType[] directly
-        const sourceCategories: any[] = Array.isArray(categoriesData)
-          ? categoriesData
-          : categoriesData?.data && Array.isArray(categoriesData.data)
-          ? categoriesData.data
-          : [];
-
-        // Map/normalize into CategoryType[], ensuring required fields exist
-        const normalized: CategoryType[] = (sourceCategories as any[])
-          .slice(0, 12)
-          .map((cat: any) => {
-            const slug = (cat.slug || String(cat.name || "")).toLowerCase();
-            const id = cat.id || slug;
-            const name = cat.name || slug;
-            const description = cat.description || `Discover amazing ${name} products`;
-            const image = cat.image || ""; // Keep empty if no image, UI will handle fallback
-
-            const mapped: CategoryType = {
-              id,
-              name,
-              slug,
-              description,
-              image,
-              meta: cat.meta || undefined,
-            };
-
-            return mapped;
-          });
-
-        // Attach runtime itemCount so UI can show counts (prefer API productCount when available)
-        normalized.forEach((c, idx) => {
-          const src = sourceCategories[idx] || {};
-          const categoryCount =
-            ((src as any).productCount ??
-              categoriesWithCounts.find((x) => x.slug === c.slug)?.count) ||
-            0;
-          (c as any).itemCount = categoryCount;
-          // Also keep productCount field if provided by API
-          if ((src as any).productCount !== undefined) {
-            (c as any).productCount = (src as any).productCount;
-          }
-        });
-
-        setCategories(normalized);
-      } catch (err) {
-        console.error("Error fetching categories:", err);
-        setError(err instanceof Error ? err.message : "Failed to load categories");
+      } catch (error) {
+        console.error("Error fetching featured categories:", error);
       } finally {
         setLoading(false);
       }
@@ -93,6 +30,28 @@ const DynamicFeaturedCategories: React.FC = () => {
 
   if (loading) {
     return <CategoriesSkeleton />;
+  }
+
+  if (categories.length === 0) {
+    return (
+      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Featured Categories
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Explore our curated selection of categories
+            </p>
+          </div>
+          <div className="text-center py-10">
+            <p className="text-gray-500 text-lg">
+              No featured categories available at the moment.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return <CategoriesCarousel categories={categories} />;

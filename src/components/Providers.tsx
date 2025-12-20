@@ -22,7 +22,32 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               <CurrencyProvider>
                 <NotificationProvider>
                   {children}
-                  <Toaster position="bottom-right" />
+                  <Toaster
+                    position="bottom-right"
+                    toastOptions={{
+                      className: '!bg-gray-900 !text-white !border-0',
+                      style: {
+                        background: '#000000', // gray-900
+                        color: '#ffffff',
+                        border: 'none',
+                      },
+                      success: {
+                        style: {
+                          borderBottom: '2px solid #10b981', // green-500
+                        },
+                      },
+                      error: {
+                        style: {
+                          borderBottom: '2px solid #ef4444', // red-500
+                        },
+                      },
+                      loading: {
+                        style: {
+                          borderBottom: '2px solid #3b82f6', // blue-500
+                        },
+                      },
+                    }}
+                  />
                 </NotificationProvider>
               </CurrencyProvider>
             </UserSyncProvider>

@@ -51,35 +51,6 @@ export async function PUT(
       console.log("Order not found in orders collection, checking user orders");
     }
 
-    // If userId provided, update the order in user's orders array
-    if (userId) {
-      const userRef = adminDb.collection("users").doc(userId);
-      const userDoc = await userRef.get();
-
-      if (userDoc.exists) {
-        const userData = userDoc.data();
-        const orders = userData?.orders || [];
-
-        const orderIndex = orders.findIndex(
-          (order: any) => order.id === orderId
-        );
-        if (orderIndex !== -1) {
-          orders[orderIndex] = {
-            ...orders[orderIndex],
-            ...updates,
-            updatedAt: new Date().toISOString(),
-          };
-
-          await userRef.update({ orders });
-          return NextResponse.json({
-            success: true,
-            updated: "user_orders",
-            orderId,
-          });
-        }
-      }
-    }
-
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   } catch (error) {
     console.error("Error updating order:", error);
@@ -128,30 +99,6 @@ export async function DELETE(
       }
     } catch (orderError) {
       console.log("Order not found in orders collection, checking user orders");
-    }
-
-    // Search through all users and remove the order from any user's orders array
-    const usersRef = adminDb.collection("users");
-    const usersSnapshot = await usersRef.get();
-
-    for (const userDoc of usersSnapshot.docs) {
-      const userData = userDoc.data();
-      if (userData.orders && Array.isArray(userData.orders)) {
-        const originalOrdersLength = userData.orders.length;
-        const filteredOrders = userData.orders.filter(
-          (order: any) => order.id !== orderId
-        );
-
-        // If order was found and removed
-        if (filteredOrders.length !== originalOrdersLength) {
-          await userDoc.ref.update({
-            orders: filteredOrders,
-            updatedAt: new Date().toISOString(),
-          });
-          deleted = true;
-          deletedFrom.push(`user_orders:${userDoc.id}`);
-        }
-      }
     }
 
     if (!deleted) {
@@ -209,27 +156,6 @@ export async function GET(
       }
     } catch (orderError) {
       console.log("Order not found in orders collection, checking user orders");
-    }
-
-    // Search in all users' orders
-    const usersSnapshot = await adminDb.collection("users").get();
-
-    for (const userDoc of usersSnapshot.docs) {
-      const userData = userDoc.data();
-      if (userData.orders && Array.isArray(userData.orders)) {
-        const foundOrder = userData.orders.find(
-          (order: any) => order.id === orderId
-        );
-        if (foundOrder) {
-          return NextResponse.json({
-            order: foundOrder,
-            userId: userDoc.id,
-            customerName: userData.name || userData.displayName,
-            customerEmail: userData.email,
-            source: "user_orders",
-          });
-        }
-      }
     }
 
     return NextResponse.json({ error: "Order not found" }, { status: 404 });

@@ -74,8 +74,7 @@ export interface UserData {
   email: string;
   image?: string;
   role: UserRole;
-  createdAt: string;
-  updatedAt: string;
+  
   emailVerified: boolean;
   provider?: string;
 
@@ -93,6 +92,8 @@ export interface UserData {
 
   cart: ProductType[];
   wishlist: ProductType[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ---------------------- ORDER -----------------------
@@ -107,7 +108,6 @@ export interface OrderData {
   items: OrderItem[];
   totalAmount: number;
 
-  // Removed shippingAddress → renamed to local trade location
   orderAddress: Address;
 
   paymentMethod: PaymentMethod;
@@ -153,6 +153,7 @@ export interface CategoryType {
   slug: string;
   description: string;
   image: string;
+  isFeatured?: boolean;
   meta?: {
     createdAt: string;
     updatedAt: string;
@@ -167,7 +168,6 @@ export interface NotificationType {
   title: string;
   message: string;
 
-  // Local trading notification types
   type:
   | "order"
   | "payment"
@@ -188,7 +188,6 @@ export interface QuotationProductType {
   quantity: number;
   unitPrice?: number;           // Optional until admin sets price
   totalPrice?: number;
-  notes?: string;               // Additional user information
 }
 
 // ---------------------- MESSAGE THREAD (NEGOTIATION CHAT) ----

@@ -35,7 +35,7 @@ export async function DELETE(request: NextRequest) {
       try {
         let deleted = false;
 
-        // Try to delete from orders collection first
+        // Try to delete from orders collection
         try {
           const orderRef = adminDb.collection("orders").doc(orderId);
           const orderDoc = await orderRef.get();
@@ -48,28 +48,6 @@ export async function DELETE(request: NextRequest) {
           console.log(
             `Order ${orderId} not found in orders collection, checking user orders`
           );
-        }
-
-        // Search through all users and remove the order from any user's orders array
-        const usersSnapshot = await adminDb.collection("users").get();
-
-        for (const userDoc of usersSnapshot.docs) {
-          const userData = userDoc.data();
-          if (userData.orders && Array.isArray(userData.orders)) {
-            const originalOrdersLength = userData.orders.length;
-            const filteredOrders = userData.orders.filter(
-              (order: any) => order.id !== orderId
-            );
-
-            // If order was found and removed
-            if (filteredOrders.length !== originalOrdersLength) {
-              await userDoc.ref.update({
-                orders: filteredOrders,
-                updatedAt: new Date().toISOString(),
-              });
-              deleted = true;
-            }
-          }
         }
 
         if (deleted) {

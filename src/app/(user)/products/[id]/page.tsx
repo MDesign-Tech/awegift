@@ -12,7 +12,6 @@ import ProductSpecifications from "@/components/ProductSpecifications";
 import RelatedProducts from "@/components/RelatedProducts";
 import ProductActionsClient from "@/components/ProductActionsClient";
 import { notFound } from "next/navigation";
-import { absoluteUrl } from "../../../../../config";
 
 interface Props {
   params: {
@@ -24,7 +23,7 @@ const SingleProductPage = async ({ params }: Props) => {
   const { id } = await params;
   let product: ProductType;
   try {
-    product = await getData(absoluteUrl(`/api/products/${id}`));
+    product = await getData(`/api/products/${id}`);
   } catch (error: any) {
     if (error.status === 404) {
       notFound();
@@ -34,7 +33,7 @@ const SingleProductPage = async ({ params }: Props) => {
   console.log("Product Data:", product);
 
   // Fetch related products for the same category
-  const allProductsData = await getData(absoluteUrl(`/api/products?limit=0`));
+  const allProductsData = await getData(`/api/products?limit=0`);
   const allProducts: ProductType[] = allProductsData.products || [];
 
   const regularPrice = product?.price;

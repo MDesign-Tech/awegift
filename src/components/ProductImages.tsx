@@ -33,7 +33,7 @@ const ProductImages = ({ images , thumbsail }: Props) => {
         )}
       </div>
       {/* Thumbnails */}
-      <div className="order-2 flex gap-2 flex-row md:gap-2 overflow-x-auto ">
+      <div className="order-2 flex gap-2 flex-row md:gap-2 overflow-x-auto md:overflow-visible">
         {thumbnailImages?.map((item, index) => (
           <img
             src={item}

@@ -30,6 +30,7 @@ export default function CategoryForm({ category, onCancel, onSuccess, refetchCat
     slug: "",
     description: "",
     image: "",
+    isFeatured: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -41,6 +42,7 @@ export default function CategoryForm({ category, onCancel, onSuccess, refetchCat
         slug: category.slug || "",
         description: category.description || "",
         image: category.image || "",
+        isFeatured: category.isFeatured || false,
       });
     }
   }, [category]);
@@ -144,6 +146,18 @@ export default function CategoryForm({ category, onCancel, onSuccess, refetchCat
             {errors.description && (
               <p className="text-red-500 text-sm mt-1">{errors.description}</p>
             )}
+          </div>
+
+          <div>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.isFeatured}
+                onChange={(e) => setFormData(prev => ({ ...prev, isFeatured: e.target.checked }))}
+                className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
+              />
+              <span className="ml-2 text-sm font-medium text-gray-700">Mark as Featured</span>
+            </label>
           </div>
 
           <div>

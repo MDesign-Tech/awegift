@@ -5,6 +5,10 @@ import { getData } from "../helpers";
 import { getCategoriesWithCounts } from "../helpers/productHelpers";
 import { Metadata } from "next";
 import Link from "next/link";
+import { CategoryType } from "../../../../type";
+
+type CategoryWithCount = CategoryType & { productCount: number };
+type EnrichedCategory = CategoryWithCount & { count: number };
 
 export const metadata: Metadata = {
   title: "Product Categories | AweGift - Shop by Category",
@@ -34,24 +38,19 @@ export const metadata: Metadata = {
 };
 
 export default async function CategoriesPage() {
-  // Fetch categories and all products data
-  const [categoriesData, allProductsData] = await Promise.all([
-    getData(`/api/categories`), // Get categories from admin API
-    getData(`/api/products?limit=0`), // Get all products
-  ]);
+  // Fetch categories with product counts from API
+  const categoriesData = await getData(`/api/categories`) as CategoryWithCount[];
 
   console.log("Categories Data:", categoriesData);
-  // Get categories with product counts
-  const categoriesWithCounts = getCategoriesWithCounts(
-    allProductsData?.products || []
-  );
 
-  // Combine API categories with counts
+  // Map to Category interface expected by InfiniteCategoryGrid
   const enrichedCategories =
-    categoriesData?.map((category: any) => ({
-      ...category,
-      count:
-        categoriesWithCounts.find((c) => c.slug === category.slug)?.count || 0,
+    categoriesData?.map((category) => ({
+      slug: category.slug,
+      name: category.name,
+      url: category.image || "",
+      description: category.description || "",
+      count: category.productCount || 0,
     })) || [];
 
   return (
@@ -84,8 +83,8 @@ export default async function CategoriesPage() {
       {/* Categories Grid */}
       <InfiniteCategoryGrid
         initialCategories={enrichedCategories}
-        totalProducts={allProductsData?.total || 0}
-        allProducts={allProductsData?.products || []}
+        totalProducts={enrichedCategories.reduce((sum: number, cat) => sum + cat.count, 0)}
+        allProducts={[]}
       />
     </Container>
   );

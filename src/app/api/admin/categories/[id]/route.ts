@@ -35,6 +35,49 @@ export async function GET(
   }
 }
 
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    // Check authentication and permissions
+    const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = token.role as UserRole;
+    if (!hasPermission(userRole, "canUpdateProducts")) {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    }
+
+    const partialData: Partial<CategoryType> = await request.json();
+
+    // Update timestamp
+    const updatedData = {
+      ...partialData,
+      meta: {
+        updatedAt: new Date().toISOString(),
+      },
+    };
+
+    const docRef = adminDb.collection("categories").doc(id);
+    await docRef.update(updatedData);
+
+    return NextResponse.json({
+      id,
+      ...updatedData,
+    });
+  } catch (error) {
+    console.error("Error updating category:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }

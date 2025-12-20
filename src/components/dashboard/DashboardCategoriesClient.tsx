@@ -26,12 +26,15 @@ import InfiniteCategoryList from './InfiniteCategoryList';
 
 interface CategoryWithId extends CategoryType {
   productCount?: number;
+  isFeatured?: boolean;
 }
 
 export default function DashboardCategoriesClient() {
   const { user, isAdmin, userRole } = useCurrentUser();
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [updatingFeatured, setUpdatingFeatured] = useState<Set<string>>(new Set());
+
 
   // Use the category search hook
   const {
@@ -182,6 +185,45 @@ export default function DashboardCategoriesClient() {
     setDeleteSelectedModal(true);
   };
 
+const handleToggleFeatured = async (category: CategoryWithId) => {
+  if (updatingFeatured.has(category.id)) return;
+
+  setUpdatingFeatured(prev => new Set(prev).add(category.id));
+
+  try {
+    const response = await fetch(`/api/admin/categories/${category.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        isFeatured: !category.isFeatured,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to update category");
+    }
+
+    toast.success(
+      `Category ${!category.isFeatured ? "marked as" : "removed from"} featured`
+    );
+
+    await refetchCategories();
+  } catch (error) {
+    console.error("Error updating category:", error);
+    toast.error("Error updating featured status");
+  } finally {
+    setUpdatingFeatured(prev => {
+      const next = new Set(prev);
+      next.delete(category.id);
+      return next;
+    });
+  }
+};
+
+
   const confirmDeleteSelected = async () => {
     if (selectedCategories.length === 0) return;
 
@@ -326,6 +368,9 @@ export default function DashboardCategoriesClient() {
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                 Category
               </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                Status
+              </th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                 Products
               </th>
@@ -342,7 +387,9 @@ export default function DashboardCategoriesClient() {
             onView={setViewCategoryModal}
             onEdit={setEditingCategory}
             onDelete={handleDeleteCategory}
+            onToggleFeatured={handleToggleFeatured}
             isRefreshing={isRefreshing}
+            updatingFeatured={updatingFeatured}
           />
         </table>
       </div>
@@ -687,3 +734,4 @@ export default function DashboardCategoriesClient() {
     </div>
   );
 }
+

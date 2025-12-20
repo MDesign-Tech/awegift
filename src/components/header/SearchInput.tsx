@@ -80,7 +80,6 @@ const SearchInput = () => {
             isLoading ? (
               <div className="py-8 px-5 text-center">
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#ed4c07] border-t-transparent"></div>
                   <div className="flex space-x-1">
                     <div
                       className="w-2 h-2 bg-[#ed4c07] rounded-full animate-bounce"
