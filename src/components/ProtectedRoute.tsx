@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import Container from "@/components/Container";
 import { FiLoader } from "react-icons/fi";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -21,13 +22,22 @@ const ProtectedRoute = ({
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [networkError, setNetworkError] = useState(false);
 
   useEffect(() => {
+    if (status === "loading" && !networkError) {
+      const timer = setTimeout(() => {
+        setNetworkError(true);
+        toast.error("Network error");
+      }, 10000); // 10 seconds timeout
+      return () => clearTimeout(timer);
+    }
+
     if (status === "loading") {
       return; // Still loading
     }
 
-    if (status === "unauthenticated" || !session?.user) {
+    if (status === "unauthenticated" || !session?.user || networkError) {
       setIsRedirecting(true);
       // Add a small delay to show the message before redirecting
       const timer = setTimeout(() => {
@@ -38,10 +48,10 @@ const ProtectedRoute = ({
     } else {
       setIsRedirecting(false);
     }
-  }, [session, status, router, fallbackPath]);
+  }, [session, status, router, fallbackPath, networkError]);
 
   // Show loading state while checking authentication
-  if (status === "loading") {
+  if (status === "loading" && !networkError) {
     return (
       <Container className="py-8">
         <div className="flex flex-col items-center justify-center min-h-96">
@@ -52,21 +62,25 @@ const ProtectedRoute = ({
     );
   }
 
-  // Show redirect message when unauthenticated
+  // Show redirect message when unauthenticated or network error
   if (
     status === "unauthenticated" ||
     (!session?.user && status === "authenticated") ||
+    networkError ||
     isRedirecting
   ) {
     return (
       <Container className="py-8">
         <div className="text-center">
-          <div className="text-6xl mb-4">🔒</div>
+          <div className="text-6xl mb-4">{networkError ? "🌐" : "🔒"}</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Authentication Required
+            {networkError ? "Network Error" : "Authentication Required"}
           </h1>
           <p className="text-gray-600 mb-6">
-            You need to be signed in to access this page.
+            {networkError
+              ? "Unable to connect to the server. Please check your internet connection and try again."
+              : "You need to be signed in to access this page."
+            }
           </p>
 
           <div className="flex items-center justify-center space-x-4 mb-6">
@@ -75,18 +89,37 @@ const ProtectedRoute = ({
           </div>
 
           <div className="space-x-4">
-            <Link
-              href="/auth/signin"
-              className="inline-block bg-theme-color text-white px-6 py-2 rounded hover:bg-theme-color/80"
-            >
-              Sign In
-            </Link>
-            <button
-              onClick={() => window.location.reload()}
-              className="inline-block bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600"
-            >
-              Refresh Page
-            </button>
+            {networkError ? (
+              <>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="inline-block bg-theme-color text-white px-6 py-2 rounded hover:bg-theme-color/80"
+                >
+                  Retry
+                </button>
+                <Link
+                  href="/"
+                  className="inline-block bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600"
+                >
+                  Go Home
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/auth/signin"
+                  className="inline-block bg-theme-color text-white px-6 py-2 rounded hover:bg-theme-color/80"
+                >
+                  Sign In
+                </Link>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="inline-block bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600"
+                >
+                  Refresh Page
+                </button>
+              </>
+            )}
           </div>
         </div>
       </Container>

@@ -381,11 +381,18 @@ export default function DashboardProductsClient() {
     <div className="bg-white rounded-lg shadow overflow-hidden relative">
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center flex-wrap justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Products Management ({allProducts.length}{hasMore ? '+' : ''})
-          </h2>
-          <div className="grid grid-cols-2 items-center sm:flex sm:grid-cols-none gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center mb-4 sm:mb-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+              Products Management ({allProducts.length}{hasMore ? '+' : ''})
+            </h2>
+            {selectedProducts.length > 0 && (
+              <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                {selectedProducts.length} selected
+              </span>
+            )}
+          </div>
+          <div className="flex items-center flex-wrap space-x-2">
             {hasPermission(userRole as UserRole, "canDeleteProducts") && (
               <>
                 {selectedProducts.length > 0 && (
@@ -394,7 +401,8 @@ export default function DashboardProductsClient() {
                     className="flex items-center px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm disabled:opacity-50"
                     disabled={isRefreshing}
                   >
-                    Delete Selected ({selectedProducts.length})
+                    <FiTrash2 className="mr-2 h-4 w-4" />
+                    Delete {selectedProducts.length} Selected
                   </button>
                 )}
                 <button
@@ -402,6 +410,7 @@ export default function DashboardProductsClient() {
                   className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm disabled:opacity-50"
                   disabled={allProducts.length === 0 || isRefreshing}
                 >
+                  <FiTrash2 className="mr-2 h-4 w-4" />
                   Delete All
                 </button>
               </>
@@ -409,11 +418,12 @@ export default function DashboardProductsClient() {
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="flex items-center px-3 py-2 bg-theme-color text-white rounded-lg hover:bg-accent-color transition-colors text-sm disabled:opacity-50"
+              className="flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+              title="Refresh products"
             >
-              <FiRefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+              <FiRefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
+
             {hasPermission(userRole as UserRole, "canCreateProducts") && (
               <button
                 onClick={() => setShowCreateModal(true)}

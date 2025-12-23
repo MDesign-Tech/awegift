@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { adminDb } from "@/lib/firebase/admin";
+import { emailService } from "@/lib/email/service";
+import { createAdminNewUserNotification } from "@/lib/notification/helpers";
+import { notificationService } from "@/lib/notification/service";
 
 export async function POST(request: NextRequest) {
   try {
@@ -64,6 +67,20 @@ export async function POST(request: NextRequest) {
       wishlist: [],
       orders: [],
     });
+
+    // Send admin notification for new user registration asynchronously (don't block the response)
+    console.log('Creating admin notification for new user:', userDoc.id, email, name);
+    createAdminNewUserNotification('admin', name, email)
+      .then((result: any) => {
+        if (!result.success) {
+          console.error('Failed to create admin notification:', result.error);
+        } else {
+          console.log('Successfully created admin notification:', result.notificationId);
+        }
+      })
+      .catch((error: any) => {
+        console.error('Error creating admin notification:', error);
+      });
 
     return NextResponse.json(
       {

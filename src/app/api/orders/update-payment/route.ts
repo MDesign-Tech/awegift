@@ -5,9 +5,10 @@ import { adminDb } from "@/lib/firebase/admin";
 import { OrderData, OrderStatusHistory } from "../../../../../type";
 import { OrderStatus } from "@/lib/orderStatus";
 import { UserRole } from "@/lib/rbac/roles";
-import { PaymentStatus, canUpdatePaymentStatus } from "@/lib/orderStatus";
+import { PaymentStatus, PaymentMethod, canUpdatePaymentStatus } from "@/lib/orderStatus";
 import { auth } from "@/auth";
 import { fetchUserFromFirestore } from "@/lib/firebase/userService.server";
+import { createOrderPaidNotification } from "@/lib/notification/helpers";
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,10 +53,12 @@ export async function POST(request: NextRequest) {
     }
 
     const currentPaymentStatus = currentOrder.paymentStatus;
+    const normalizedCurrentMethod = currentOrder.paymentMethod?.toLowerCase() as PaymentMethod;
+    const normalizedNewMethod = paymentMethod?.toLowerCase() as PaymentMethod;
 
     // Check if user has permission to update payment status
     const userRole = user.role || "user";
-    if (!canUpdatePaymentStatus(userRole, currentOrder.paymentMethod as any, currentPaymentStatus, paymentStatus, paymentMethod)) {
+    if (!canUpdatePaymentStatus(userRole, normalizedCurrentMethod, currentPaymentStatus, paymentStatus, normalizedNewMethod)) {
       return NextResponse.json({ error: "Insufficient permissions to update payment status" }, { status: 403 });
     }
 
@@ -70,8 +73,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle payment method update
-    if (paymentMethod && paymentMethod !== currentOrder.paymentMethod) {
-      updateData.paymentMethod = paymentMethod;
+    if (paymentMethod && paymentMethod.toLowerCase() !== currentOrder.paymentMethod?.toLowerCase()) {
+      updateData.paymentMethod = paymentMethod.toLowerCase();
     }
 
     // Handle payment screenshot update
@@ -94,6 +97,20 @@ export async function POST(request: NextRequest) {
 
     // Update the order
     await orderRef.update(updateData);
+
+    // Send notification if payment status changed to paid
+    if (paymentStatus && paymentStatus !== currentPaymentStatus && paymentStatus === "paid") {
+      try {
+        await createOrderPaidNotification(
+          user.id,
+          orderId,
+          currentOrder.totalAmount,
+          'RWF'
+        );
+      } catch (notificationError) {
+        console.error("Failed to send payment status notification:", notificationError);
+      }
+    }
 
     return NextResponse.json({
       message: "Order updated successfully",

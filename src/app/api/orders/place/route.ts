@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { auth } from "@/auth";
 import { OrderData } from "../../../../../type";
+import { emailService } from "@/lib/email/service";
+import {
+  createOrderPlacedNotification,
+  createAdminOrderAlertNotification
+} from "@/lib/notification/helpers";
 
 
 export async function POST(request: NextRequest) {
@@ -12,12 +17,60 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orderData: OrderData = await request.json();
+    const orderData = await request.json();
     const userId = session.user.id;
     orderData.userId = userId;
 
     // Save the order to the orders collection with custom ID
     await adminDb.collection("orders").doc(orderData.id).set(orderData);
+
+    // Send order confirmation notification to customer and admin alert asynchronously
+    // Send customer notification (includes email)
+    const customerNotificationPromise = createOrderPlacedNotification(
+      orderData.userId,
+      orderData.customerEmail,
+      orderData.customerName,
+      orderData.id,
+      orderData.totalAmount,
+      'RWF',
+      {
+        orderId: orderData.id,
+        items: orderData.items.map(item => ({
+          name: item.title,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        total: orderData.totalAmount,
+        subtotal: orderData.totalAmount - (orderData.deliveryFee || 0),
+        deliveryFee: orderData.deliveryFee || 0,
+        currency: 'RWF',
+        deliveryAddress: orderData.orderAddress?.address,
+      }
+    );
+
+    // Send admin alert notification
+    const adminNotificationPromise = createAdminOrderAlertNotification(
+      'admin', // Admin user ID - should be configurable
+      orderData.id,
+      orderData.customerName,
+      orderData.totalAmount,
+      'RWF'
+    );
+
+    // Handle notification creation errors without blocking the response
+    Promise.allSettled([customerNotificationPromise, adminNotificationPromise])
+      .then(results => {
+        results.forEach((result, index) => {
+          if (result.status === 'rejected') {
+            console.error(`Notification ${index === 0 ? 'customer' : 'admin'} failed:`, result.reason);
+          } else if (result.value && !result.value.success) {
+            console.error(`Notification ${index === 0 ? 'customer' : 'admin'} failed:`, result.value.error);
+          }
+        });
+      })
+      .catch(error => {
+        console.error('Error creating order notifications:', error);
+      });
 
     return NextResponse.json({
       message: "Order placed successfully",

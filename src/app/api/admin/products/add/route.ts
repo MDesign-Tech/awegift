@@ -4,6 +4,7 @@ import { adminDb } from "@/lib/firebase/admin";
 import { ProductType } from "../../../../../../type";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
+import { createNewProductLaunchNotification } from "@/lib/notification/helpers";
 
 export async function POST(request: NextRequest) {
   try {

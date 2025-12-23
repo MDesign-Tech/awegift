@@ -304,10 +304,9 @@ const handleToggleFeatured = async (category: CategoryWithId) => {
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="flex items-center px-3 py-2 bg-theme-color text-white rounded-lg hover:bg-accent-color transition-colors text-sm disabled:opacity-50"
+              className="flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
             >
-              <FiRefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+              <FiRefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
             {hasPermission(userRole as UserRole, "canCreateProducts") && (
               <button

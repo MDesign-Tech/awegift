@@ -1,108 +1,85 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { collection, query, where, orderBy, onSnapshot, Timestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
-import { useAuth } from "@/lib/auth/AuthContext";
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: string;
-  read: boolean;
-  quoteId?: string;
-  createdAt: Timestamp;
-}
-
-interface NotificationPopdown {
-  id: string;
-  title: string;
-  message: string;
-  type: string;
-}
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { NotificationData } from '../../type';
 
 export const useNotifications = () => {
-  const { user } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [newNotification, setNewNotification] = useState<NotificationPopdown | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [newNotification, setNewNotification] = useState<NotificationData | null>(null);
+  const { data: session } = useSession();
+
+  const fetchNotifications = async () => {
+    if (!session?.user?.id) return;
+    try {
+      const response = await fetch(`/api/user/notifications?t=${Date.now()}`);
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.notifications);
+        setUnreadCount(data.notifications.filter((n: NotificationData) => !n.isRead).length);
+      } else {
+        console.error('Failed to fetch notifications');
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!user?.uid) {
-      setLoading(false);
-      return;
-    }
+    fetchNotifications();
+  }, [session?.user?.id]);
 
-    const notificationsRef = collection(db, "notifications");
-    const q = query(
-      notificationsRef,
-      where("userId", "==", user.uid),
-      orderBy("createdAt", "desc")
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const notificationData: Notification[] = [];
-      let hasNewNotification = false;
-      let latestNotification: NotificationPopdown | null = null;
-
-      snapshot.forEach((doc) => {
-        const data = doc.data() as Omit<Notification, 'id'>;
-        const notification: Notification = {
-          id: doc.id,
-          ...data,
-        };
-        notificationData.push(notification);
+  const markAsRead = async (notificationId: string) => {
+    try {
+      const response = await fetch(`/api/user/notifications/${notificationId}`, {
+        method: 'PATCH',
       });
-
-      // Check for new notifications (only if we already have data)
-      if (notifications.length > 0 && notificationData.length > notifications.length) {
-        // Find the newest notification
-        const sortedData = notificationData.sort((a, b) =>
-          b.createdAt.toMillis() - a.createdAt.toMillis()
+      if (response.ok) {
+        setNotifications(prev =>
+          prev.map(n =>
+            n.id === notificationId ? { ...n, isRead: true } : n
+          )
         );
-        const newest = sortedData[0];
-
-        // Check if it's unread and not already in our previous list
-        const isNew = !notifications.some(n => n.id === newest.id) && !newest.read;
-
-        if (isNew) {
-          latestNotification = {
-            id: newest.id,
-            title: newest.title,
-            message: newest.message,
-            type: newest.type,
-          };
-          hasNewNotification = true;
-        }
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      } else {
+        console.error('Failed to mark as read');
       }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
 
-      setNotifications(notificationData);
-      setLoading(false);
+  const deleteNotification = async (notificationId: string) => {
+    // Not implemented via API yet
+    console.log('Delete not implemented');
+  };
 
-      if (hasNewNotification && latestNotification) {
-        setNewNotification(latestNotification);
-        // Auto-clear after 4 seconds
-        setTimeout(() => {
-          setNewNotification(null);
-        }, 4000);
-      }
-    }, (error) => {
-      console.error("Error listening to notifications:", error);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [user?.uid, notifications.length]);
+  const markAllAsRead = async () => {
+    // Not implemented via API yet
+    console.log('Mark all not implemented');
+  };
 
   const clearNewNotification = () => {
     setNewNotification(null);
   };
 
+  const refetch = () => {
+    fetchNotifications();
+  };
+
   return {
     notifications,
+    unreadCount,
+    isLoading,
+    markAsRead,
+    deleteNotification,
+    markAllAsRead,
+    refetch,
     newNotification,
-    loading,
     clearNewNotification,
   };
 };

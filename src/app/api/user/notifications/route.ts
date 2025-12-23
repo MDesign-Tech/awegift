@@ -15,12 +15,15 @@ export async function GET(request: NextRequest) {
 
     // Get notifications for the current user
     const notificationsRef = adminDb.collection("notifications");
-    const querySnapshot = await notificationsRef.where("userId", "==", session.user.id).get();
+    const querySnapshot = await notificationsRef
+      .where("recipientId", "==", session.user.id)
+      .where("recipientRole", "==", "user")
+      .get();
     const notifications = querySnapshot.docs
       .map(doc => ({
         id: doc.id,
         ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
+        createdAt: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : new Date(doc.data().createdAt),
       }))
       .sort((a, b) => {
         const dateA = new Date(a.createdAt);

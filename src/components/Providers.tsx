@@ -27,7 +27,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                     toastOptions={{
                       className: '!bg-gray-900 !text-white !border-0',
                       style: {
-                        background: '#000000', // gray-900
+                        background: '#000000',
                         color: '#ffffff',
                         border: 'none',
                       },

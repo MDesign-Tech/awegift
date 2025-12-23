@@ -1,28 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useNotifications } from "@/hooks/useNotifications";
-import NotificationPopdown from "./NotificationPopdown";
+import NotificationPopup from "@/components/notifications/NotificationPopup";
+import { NotificationProvider as ContextProvider } from "@/lib/notification/provider";
 
 const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
-  const { newNotification, clearNewNotification } = useNotifications();
-  const [notificationModal, setNotificationModal] = useState<any>(null);
-
-  const handleViewNotification = (notificationId: string) => {
-    // Here you could fetch the full notification details or navigate to notifications page
-    // For now, just close the popdown
-    clearNewNotification();
-  };
-
   return (
-    <>
+    <ContextProvider>
       {children}
-      <NotificationPopdown
-        notification={newNotification}
-        onClose={clearNewNotification}
-        onView={handleViewNotification}
-      />
-    </>
+      <NotificationPopup showSequentially={true} autoDismissTime={5000} />
+    </ContextProvider>
   );
 };
 

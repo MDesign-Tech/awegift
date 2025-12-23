@@ -1,11 +1,19 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { toast } from 'react-hot-toast';
+
+interface Toast {
+  id: string;
+  message: string;
+  type: 'error' | 'success' | 'info';
+}
 
 interface NetworkContextType {
   isOnline: boolean;
   justConnected: boolean;
+  showToast: (message: string, type?: 'error' | 'success' | 'info') => void;
+  toasts: Toast[];
+  removeToast: (id: string) => void;
   retryFetch: <T>(fetchFn: () => Promise<T>, retries?: number, delay?: number) => Promise<T>;
 }
 

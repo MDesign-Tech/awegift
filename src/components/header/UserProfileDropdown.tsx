@@ -14,7 +14,7 @@ import {
 import { signOut } from "next-auth/react";
 import { getDefaultDashboardRoute, getRoleDisplayName } from "@/lib/rbac/roles";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useNotifications } from "@/lib/notification/provider";
 
 interface UserProfileDropdownProps {
   user: {
@@ -91,7 +91,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
     "admin"
   ].includes(currentUser.role as any);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.isRead).length;
   const displayCount = unreadCount > 9 ? "9+" : unreadCount.toString();
 
   const menuItems: MenuItem[] = [

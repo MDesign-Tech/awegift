@@ -1,4 +1,4 @@
-import Auth from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
@@ -7,10 +7,10 @@ import { adminDb } from "@/lib/firebase/admin";
 import { authConfig } from "./auth.config";
 import { UserRole } from "@/lib/rbac/roles";
 
-export const { auth, handlers } = Auth({
+const config = {
   ...authConfig,
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
     maxAge: 60 * 60 * 24 * 7, // 7 days
   },
   providers: [
@@ -125,7 +125,12 @@ export const { auth, handlers } = Auth({
       // Attempt to refresh role from DB if possible, but fallback gracefully if DB fails (though this runs on server, so it should be fine)
       try {
         if (token.id) {
-          const userDoc = await adminDb.collection("users").doc(token.id as string).get();
+          // Add timeout to prevent hanging
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Database timeout")), 5000)
+          );
+          const dbPromise = adminDb.collection("users").doc(token.id as string).get();
+          const userDoc = await Promise.race([dbPromise, timeoutPromise]) as any;
           if (userDoc.exists) {
             const dbRole = (userDoc.data()?.role as UserRole) || "user";
             // Update session with latest DB role
@@ -140,4 +145,6 @@ export const { auth, handlers } = Auth({
       return session;
     }
   }
-});
+};
+
+export const { handlers, auth } = NextAuth(config);

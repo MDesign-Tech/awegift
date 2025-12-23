@@ -1,34 +1,61 @@
-import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase/admin";
-import { hasPermission, UserRole } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { notificationService } from '@/lib/notification/service';
+import { CreateNotificationPayload } from '../../../../../type';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await auth();
+    if (!session?.user?.id || (session.user as any).role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const userRole = token.role as UserRole;
-    if (!hasPermission(userRole, "canViewUsers")) { // Admin can view notifications
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-
-    const snapshot = await adminDb.collection("notifications").orderBy("createdAt", "desc").limit(5000).get();
-
-    const notifications = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    return NextResponse.json({ notifications });
+    const notifications = await notificationService.getAllNotifications();
+    // Filter to show only system notifications sent to admin
+    const adminNotifications = notifications.filter(notification => notification.recipientRole === 'admin');
+    return NextResponse.json({ notifications: adminNotifications });
   } catch (error) {
-    console.error("Error fetching notifications:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    console.error('Error fetching notifications:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id || (session.user as any).role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const body: CreateNotificationPayload = await request.json();
+    const result = await notificationService.createNotification(body);
+    if (result.success) {
+      return NextResponse.json({ success: true, notificationId: result.notificationId }, { status: 201 });
+    } else {
+      return NextResponse.json({ error: result.error }, { status: 500 });
+    }
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id || (session.user as any).role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const body = await request.json();
+    const { ids } = body;
+    if (!ids || !Array.isArray(ids)) {
+      return NextResponse.json({ error: 'IDs array is required' }, { status: 400 });
+    }
+    // Delete each notification
+    const deletePromises = ids.map(id => notificationService.deleteNotification(id));
+    const results = await Promise.all(deletePromises);
+    const successCount = results.filter(result => result).length;
+    return NextResponse.json({ success: true, deletedCount: successCount }, { status: 200 });
+  } catch (error) {
+    console.error('Error bulk deleting notifications:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -5,16 +5,25 @@ export async function GET() {
   try {
     const session = await auth();
 
-    if (!session) {
+    if (!session || !session.user) {
       return NextResponse.json({ user: null }, { status: 200 });
     }
 
-    return NextResponse.json({ user: session.user }, { status: 200 });
+    // Ensure user object is serializable
+    const user = {
+      id: session.user.id,
+      email: session.user.email,
+      name: session.user.name,
+      image: session.user.image,
+      role: (session.user as any).role,
+    };
+
+    return NextResponse.json({ user }, { status: 200 });
   } catch (error) {
     console.error("Session fetch error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch session" },
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ error: "Failed to fetch session" }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }

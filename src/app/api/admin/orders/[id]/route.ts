@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { hasPermission } from "@/lib/rbac/roles";
 import { getToken } from "next-auth/jwt";
 import { adminDb } from "@/lib/firebase/admin";
+import {
+  createOrderReadyNotification,
+  createOrderCompletedNotification,
+  createOrderCancelledNotification,
+  createOrderFailedNotification,
+  createOrderRefundedNotification,
+  createAdminOrderCancelledNotification
+} from "@/lib/notification/helpers";
 
 export async function PUT(
   request: NextRequest,
@@ -34,12 +42,41 @@ export async function PUT(
       const orderDoc = await orderRef.get();
 
       if (orderDoc.exists) {
+        const currentOrder = orderDoc.data();
+
         await orderRef.update({
           ...updates,
           updatedAt: new Date().toISOString(),
         });
 
-        // TODO: Send notification if status changed (notification system not implemented)
+        // Send notification if status changed
+        if (updates.status && updates.status !== currentOrder?.status && currentOrder?.userId) {
+          try {
+            switch (updates.status.toLowerCase()) {
+              case 'ready':
+                await createOrderReadyNotification(currentOrder.userId, orderId);
+                break;
+              case 'completed':
+                await createOrderCompletedNotification(currentOrder.userId, orderId);
+                break;
+              case 'cancelled':
+                await createOrderCancelledNotification(currentOrder.userId, orderId);
+                await createAdminOrderCancelledNotification('admin', orderId, currentOrder.customerName || 'Customer');
+                break;
+              case 'failed':
+                await createOrderFailedNotification(currentOrder.userId, orderId);
+                break;
+              case 'refunded':
+                await createOrderRefundedNotification(currentOrder.userId, orderId, currentOrder.totalAmount, 'RWF');
+                break;
+              default:
+                // No specific notification for other statuses
+                break;
+            }
+          } catch (notificationError) {
+            console.error("Failed to send order status notification:", notificationError);
+          }
+        }
 
         return NextResponse.json({
           success: true,

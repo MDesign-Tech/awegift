@@ -63,17 +63,8 @@ const SingleProductPage = async ({ params }: Props) => {
             Brand: <span className="font-medium">{product?.brand}</span>
           </p>
           <p>
-            Category:{" "}
+            Categories:{" "}
             <span className="font-medium capitalize">{product?.categories && product.categories.length > 0 ? product.categories.join(", ") : "No category"}</span>
-          </p>
-          <p>
-            Tags:{" "}
-            {product?.tags?.map((item, index) => (
-              <span key={index.toString()} className="font-medium capitalize">
-                {item}
-                {index < product?.tags?.length - 1 && ", "}
-              </span>
-            ))}
           </p>
 
           <AddToCartButton

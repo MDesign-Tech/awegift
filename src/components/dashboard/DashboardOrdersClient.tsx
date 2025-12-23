@@ -38,6 +38,7 @@ export default function DashboardOrdersClient() {
   const [userRole, setUserRole] = useState<string>("");
   const [deliveryNote, setDeliveryNote] = useState("");
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -364,19 +365,26 @@ export default function DashboardOrdersClient() {
     <div className="bg-white rounded-lg shadow overflow-hidden">
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Orders Management ({filteredOrders.length})
-          </h2>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center mb-4 md:mb-0">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900">
+              Orders Management ({filteredOrders.length})
+            </h2>
+            {selectedOrders.length > 0 && (
+              <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                {selectedOrders.length} selected
+              </span>
+            )}
+          </div>
           {userRole && hasPermission(userRole as any, "canDeleteOrders") && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center flex-wrap space-x-2">
               {selectedOrders.length > 0 && (
                 <button
                   onClick={handleDeleteSelected}
                   className="flex items-center px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
                 >
                   <FiTrash2 className="mr-2 h-4 w-4" />
-                  Delete Selected ({selectedOrders.length})
+                  Delete {selectedOrders.length} Selected
                 </button>
               )}
               <button
@@ -387,12 +395,13 @@ export default function DashboardOrdersClient() {
                 <FiTrash2 className="mr-2 h-4 w-4" />
                 Delete All
               </button>
+
               <button
                 onClick={fetchOrders}
-                className="flex items-center px-3 py-2 bg-theme-color text-white rounded-lg hover:bg-accent-color transition-colors text-sm"
+                className="flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                title="Refresh orders"
               >
-                <FiRefreshCw className="mr-2 h-4 w-4" />
-                Refresh
+                <FiRefreshCw className="h-4 w-4" />
               </button>
             </div>
           )}
@@ -817,7 +826,7 @@ export default function DashboardOrdersClient() {
               {viewOrderModal.orderAddress && (
                 <div>
                   <h4 className="font-medium text-gray-900">
-                    Order Address 
+                    Order Address
                   </h4>
                   <div className="mt-2 p-3 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-900">

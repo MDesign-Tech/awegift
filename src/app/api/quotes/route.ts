@@ -4,6 +4,7 @@ import { QUOTE_STATUSES } from "@/lib/quoteStatuses";
 import { adminDb } from "@/lib/firebase/admin";
 import { auth } from "@/auth";
 import { fetchUserFromFirestore } from "@/lib/firebase/userService.server";
+import { createQuotationRequestNotification } from "@/lib/notification/helpers";
 
 // POST - Create new quote request
 export async function POST(request: NextRequest) {
@@ -91,6 +92,22 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
+
+    // Send notification to admin about new quotation request
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        createQuotationRequestNotification(
+          'admin', // Admin user ID - should be configurable
+          quoteId,
+          user?.name || 'Customer',
+          products.length
+        ).catch(error => {
+          console.error('Failed to create quotation request notification:', error);
+        });
+      } catch (error) {
+        console.error('Error sending quotation request notification:', error);
+      }
+    }
 
     return NextResponse.json({
       success: true,

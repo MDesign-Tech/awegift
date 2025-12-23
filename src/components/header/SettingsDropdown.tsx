@@ -56,7 +56,7 @@ const SettingsDropdown = () => {
     return null;
   }
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const menuItems = [
     {

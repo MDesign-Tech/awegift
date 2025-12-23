@@ -115,7 +115,7 @@ const CheckoutPage = () => {
         body: JSON.stringify({
           orderId: existingOrder.id,
           paymentStatus: PAYMENT_STATUSES.PENDING,
-          paymentMethod: paymentMethod.toUpperCase(),
+          paymentMethod: paymentMethod.toLowerCase(),
           paymentScreenshot: screenshotUrl,
         }),
       });

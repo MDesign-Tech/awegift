@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Notifications collection rules
+    match /notifications/{notificationId} {
+      // Allow read access based on recipient
+      allow read: if request.auth != null && (
+        // Users can read their own notifications
+        resource.data.recipientId == request.auth.uid &&
+        resource.data.recipientRole == 'user' ||
+        // Admins can read all notifications
+        isAdmin(request.auth.uid)
+      );
+
+      // Allow write access only for admins and system
+      allow create: if request.auth != null && (
+        // Admins can create notifications
+        isAdmin(request.auth.uid) ||
+        // System service accounts can create notifications
+        request.auth.token.admin == true
+      );
+
+      // Allow update only for marking as read or system updates
+      allow update: if request.auth != null && (
+        // Users can only mark their own notifications as read
+        (resource.data.recipientId == request.auth.uid &&
+         resource.data.recipientRole == 'user' &&
+         request.resource.data.isRead == true &&
+         request.resource.data.keys().hasOnly(['isRead', 'updatedAt'])) ||
+        // Admins can update any notification
+        isAdmin(request.auth.uid)
+      );
+
+      // Allow delete only for admins
+      allow delete: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // Helper function to check if user is admin
+    function isAdmin(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.role == 'admin';
+    }
+    
+    // Allow authenticated users to read their own user document
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
