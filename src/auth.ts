@@ -122,26 +122,6 @@ const config = {
         session = await authConfig.callbacks.session({ session, token } as any);
       }
 
-      // Attempt to refresh role from DB if possible, but fallback gracefully if DB fails (though this runs on server, so it should be fine)
-      try {
-        if (token.id) {
-          // Add timeout to prevent hanging
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Database timeout")), 5000)
-          );
-          const dbPromise = adminDb.collection("users").doc(token.id as string).get();
-          const userDoc = await Promise.race([dbPromise, timeoutPromise]) as any;
-          if (userDoc.exists) {
-            const dbRole = (userDoc.data()?.role as UserRole) || "user";
-            // Update session with latest DB role
-            (session.user as any).role = dbRole;
-          }
-        }
-      } catch (error) {
-        // Silent fail on DB error, keep token role
-        console.error("Session refresh error:", error);
-      }
-
       return session;
     }
   }

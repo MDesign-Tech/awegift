@@ -7,12 +7,9 @@ import { ORDER_STATUSES, PAYMENT_STATUSES } from "@/lib/orderStatus";
 export async function GET(request: NextRequest) {
   try {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token?.sub) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!token || !token.role) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const userDoc = await adminDb.collection("users").doc(token.sub).get();
-    if (!userDoc.exists) return NextResponse.json({ error: "User not found" }, { status: 404 });
-
-    const userRole = (userDoc.data()?.role as UserRole) || "user";
+    const userRole = token.role as UserRole;
     if (!hasPermission(userRole, "canViewAnalytics"))
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
 

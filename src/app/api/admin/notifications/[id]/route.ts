@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { getToken } from 'next-auth/jwt';
 import { notificationService } from '@/lib/notification/service';
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await auth();
-    if (!session?.user?.id || (session.user as any).role !== 'admin') {
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || token.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const notificationId = params.id;
+    const { id: notificationId } = await params;
     const success = await notificationService.markAsRead(notificationId);
     if (success) {
       return NextResponse.json({ success: true });
@@ -21,13 +21,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await auth();
-    if (!session?.user?.id || (session.user as any).role !== 'admin') {
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || token.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const notificationId = params.id;
+    const { id: notificationId } = await params;
     const success = await notificationService.deleteNotification(notificationId);
     if (success) {
       return NextResponse.json({ success: true });
