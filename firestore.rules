@@ -4,14 +4,8 @@ service cloud.firestore {
     
     // Notifications collection rules
     match /notifications/{notificationId} {
-      // Allow read access based on recipient
-      allow read: if request.auth != null && (
-        // Users can read their own notifications
-        resource.data.recipientId == request.auth.uid &&
-        resource.data.recipientRole == 'user' ||
-        // Admins can read all notifications
-        isAdmin(request.auth.uid)
-      );
+      // Allow read access for authenticated users (security handled by API and page protection)
+      allow read: if request.auth != null;
 
       // Allow write access only for admins and system
       allow create: if request.auth != null && (

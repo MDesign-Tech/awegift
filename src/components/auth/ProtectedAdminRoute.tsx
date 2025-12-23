@@ -1,6 +1,6 @@
 "use client";
 
-import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -9,20 +9,33 @@ interface ProtectedAdminRouteProps {
 }
 
 export default function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
-  const { isAdmin, isAuthenticated } = useCurrentUser();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/auth/login");
-      return;
-    }
+  const isAuthenticated = !!user;
+  const isAdmin = (user as any)?.role === 'admin';
 
-    if (!isAdmin) {
-      router.push("/");
-      return;
+  useEffect(() => {
+    if (!loading) {
+      if (!isAuthenticated) {
+        router.push("/auth/login");
+        return;
+      }
+
+      if (!isAdmin) {
+        router.push("/");
+        return;
+      }
     }
-  }, [isAdmin, isAuthenticated, router]);
+  }, [isAdmin, isAuthenticated, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !isAdmin) {
     return (

@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { QuotationType, QuotationProductType } from "../../../type";
 import { getStatusDisplayInfo, QuotationStatus } from "@/lib/quoteStatuses";
+import { getData } from "@/app/(user)/helpers";
 
 interface QuotesListProps {
   showHeader?: boolean;
@@ -42,7 +43,7 @@ export default function QuotesList({
   const fetchQuotes = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/user/quotes");
+      const response = await getData("/api/user/quotes");
 
       if (!response.ok) {
         throw new Error("Failed to fetch quotes");
