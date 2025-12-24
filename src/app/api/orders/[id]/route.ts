@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { adminDb } from "@/lib/firebase/admin";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService.server";
+import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
 import { OrderData } from "../../../../../type";
 
 export async function GET(

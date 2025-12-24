@@ -1,20 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { hasPermission, UserRole } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
+import { requireRole } from "@/lib/server/auth-utils";
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as UserRole;
-    if (!hasPermission(userRole, "canViewAnalytics")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request, "canViewAnalytics");
+    if (check instanceof NextResponse) return check;
 
     // Fetch all orders from orders collection (primary source)
     const ordersRef = adminDb.collection("orders");

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser, removeUser } from "@/redux/aweGiftSlice";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { fetchUserFromFirestore } from "@/lib/firebase/clientUser";
 import type { RootState } from "@/redux/store";
 
 export function useUserSync() {

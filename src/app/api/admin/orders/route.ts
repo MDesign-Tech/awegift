@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { hasPermission } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
 import { adminDb } from "@/lib/firebase/admin";
+import { requireRole } from "@/lib/server/auth-utils";
+import { getToken } from "next-auth/jwt";
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role || !token.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const check = await requireRole(request, "canViewOrders");
+    if (check instanceof NextResponse) return check;
+    const { role, userId } = check;
 
-    const userRole = token.role as any;
-    if (!hasPermission(userRole, "canViewOrders")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    // Get token for email if needed for filtering
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
     // Fetch all orders and filter based on role
     const ordersSnapshot = await adminDb.collection("orders").limit(5000).get();
@@ -59,9 +55,9 @@ export async function GET(request: NextRequest) {
     });
 
     // Filter based on role
-    if (userRole === "user") {
+    if (role === "user") {
       // Regular users can only see their own orders
-      orders = orders.filter((order) => order.customerEmail === token.email);
+      orders = orders.filter((order) => order.customerEmail === token?.email);
     }
     // Admin sees all orders (no filter)
 
@@ -77,16 +73,8 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as any;
-    if (!hasPermission(userRole, "canUpdateOrders")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request, "canUpdateOrders");
+    if (check instanceof NextResponse) return check;
 
     const body = await request.json();
     const { orderId, userId, updates, status, paymentStatus } = body;
@@ -181,16 +169,8 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as any;
-    if (!hasPermission(userRole, "canDeleteOrders")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request, "canDeleteOrders");
+    if (check instanceof NextResponse) return check;
 
     const { orderId, userId } = await request.json();
 

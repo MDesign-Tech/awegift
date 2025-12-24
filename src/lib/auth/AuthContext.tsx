@@ -22,35 +22,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loading = status === "loading";
 
   const signInWithEmailAndPassword = async (email: string, password: string) => {
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+  const result = await signIn("credentials", {
+    email,
+    password,
+    redirect: false,
+  });
 
-      const data = await response.json();
+  if (result?.error) {
+    return { error: new Error("Invalid email or password") };
+  }
 
-      if (!response.ok) {
-        return { error: new Error(data.error || "Login failed") };
-      }
+  return { error: null };
+};
 
-      // On success, create session with NextAuth
-      const result = await signIn("credentials", {
-        email: data.user.email,
-        password: "authenticated", // Special password to indicate pre-authenticated
-        redirect: false
-      });
-
-      if (result?.error) {
-        return { error: new Error("Session creation failed") };
-      }
-
-      return { error: null };
-    } catch (error) {
-      return { error };
-    }
-  };
 
   const signInWithGoogle = async () => {
     try {

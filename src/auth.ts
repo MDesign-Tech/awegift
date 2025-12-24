@@ -29,42 +29,40 @@ const config = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || typeof credentials.email !== 'string') return null;
-
-        try {
-          const snapshot = await adminDb
-            .collection("users")
-            .where("email", "==", credentials.email)
-            .limit(1)
-            .get();
-
-          if (snapshot.empty) return null;
-
-          const doc = snapshot.docs[0];
-          const user = doc.data();
-
-          if (!user.password || typeof user.password !== 'string') return null;
-
-          // If password is "authenticated", skip password check (used for custom login)
-          if (credentials.password !== "authenticated") {
-            if (!credentials.password || typeof credentials.password !== 'string') return null;
-            const isValid = await compare(credentials.password, user.password);
-            if (!isValid) return null;
-          }
-
-          return {
-            id: doc.id,
-            email: user.email,
-            name: user.name,
-            image: user.image || null,
-            role: user.role || "user",
-          };
-        } catch (error) {
-          console.error("Auth error:", error);
+        if (
+          !credentials?.email ||
+          !credentials?.password ||
+          typeof credentials.email !== "string" ||
+          typeof credentials.password !== "string"
+        ) {
           return null;
         }
+
+        const snapshot = await adminDb
+          .collection("users")
+          .where("email", "==", credentials.email)
+          .limit(1)
+          .get();
+
+        if (snapshot.empty) return null;
+
+        const doc = snapshot.docs[0];
+        const user = doc.data();
+
+        if (!user.password) return null;
+
+        const isValid = await compare(credentials.password, user.password);
+        if (!isValid) return null;
+
+        return {
+          id: doc.id,
+          email: user.email,
+          name: user.name,
+          image: user.image || null,
+          role: user.role || "user",
+        };
       },
-    }),
+    })
   ],
   callbacks: {
     ...authConfig.callbacks,

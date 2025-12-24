@@ -11,7 +11,7 @@ import {
 } from "@/lib/orderStatus";
 import { adminDb } from "@/lib/firebase/admin";
 import { auth } from "@/auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService.server";
+import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
 
 // GET - Fetch orders based on user role
 export async function GET(request: NextRequest) {

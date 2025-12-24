@@ -1,23 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { hasPermission, UserRole } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
+import { requireRole } from "@/lib/server/auth-utils";
 
 export async function DELETE(request: NextRequest) {
   try {
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // ✅ Check authentication & permission
+    const check = await requireRole(request, "canDeleteUsers");
+    if (check instanceof NextResponse) return check;
 
-    const userRole = token.role as UserRole;
-    if (!hasPermission(userRole, "canDeleteUsers")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-
+    // Get request body
     const { userIds } = await request.json();
-
     if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
       return NextResponse.json(
         { error: "Invalid user IDs provided" },
@@ -25,20 +17,33 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Create a batch for efficient deletion
+    // 🔐 Optional: Prevent admin deletion
+    const adminUserIds: string[] = [];
     const batch = adminDb.batch();
 
-    // Delete users only (preserve orders for analytics)
     for (const userId of userIds) {
-      const userRef = adminDb.collection("users").doc(userId);
-      batch.delete(userRef);
+      const userDoc = await adminDb.collection("users").doc(userId).get();
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        if (userData?.role === "admin") {
+          adminUserIds.push(userId);
+          continue; // skip admins
+        }
+        batch.delete(adminDb.collection("users").doc(userId));
+      }
     }
 
-    // Commit the batch
+    if (adminUserIds.length > 0) {
+      return NextResponse.json({
+        error: `Cannot delete admin users: ${adminUserIds.join(", ")}`,
+      }, { status: 403 });
+    }
+
+    // Commit batch
     await batch.commit();
 
     return NextResponse.json({
-      message: `Successfully deleted ${userIds.length} users`,
+      message: `Successfully deleted ${userIds.length - adminUserIds.length} users`,
     });
   } catch (error) {
     console.error("Error deleting users:", error);

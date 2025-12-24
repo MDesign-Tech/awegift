@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
+import { requireRole } from "@/lib/server/auth-utils";
 
 export async function DELETE(request: Request) {
   try {
+    const check = await requireRole(request as any, "canDeleteProducts");
+    if (check instanceof NextResponse) return check;
     let categoryIds: string[] | undefined;
 
     // Check if request has a body
