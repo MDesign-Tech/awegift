@@ -225,6 +225,7 @@ export interface QuotationType {
 export type EmailType =
   // Customer order lifecycle
   | "ORDER_CREATED" // when user places order
+  | "ORDER_CONFIRMED" // when admin confirms order
   | "ORDER_PAID" // payment confirmed 
   | "ORDER_READY" // when admin marks order ready
   | "ORDER_COMPLETED" // when user confirms receipt or admin marks completed
@@ -261,6 +262,17 @@ export interface EmailPayload {
   productLaunchInfo?: ProductLounchEmailData;
   orderStatus?: string;
 }
+
+export interface EmailData {
+  type: EmailType;
+  to: string;
+  name?: string;
+  order?: OrderEmailData;
+  quotation?: QuotationEmailData;
+  productLaunchInfo?: ProductLounchEmailData;
+  orderStatus?: string;
+}
+
 
 export interface OrderEmailData {
   orderId: string;
@@ -315,9 +327,12 @@ export interface EmailResponse {
 
 import { Timestamp } from 'firebase/firestore';
 
+export type NotificationScope = 'personal' | 'admin';
+
 export type NotificationType =
   // Customer order lifecycle
   | "ORDER_CREATED" // when user places order
+  | "ORDER_CONFIRMED" // when admin confirms order
   | "ORDER_PAID" // payment confirmed 
   | "ORDER_READY" // when admin marks order ready
   | "ORDER_COMPLETED" // when user confirms receipt or admin marks completed
@@ -352,6 +367,7 @@ export interface NotificationData {
   id?: string;
   recipientId: string;
   recipientRole: UserRole;
+  scope: NotificationScope;
   type: NotificationType;
   title: string;
   message: string;
@@ -361,9 +377,11 @@ export interface NotificationData {
   data?: any;
 }
 
+
 export interface CreateNotificationPayload {
   recipientId: string;
   recipientRole: UserRole;
+  scope: NotificationScope;
   type: NotificationType;
   title: string;
   message: string;
@@ -371,15 +389,6 @@ export interface CreateNotificationPayload {
   data?: any;
 }
 
-export interface EmailData {
-  type: EmailType;
-  to: string;
-  name?: string;
-  order?: OrderEmailData;
-  quotation?: QuotationEmailData;
-  productLaunchInfo?: ProductLounchEmailData;
-  orderStatus?: string;
-}
 
 export interface NotificationResponse {
   success: boolean;

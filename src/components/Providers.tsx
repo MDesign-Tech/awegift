@@ -6,12 +6,30 @@ import { AuthProvider } from "@/lib/auth/AuthContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { UserSyncProvider } from "@/components/UserSyncProvider";
 import StateProvider from "@/components/auth/StateProvider";
-import NotificationProvider from "@/components/NotificationProvider";
+import { NotificationProvider } from "@/components/NotificationProvider";
 import { NetworkProvider } from "@/contexts/NetworkContext";
 import NetworkStatus from "@/components/NetworkStatus";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+
 
 
 export default function Providers({ children }: { children: React.ReactNode }) {
+  const [currentScope, setCurrentScope] = useState<any>("personal");
+  const pathname = usePathname();
+
+  const determineScope = () => {
+    if (pathname.includes("/dashboard")) {
+      setCurrentScope("admin");
+    } else {
+      setCurrentScope("personal");
+    }
+  };
+
+  useEffect(() => {
+    determineScope();
+  }, [pathname]);
+
   return (
     <SessionProvider>
       <NetworkProvider>
@@ -20,7 +38,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <AuthProvider>
             <UserSyncProvider>
               <CurrencyProvider>
-                <NotificationProvider>
+                <NotificationProvider scope={currentScope}>
                   {children}
                   <Toaster
                     position="bottom-right"

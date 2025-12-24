@@ -85,6 +85,28 @@ export class EmailService {
   }
 
   /**
+    * Send admin new user registration email
+    */
+    async sendAdminNewUserEmail(to: string, name: string): Promise<EmailResponse> {
+      return this.sendEmail({
+        type: 'ADMIN_NEW_USER',
+        to,
+        name,
+      });
+    }
+
+  // /**
+  //   * Send email verification email to user
+  //   */
+  // async sendEmailVerificationEmail(to: string, verificationToken: string): Promise<EmailResponse> {
+  //   return this.sendEmail({
+  //     type: 'EMAIL_VERIFICATION',
+  //     to,
+  //     verificationToken,
+  //   });
+  // }
+
+  /**
     * Send order created email to customer
     */
    async sendOrderCreatedEmail(
@@ -218,6 +240,7 @@ export class EmailService {
     // Validate required data for specific email types
     switch (payload.type) {
       case 'ORDER_CREATED':
+      case 'ORDER_CONFIRMED':
       case 'ORDER_PAID':
       case 'ORDER_READY':
       case 'ORDER_COMPLETED':
@@ -260,9 +283,7 @@ export class EmailService {
   static isConfigured(): boolean {
     return !!(
       process.env.GMAIL_USER &&
-      process.env.GMAIL_APP_PASSWORD &&
-      process.env.GMAIL_USER !== 'your-gmail-user-here' &&
-      process.env.GMAIL_APP_PASSWORD !== 'your-gmail-app-password-here'
+      process.env.GMAIL_APP_PASSWORD
     );
   }
 
@@ -274,16 +295,11 @@ export class EmailService {
 
     if (!process.env.GMAIL_USER) {
       missing.push('GMAIL_USER');
-    } else if (process.env.GMAIL_USER === 'your-gmail-user-here') {
-      missing.push('GMAIL_USER (using default placeholder)');
     }
 
     if (!process.env.GMAIL_APP_PASSWORD) {
       missing.push('GMAIL_APP_PASSWORD');
-    } else if (process.env.GMAIL_APP_PASSWORD === 'your-gmail-app-password-here') {
-      missing.push('GMAIL_APP_PASSWORD (using default placeholder)');
-    }
-
+    } 
     return {
       configured: missing.length === 0,
       missing,

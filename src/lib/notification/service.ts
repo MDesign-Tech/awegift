@@ -22,6 +22,7 @@ export class NotificationService {
       const notificationData: Omit<NotificationData, 'id'> = {
         recipientId: payload.recipientId,
         recipientRole: payload.recipientRole,
+        scope: payload.scope || 'personal',
         type: payload.type,
         title: payload.title,
         message: payload.message,
@@ -66,14 +67,18 @@ export class NotificationService {
   }
 
   /**
-   * Mark all notifications as read for a user
+   * Mark all notifications as read
    */
-  async markAllAsRead(userId: string, userRole: UserRole): Promise<boolean> {
+  async markAllAsRead(userId: string, userRole: UserRole, scope: 'personal' | 'admin' = 'personal'): Promise<boolean> {
     try {
       const notificationsRef = adminDb.collection(this.notificationsCollection)
         .where('recipientId', '==', userId)
         .where('recipientRole', '==', userRole)
         .where('isRead', '==', false);
+
+      if (scope === 'admin') {
+        notificationsRef.where('scope', '==', 'admin');
+      }
 
       const snapshot = await notificationsRef.get();
 
@@ -104,28 +109,6 @@ export class NotificationService {
   }
 
   /**
-   * Get notifications for a user
-   */
-  async getUserNotifications(userId: string, userRole: UserRole): Promise<NotificationData[]> {
-    try {
-      const notificationsRef = adminDb.collection(this.notificationsCollection)
-        .where('recipientId', '==', userId)
-        .where('recipientRole', '==', userRole)
-        .orderBy('createdAt', 'desc');
-
-      const snapshot = await notificationsRef.get();
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
-      })) as NotificationData[];
-    } catch (error) {
-      console.error('Error fetching user notifications:', error);
-      return [];
-    }
-  }
-
-  /**
    * Get unread notifications count for a user
    */
   async getUnreadCount(userId: string, userRole: UserRole): Promise<number> {
@@ -144,69 +127,37 @@ export class NotificationService {
   }
 
   /**
-   * Get all notifications (for admin)
+   * Get account notifications (for API use)
    */
-  async getAllNotifications(): Promise<NotificationData[]> {
-    try {
-      const notificationsRef = adminDb.collection(this.notificationsCollection)
-        .orderBy('createdAt', 'desc');
-
-      const snapshot = await notificationsRef.get();
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
-      })) as NotificationData[];
-    } catch (error) {
-      console.error('Error fetching all notifications:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Set up real-time listener for user notifications
-   */
-  onUserNotificationsChange(
-    userId: string,
-    userRole: UserRole,
-    callback: (notifications: NotificationData[]) => void
-  ): () => void {
-    const notificationsRef = adminDb.collection(this.notificationsCollection)
+  async getAccountNotifications(userId: string, userRole: UserRole): Promise<NotificationData[]> {
+    const snapshot = await adminDb.collection(this.notificationsCollection)
       .where('recipientId', '==', userId)
       .where('recipientRole', '==', userRole)
-      .orderBy('createdAt', 'desc');
+      .where('scope', '==', 'personal')
+      .orderBy('createdAt', 'desc')
+      .get();
 
-    return notificationsRef.onSnapshot((snapshot) => {
-      const notifications = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt,
-      })) as NotificationData[];
-
-      callback(notifications);
-    }, (error) => {
-      console.error('Error listening to notifications:', error);
-    });
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
+    })) as NotificationData[];
   }
 
   /**
-   * Set up real-time listener for all notifications (admin)
+   * Get admin notifications (for API use)
    */
-  onAllNotificationsChange(callback: (notifications: NotificationData[]) => void): () => void {
-    const notificationsRef = adminDb.collection(this.notificationsCollection)
-      .orderBy('createdAt', 'desc');
+  async getAdminNotifications(): Promise<NotificationData[]> {
+    const snapshot = await adminDb.collection(this.notificationsCollection)
+      .where('scope', '==', 'admin')
+      .orderBy('createdAt', 'desc')
+      .get();
 
-    return notificationsRef.onSnapshot((snapshot) => {
-      const notifications = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt,
-      })) as NotificationData[];
-
-      callback(notifications);
-    }, (error) => {
-      console.error('Error listening to all notifications:', error);
-    });
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
+    })) as NotificationData[];
   }
 }
 

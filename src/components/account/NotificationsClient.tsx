@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FiBell, FiX, FiCheck, FiMail } from 'react-icons/fi';
 import { formatNotificationDate } from '@/lib/date';
-import { useNotifications } from '@/hooks/useNotifications';
+
 import { NotificationData } from '../../../type';
+import { useNotifications } from '@/components/NotificationProvider';
 
 const NotificationsClient: React.FC = () => {
-  const { notifications, isLoading: loading, markAsRead } = useNotifications();
+  const { notifications, isLoading: loading, markAsRead, markAllAsRead, unreadCount } = useNotifications();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
@@ -123,6 +124,14 @@ const NotificationsClient: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Notifications</h2>
+        {unreadCount > 0 && (
+          <button
+            onClick={markAllAsRead}
+            className="px-4 py-2 bg-theme-color text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Mark All as Read
+          </button>
+        )}
       </div>
 
       {/* Status Messages */}

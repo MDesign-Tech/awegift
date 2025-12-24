@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Container from "../Container";
 import CurrencyDropdown from "./CurrencyDropdown";
-import SettingsDropdown from "./SettingsDropdown";
+// import SettingsDropdown from "./SettingsDropdown";
 
 const TopHeader = ({
   freeShippingThreshold,
@@ -29,9 +29,9 @@ const TopHeader = ({
             Request Quotation
           </Link>
           <CurrencyDropdown />
-          <div className="hidden md:block">
+          {/* <div className="hidden md:block">
             <SettingsDropdown />
-          </div>
+          </div> */}
         </div>
       </Container>
     </div>

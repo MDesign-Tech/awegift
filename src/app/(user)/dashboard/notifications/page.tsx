@@ -9,7 +9,8 @@ export default function NotificationsPage() {
           allowedRoles={["admin"]}
           loadingMessage="Loading notifications..."
         >
-      <DashboardNotificationsClient />
+      
+        <DashboardNotificationsClient />
     </RoleProtectedRoute>
   )
 }

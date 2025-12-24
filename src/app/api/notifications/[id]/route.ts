@@ -1,17 +1,29 @@
+// app/api/notifications/[id]/route.ts
+'use server';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { notificationService } from '@/lib/notification/service';
+import { UserRole } from '@/lib/rbac/roles';
 
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+interface Params {
+  params: { id: string };
+}
+
+/**
+ * PATCH /api/notifications/:id
+ * Mark a single notification as read
+ */
+export async function PATCH(request: NextRequest, { params }: Params) {
   try {
+
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || token.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const { id: notificationId } = await params;
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const notificationId = params.id;
+
     const success = await notificationService.markAsRead(notificationId);
     if (success) {
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true }, { status: 200 });
     } else {
       return NextResponse.json({ error: 'Failed to mark as read' }, { status: 500 });
     }
@@ -21,16 +33,20 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+/**
+ * DELETE /api/notifications/:id
+ * Delete a single notification
+ */
+export async function DELETE(request: NextRequest, { params }: Params) {
   try {
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || token.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const { id: notificationId } = await params;
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const notificationId = params.id;
+
     const success = await notificationService.deleteNotification(notificationId);
     if (success) {
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true }, { status: 200 });
     } else {
       return NextResponse.json({ error: 'Failed to delete notification' }, { status: 500 });
     }

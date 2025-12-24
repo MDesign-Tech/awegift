@@ -2,29 +2,13 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useAdminNotifications } from '@/hooks/useAdminNotifications';
-import { FiBell, FiMail, FiRefreshCw } from 'react-icons/fi';
+import { useNotifications } from '@/components/NotificationProvider';
+import { FiBell, FiMail } from 'react-icons/fi';
 import { formatNotificationDate } from '@/lib/date';
 
 const DashboardNotificationsClient: React.FC = () => {
-  const { notifications, isLoading, refetch } = useAdminNotifications();
+  const { notifications, isLoading, markAsRead, markAllAsRead, unreadCount } = useNotifications();
   const router = useRouter();
-
-  const markAsRead = async (notificationId: string) => {
-    try {
-      const response = await fetch(`/api/admin/notifications/${notificationId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      if (response.ok) {
-        refetch();
-      }
-    } catch (err) {
-      console.error('Error marking notification as read:', err);
-    }
-  };
 
   const handleNotificationClick = async (notification: any) => {
     if (notification.id && !notification.isRead) {
@@ -81,15 +65,14 @@ const DashboardNotificationsClient: React.FC = () => {
               System Notifications ({notifications.length})
             </h2>
           </div>
-          <div className="flex items-center flex-wrap space-x-2">
+          {unreadCount > 0 && (
             <button
-              onClick={refetch}
-              className="flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-              title="Refresh notifications"
+              onClick={markAllAsRead}
+              className="px-4 py-2 bg-theme-color text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
-              <FiRefreshCw className="h-4 w-4" />
+              Mark All as Read
             </button>
-          </div>
+          )}
         </div>
       </div>
 

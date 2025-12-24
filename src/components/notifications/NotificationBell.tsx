@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useNotifications } from '@/lib/notification/provider';
+import { useNotifications } from '@/components/NotificationProvider';
 import { FiBell, FiBellOff } from 'react-icons/fi';
 import Link from 'next/link';
 

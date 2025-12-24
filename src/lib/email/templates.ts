@@ -23,6 +23,8 @@ export class EmailTemplates {
         return this.generateSecurityAlertEmail(payload);
       case 'ORDER_CREATED':
         return this.generateOrderCreatedEmail(payload);
+      case 'ORDER_CONFIRMED':
+        return this.generateOrderConfirmationEmail(payload);
       case 'ORDER_PAID':
         return this.generateOrderPaidEmail(payload);
       case 'ORDER_READY':
@@ -45,6 +47,8 @@ export class EmailTemplates {
         return this.generateQuotationRejectedEmail(payload);
       case 'NEW_PRODUCT_LAUNCH':
         return this.generateNewProductLaunchEmail(payload);
+      case 'ADMIN_NEW_USER':
+        return this.generateAdminNewUserEmail(payload);
       case 'ADMIN_NEW_ORDER':
         return this.generateAdminNewOrderEmail(payload);
       case 'ADMIN_NEW_QUOTATION':
@@ -112,6 +116,57 @@ Here's what you can do next:
 Start shopping: ${this.BASE_URL}
 
 If you have any questions, reply to this email or contact our support team at ${this.SUPPORT_EMAIL}
+
+Best regards,
+The ${this.COMPANY_NAME} Team
+    `;
+
+    return { subject, html, text };
+  }
+
+  private static generateAdminNewUserEmail(payload: EmailPayload): { subject: string; html: string; text: string } {
+    const name = payload.name || 'Admin';
+    const subject = `New User Registered - ${this.COMPANY_NAME}`;
+    const html = 
+    `<!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New User Registered</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #28a745; }
+          .content { padding: 30px 0; }
+          .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="margin: 0; color: #28a745;">${this.COMPANY_NAME}</h1>
+          </div>    
+          <div class="content">
+            <h2 style="color: #333;">New User Registration</h2>
+            <p>Hi ${name},</p>
+            <p></p>A new user has just registered on ${this.COMPANY_NAME}. Please review their details in the admin dashboard.</p>
+          </div>
+          <div class="footer">
+            <p>If you have any questions, reply to this email or contact our support team at <a href="mailto:${this.SUPPORT_EMAIL}">${this.SUPPORT_EMAIL}</a></p>
+            <p>© ${new Date().getFullYear()} ${this.COMPANY_NAME}. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `
+New User Registration - ${this.COMPANY_NAME}
+
+Hi ${name},
+
+A new user has just registered on ${this.COMPANY_NAME}. Please review their details in the admin dashboard.
 
 Best regards,
 The ${this.COMPANY_NAME} Team
@@ -1113,7 +1168,7 @@ Please review this order in your admin dashboard.
     const text = `
 Quotation Response - Quotation #${quotation.quotationId}
 
-Thank you for your inquiry. Here's our response to your quotation request:
+Thank you for your . Here's our response to your quotation request:
 
 Quotation Summary:
 ${quotation.items.map(item => `- ${item.name} x ${item.quantity}: ${this.formatCurrency(item.price * item.quantity, quotation.currency)}`).join('\n')}
@@ -1490,72 +1545,6 @@ Please review this quotation request in your admin dashboard.
     return { subject, html, text };
   }
 
-  private static generateOrderStatusChangedEmail(payload: EmailPayload): { subject: string; html: string; text: string } {
-    const order = payload.order;
-    const status = payload.orderStatus;
-    
-    if (!order || !status) {
-      throw new Error('Order data and status are required for order status changed email');
-    }
-
-    const subject = `Order Status Update - Order #${order.orderId}`;
-    const totalFormatted = this.formatCurrency(order.total, order.currency);
-
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Order Status Update</title>
-        <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background-color: #ffc107; color: #333; padding: 20px; text-align: center; }
-          .content { padding: 30px 0; }
-          .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin: 10px 0; }
-          .order-details { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1 style="margin: 0;">Order Status Update</h1>
-            <p style="margin: 5px 0 0 0;">Order #${order.orderId}</p>
-          </div>
-          <div class="content">
-            <p>Your order status has been updated to: <span class="status-badge" style="background-color: #ffc107; color: #333;">${status}</span></p>
-            <p>We wanted to let you know about this change in your order status.</p>
-            
-            <div class="order-details">
-              <h3>Order Summary</h3>
-              <p><strong>Order ID:</strong> ${order.orderId}</p>
-              <p><strong>Status:</strong> ${status}</p>
-              <p><strong>Total:</strong> ${totalFormatted}</p>
-            </div>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-
-    const text = `
-Order Status Update - Order #${order.orderId}
-
-Your order status has been updated to: ${status}
-
-We wanted to let you know about this change in your order status.
-
-Order Summary:
-- Order ID: ${order.orderId}
-- Status: ${status}
-- Total: ${totalFormatted}
-
-Please contact us if you have any questions about this status change.
-    `;
-
-    return { subject, html, text };
-  }
 
   private static generateQuotationReceivedEmail(payload: EmailPayload): { subject: string; html: string; text: string } {
     const quotation = payload.quotation;

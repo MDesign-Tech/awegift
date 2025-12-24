@@ -68,6 +68,26 @@ export async function POST(request: NextRequest) {
       orders: [],
     });
 
+    // Send welcome email asynchronously (don't block the response)
+    console.log('Sending welcome email to new user:', email);
+    emailService.sendWelcomeEmail(email, name)
+      .then(() => {
+        console.log('Welcome email sent successfully to:', email);
+      })
+      .catch((error: any) => {
+        console.error('Error sending welcome email:', error);
+      });
+
+    // send Email to admin asynchronously (don't block the response)
+    console.log('Sending new user registration email to admin for new user registered:', email);
+    emailService.sendAdminNewUserEmail('<EMAIL>', name)
+      .then(() => {
+        console.log('Admin notification email sent successfully for new user:', email);
+      })
+      .catch((error: any) => {
+        console.error('Error sending admin notification email:', error);
+      });
+
     // Send admin notification for new user registration asynchronously (don't block the response)
     console.log('Creating admin notification for new user:', userDoc.id, email, name);
     createAdminNewUserNotification('admin', name, email)

@@ -4,7 +4,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 export default function NotificationsPage() {
   return (
     <ProtectedRoute loadingMessage="Loading your notifications...">
-      <NotificationsClient />
+        <NotificationsClient />
     </ProtectedRoute>
   )
 }

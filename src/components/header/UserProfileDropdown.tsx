@@ -14,7 +14,7 @@ import {
 import { signOut } from "next-auth/react";
 import { getDefaultDashboardRoute, getRoleDisplayName } from "@/lib/rbac/roles";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { useNotifications } from "@/lib/notification/provider";
+import { useNotifications } from "@/components/NotificationProvider";
 
 interface UserProfileDropdownProps {
   user: {
@@ -37,7 +37,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user: currentUser } = useCurrentUser();
-  const { notifications } = useNotifications();
+  const { unreadCount } = useNotifications();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -91,7 +91,6 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
     "admin"
   ].includes(currentUser.role as any);
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
   const displayCount = unreadCount > 9 ? "9+" : unreadCount.toString();
 
   const menuItems: MenuItem[] = [

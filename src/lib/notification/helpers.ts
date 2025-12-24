@@ -2,62 +2,10 @@ import { notificationService } from './service';
 import {
   CreateNotificationPayload,
   NotificationResponse,
-  NotificationType
+  NotificationType,
+  NotificationScope
 } from '../../../type';
 import { UserRole } from '@/lib/rbac/roles';
-import { emailService } from '@/lib/email/service';
-import { adminDb } from '@/lib/firebase/admin';
-
-/**
- * Send notification email based on notification type
- */
-async function sendNotificationEmail(payload: CreateNotificationPayload, userEmail?: string, userName?: string): Promise<void> {
-  if (!userEmail) return;
-
-  const emailTypeMap: Record<string, string> = {
-    'QUOTATION_RECEIVED': 'QUOTATION_RECEIVED',
-    'QUOTATION_SENT': 'QUOTATION_SENT',
-    'QUOTATION_ACCEPTED': 'QUOTATION_ACCEPTED',
-    'QUOTATION_REJECTED': 'QUOTATION_REJECTED',
-    'ORDER_CREATED': 'ORDER_CREATED',
-    'ORDER_PAID': 'ORDER_PAID',
-    'ORDER_READY': 'ORDER_READY',
-    'ORDER_COMPLETED': 'ORDER_COMPLETED',
-    'ORDER_CANCELLED': 'ORDER_CANCELLED',
-    'ORDER_FAILED': 'ORDER_FAILED',
-    'ORDER_REFUNDED': 'ORDER_REFUNDED',
-    'EMAIL_VERIFICATION': 'EMAIL_VERIFICATION',
-    'PASSWORD_RESET': 'PASSWORD_RESET',
-    'ACCOUNT_UPDATED': 'ACCOUNT_UPDATED',
-    'SECURITY_ALERT': 'SECURITY_ALERT',
-    'NEW_PRODUCT_LAUNCH': 'NEW_PRODUCT_LAUNCH',
-  };
-  const emailType = emailTypeMap[payload.type];
-  if (!emailType) return;
-
-  try {
-    const emailPayload: any = {
-      type: emailType,
-      to: userEmail,
-    };
-
-    if (payload.type === 'EMAIL_VERIFICATION' || payload.type === 'PASSWORD_RESET' || payload.type === 'SECURITY_ALERT') {
-      emailPayload.name = userName;
-    } else if (payload.data) {
-      if (payload.type.startsWith('ORDER_') || payload.type === 'ADMIN_NEW_ORDER') {
-        emailPayload.order = payload.data;
-      } else if (payload.type.startsWith('QUOTATION_') || payload.type === 'ADMIN_NEW_QUOTATION') {
-        emailPayload.quotation = payload.data;
-      } else if (payload.type === 'NEW_PRODUCT_LAUNCH') {
-        emailPayload.productLaunchInfo = payload.data;
-      }
-    }
-
-    await emailService.sendEmail(emailPayload);
-  } catch (error) {
-    console.error('Error sending notification email:', error);
-  }
-}
 
 /**
  * Create a welcome notification for a new user
@@ -71,22 +19,14 @@ export async function createUserWelcomeNotification(
     {
       recipientId: userId,
       recipientRole: 'user' as UserRole,
+      scope: 'personal',
       type: 'WELCOME' as NotificationType,
       title: 'Welcome to Awegift!',
       message: `Hi ${name}, welcome to Awegift! We're excited to have you here. Start exploring our products`,
       url: '/products',
-    }
+      data: {}
+    } 
   );
-  if (result.success) {
-    await sendNotificationEmail({
-      recipientId: userId,
-      recipientRole: 'user' as UserRole,
-      type: 'WELCOME' as NotificationType,
-      title: 'Welcome to Awegift!',
-      message: `Hi ${name}, welcome to Awegift! We're excited to have you here. Start exploring our products`,
-      url: '/products',
-    }, email, name);
-  }
   return result;
 }
 
@@ -105,6 +45,7 @@ export async function createOrderPlacedNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'ORDER_CREATED' as NotificationType,
     title: 'Order Placed Successfully',
     message: `Hi ${customerName}, your order #${orderId} has been placed successfully. Total: ${currency} ${totalAmount.toFixed(2)}`,
@@ -112,9 +53,6 @@ export async function createOrderPlacedNotification(
     data: orderData,
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    await sendNotificationEmail(payload, customerEmail, customerName);
-  }
   return result;
 }
 
@@ -133,6 +71,7 @@ export async function createQuotationRequestNotification(
     {
       recipientId: adminId,
       recipientRole: 'admin' as UserRole,
+      scope: 'admin' as NotificationScope,
       type: 'QUOTATION_RECEIVED' as NotificationType,
       title: 'New Quotation Request',
       message: `New quotation request from ${userEmail}. Quotation ID: ${quotationId}`,
@@ -155,15 +94,13 @@ export async function createQuotationSentNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'QUOTATION_SENT' as NotificationType,
     title: 'Quotation Response',
     message: `Hi ${customerName}, we've prepared a response to your quotation request #${quotationId}. Total: ${currency} ${totalAmount.toFixed(2)}`,
     url: `/account/quotes/${quotationId}`,
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    await sendNotificationEmail(payload, customerEmail, customerName);
-  }
   return result;
 }
 
@@ -181,6 +118,7 @@ export async function createAdminOrderAlertNotification(
     {
       recipientId: adminId,
       recipientRole: 'admin' as UserRole,
+      scope: 'admin' as NotificationScope,
       type: 'ADMIN_NEW_ORDER' as NotificationType,
       title: 'New Order Received',
       message: `New order #${orderId} from ${customerName}. Total: ${currency} ${totalAmount.toFixed(2)}`,
@@ -202,6 +140,7 @@ export async function createOrderPaidNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'ORDER_PAID' as NotificationType,
     title: 'Payment Confirmed',
     message: `Your payment for order #${orderId} has been confirmed. Total: ${currency} ${totalAmount.toFixed(2)}`,
@@ -209,16 +148,6 @@ export async function createOrderPaidNotification(
     data: orderData,
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    // Get user email
-    const userDoc = await adminDb.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      const userEmail = userData?.email;
-      const userName = `${userData?.profile?.firstName || ''} ${userData?.profile?.lastName || ''}`.trim();
-      await sendNotificationEmail(payload, userEmail, userName);
-    }
-  }
   return result;
 }
 
@@ -232,22 +161,13 @@ export async function createOrderReadyNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'ORDER_READY' as NotificationType,
     title: 'Order Ready',
     message: `Your order #${orderId} is now ready for pickup or delivery.`,
     url: `/account/orders/${orderId}`,
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    // Get user email
-    const userDoc = await adminDb.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      const userEmail = userData?.email;
-      const userName = `${userData?.profile?.firstName || ''} ${userData?.profile?.lastName || ''}`.trim();
-      await sendNotificationEmail(payload, userEmail, userName);
-    }
-  }
   return result;
 }
 
@@ -261,22 +181,14 @@ export async function createOrderCompletedNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'ORDER_COMPLETED' as NotificationType,
     title: 'Order Completed',
     message: `Your order #${orderId} has been successfully completed. Thank you for shopping with us!`,
     url: `/account/orders/${orderId}`,
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    // Get user email
-    const userDoc = await adminDb.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      const userEmail = userData?.email;
-      const userName = `${userData?.profile?.firstName || ''} ${userData?.profile?.lastName || ''}`.trim();
-      await sendNotificationEmail(payload, userEmail, userName);
-    }
-  }
+  
   return result;
 }
 
@@ -290,22 +202,14 @@ export async function createOrderCancelledNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'ORDER_CANCELLED' as NotificationType,
     title: 'Order Cancelled',
     message: `Your order #${orderId} has been cancelled. Please contact support if you have any questions.`,
     url: `/account/orders/${orderId}`,
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    // Get user email
-    const userDoc = await adminDb.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      const userEmail = userData?.email;
-      const userName = `${userData?.profile?.firstName || ''} ${userData?.profile?.lastName || ''}`.trim();
-      await sendNotificationEmail(payload, userEmail, userName);
-    }
-  }
+  
   return result;
 }
 
@@ -319,22 +223,14 @@ export async function createOrderFailedNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'ORDER_FAILED' as NotificationType,
     title: 'Payment Failed',
     message: `Your payment for order #${orderId} could not be processed. Please try again or contact support.`,
     url: `/account/orders/${orderId}`,
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    // Get user email
-    const userDoc = await adminDb.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      const userEmail = userData?.email;
-      const userName = `${userData?.profile?.firstName || ''} ${userData?.profile?.lastName || ''}`.trim();
-      await sendNotificationEmail(payload, userEmail, userName);
-    }
-  }
+  
   return result;
 }
 
@@ -350,22 +246,14 @@ export async function createOrderRefundedNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'ORDER_REFUNDED' as NotificationType,
     title: 'Refund Processed',
     message: `Your refund of ${currency} ${refundAmount.toFixed(2)} for order #${orderId} has been processed.`,
     url: `/account/orders/${orderId}`,
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    // Get user email
-    const userDoc = await adminDb.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      const userEmail = userData?.email;
-      const userName = `${userData?.profile?.firstName || ''} ${userData?.profile?.lastName || ''}`.trim();
-      await sendNotificationEmail(payload, userEmail, userName);
-    }
-  }
+  
   return result;
 }
 
@@ -379,22 +267,14 @@ export async function createQuotationAcceptedNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'QUOTATION_ACCEPTED' as NotificationType,
     title: 'Quotation Accepted',
     message: `Your quotation #${quotationId} has been accepted. We will proceed with your order.`,
     url: `/account/quotes/${quotationId}`,
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    // Get user email
-    const userDoc = await adminDb.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      const userEmail = userData?.email;
-      const userName = `${userData?.profile?.firstName || ''} ${userData?.profile?.lastName || ''}`.trim();
-      await sendNotificationEmail(payload, userEmail, userName);
-    }
-  }
+  
   return result;
 }
 
@@ -408,22 +288,14 @@ export async function createQuotationRejectedNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'QUOTATION_REJECTED' as NotificationType,
     title: 'Quotation Update',
     message: `Your quotation #${quotationId} could not be accepted. Please contact us for alternatives.`,
     url: `/account/quotes/${quotationId}`,
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    // Get user email
-    const userDoc = await adminDb.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      const userEmail = userData?.email;
-      const userName = `${userData?.profile?.firstName || ''} ${userData?.profile?.lastName || ''}`.trim();
-      await sendNotificationEmail(payload, userEmail, userName);
-    }
-  }
+  
   return result;
 }
 
@@ -437,15 +309,14 @@ export async function createEmailVerificationNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'EMAIL_VERIFICATION' as NotificationType,
     title: 'Verify Your Email',
     message: `Please verify your email address ${email} to complete your registration.`,
     url: '/account/settings',
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    await sendNotificationEmail(payload, email);
-  }
+  
   return result;
 }
 
@@ -458,22 +329,14 @@ export async function createPasswordResetNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'PASSWORD_RESET' as NotificationType,
     title: 'Password Reset',
     message: 'A password reset request has been initiated for your account.',
     url: '/account/settings',
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    // Get user email
-    const userDoc = await adminDb.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      const userEmail = userData?.email;
-      const userName = `${userData?.profile?.firstName || ''} ${userData?.profile?.lastName || ''}`.trim();
-      await sendNotificationEmail(payload, userEmail, userName);
-    }
-  }
+  
   return result;
 }
 
@@ -486,22 +349,14 @@ export async function createAccountUpdatedNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'ACCOUNT_UPDATED' as NotificationType,
     title: 'Account Updated',
     message: 'Your account information has been successfully updated.',
     url: '/account/settings',
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    // Get user email
-    const userDoc = await adminDb.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      const userEmail = userData?.email;
-      const userName = `${userData?.profile?.firstName || ''} ${userData?.profile?.lastName || ''}`.trim();
-      await sendNotificationEmail(payload, userEmail, userName);
-    }
-  }
+  
   return result;
 }
 
@@ -514,22 +369,14 @@ export async function createSecurityAlertNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'SECURITY_ALERT' as NotificationType,
     title: 'Security Alert',
     message: 'Unusual activity detected on your account. Please review your security settings.',
     url: '/account/settings',
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    // Get user email
-    const userDoc = await adminDb.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      const userEmail = userData?.email;
-      const userName = `${userData?.profile?.firstName || ''} ${userData?.profile?.lastName || ''}`.trim();
-      await sendNotificationEmail(payload, userEmail, userName);
-    }
-  }
+  
   return result;
 }
 
@@ -544,22 +391,14 @@ export async function createNewProductLaunchNotification(
   const payload = {
     recipientId: userId,
     recipientRole: 'user' as UserRole,
+    scope: 'personal' as NotificationScope,
     type: 'NEW_PRODUCT_LAUNCH' as NotificationType,
     title: 'New Product Available',
     message: `Check out our new product: ${productName}`,
     url: `/products/${productId}`,
   };
   const result = await notificationService.createNotification(payload);
-  if (result.success) {
-    // Get user email
-    const userDoc = await adminDb.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      const userEmail = userData?.email;
-      const userName = `${userData?.profile?.firstName || ''} ${userData?.profile?.lastName || ''}`.trim();
-      await sendNotificationEmail(payload, userEmail, userName);
-    }
-  }
+  
   return result;
 }
 
@@ -575,6 +414,7 @@ export async function createAdminPaymentFailedNotification(
     {
       recipientId: adminId,
       recipientRole: 'admin' as UserRole,
+      scope: 'admin' as NotificationScope,
       type: 'ADMIN_PAYMENT_FAILED' as NotificationType,
       title: 'Payment Failed Alert',
       message: `Payment failed for order #${orderId} from ${customerName}. Please investigate.`,
@@ -596,6 +436,7 @@ export async function createAdminLowStockNotification(
     {
       recipientId: adminId,
       recipientRole: 'admin' as UserRole,
+      scope: 'admin' as NotificationScope,
       type: 'ADMIN_LOW_STOCK' as NotificationType,
       title: 'Low Stock Alert',
       message: `${productName} is running low on stock (${currentStock} remaining). Please restock.`,
@@ -616,6 +457,7 @@ export async function createAdminOrderCancelledNotification(
     {
       recipientId: adminId,
       recipientRole: 'admin' as UserRole,
+      scope: 'admin' as NotificationScope,
       type: 'ADMIN_ORDER_CANCELLED' as NotificationType,
       title: 'Order Cancelled',
       message: `Order #${orderId} from ${customerName} has been cancelled.`,
@@ -636,6 +478,7 @@ export async function createAdminNewUserNotification(
     {
       recipientId: adminId,
       recipientRole: 'admin' as UserRole,
+      scope: 'admin' as NotificationScope,
       type: 'ADMIN_NEW_USER' as NotificationType,
       title: 'New User Registered',
       message: `New user ${userName} (${userEmail}) has registered.`,
