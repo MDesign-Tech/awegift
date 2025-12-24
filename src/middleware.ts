@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getCurrentUserData } from "@/lib/firestore/adminUser";
+import { getCurrentUserData } from "@/lib/firebase/adminUser";
 import { getToken } from "next-auth/jwt";
 
 export async function middleware(request: NextRequest) {
