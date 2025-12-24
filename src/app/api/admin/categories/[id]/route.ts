@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { CategoryType } from "../../../../../../type";
-import { hasPermission, UserRole } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
+import { requireRole } from "@/lib/server/auth-utils";
 
 export async function GET(
   request: Request,
@@ -41,16 +40,8 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    // Check authentication and permissions
-    const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as UserRole;
-    if (!hasPermission(userRole, "canUpdateProducts")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request as any, "canUpdateProducts");
+    if (check instanceof NextResponse) return check;
 
     const partialData: Partial<CategoryType> = await request.json();
 
@@ -84,16 +75,8 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    // Check authentication and permissions
-    const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as UserRole;
-    if (!hasPermission(userRole, "canUpdateProducts")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request as any, "canUpdateProducts");
+    if (check instanceof NextResponse) return check;
 
     const categoryData: Partial<Omit<CategoryType, 'id' | 'meta'>> = await request.json();
 
@@ -135,16 +118,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    // Check authentication and permissions
-    const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as UserRole;
-    if (!hasPermission(userRole, "canDeleteProducts")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request as any, "canDeleteProducts");
+    if (check instanceof NextResponse) return check;
 
     const docRef = adminDb.collection("categories").doc(id);
     await docRef.delete();

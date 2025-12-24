@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
+import { getCurrentUserData } from "@/lib/firestore/adminUser";
 
 export async function GET() {
   try {
@@ -9,14 +10,14 @@ export async function GET() {
       return NextResponse.json({ user: null }, { status: 200 });
     }
 
-    // Ensure user object is serializable
-    const user = {
-      id: session.user.id,
-      email: session.user.email,
-      name: session.user.name,
-      image: session.user.image,
-      role: (session.user as any).role,
-    };
+    const userData = await getCurrentUserData(session);
+const user = {
+  id: userData?.id,
+  email: userData?.email,
+  name: userData?.name,
+  image: userData?.image,
+  role: userData?.role || "user",
+};
 
     return NextResponse.json({ user }, { status: 200 });
   } catch (error) {

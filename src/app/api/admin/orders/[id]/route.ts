@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { hasPermission } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
 import { adminDb } from "@/lib/firebase/admin";
+import { requireRole } from "@/lib/server/auth-utils";
 import {
   createOrderReadyNotification,
   createOrderCompletedNotification,
@@ -17,16 +16,8 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as any;
-    if (!hasPermission(userRole, "canUpdateOrders")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request, "canUpdateOrders");
+    if (check instanceof NextResponse) return check;
 
     const orderId = id;
     const body = await request.json();
@@ -104,16 +95,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as any;
-    if (!hasPermission(userRole, "canDeleteOrders")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request, "canDeleteOrders");
+    if (check instanceof NextResponse) return check;
 
     const orderId = id;
 
@@ -163,16 +146,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as any;
-    if (!hasPermission(userRole, "canViewOrders")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request, "canViewOrders");
+    if (check instanceof NextResponse) return check;
 
     const orderId = id;
 

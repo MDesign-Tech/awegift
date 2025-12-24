@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { QuotationType } from "../../../../../type";
 import { adminDb } from "@/lib/firebase/admin";
 import { auth } from "@/auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService.server";
+import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
 
 // GET - Fetch user's quotes
 export async function GET(request: NextRequest) {

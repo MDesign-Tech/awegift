@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { hasPermission, UserRole } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
-import { emailService } from "@/lib/email/service";
+import { requireRole } from "@/lib/server/auth-utils";
 import { createQuotationSentNotification } from "@/lib/notification/helpers";
 
 export async function GET(
@@ -10,17 +8,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const check = await requireRole(request, "canManageQuotes");
+    if (check instanceof NextResponse) return check;
 
-    const userRole = token.role as UserRole;
-    if (!hasPermission(userRole, "canManageQuotes")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const { id } = await params;
 
     const quoteRef = adminDb.collection("quotes").doc(id);
     const quoteDoc = await quoteRef.get();
@@ -29,10 +20,7 @@ export async function GET(
       return NextResponse.json({ error: "Quote not found" }, { status: 404 });
     }
 
-    const quote = {
-      id: quoteDoc.id,
-      ...quoteDoc.data(),
-    };
+    const quote = { id: quoteDoc.id, ...quoteDoc.data() };
 
     return NextResponse.json(quote);
   } catch (error) {
@@ -49,18 +37,10 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const check = await requireRole(request, "canManageQuotes");
+    if (check instanceof NextResponse) return check;
+
     const { id } = await params;
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as UserRole;
-    if (!hasPermission(userRole, "canManageQuotes")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-
     const updateData = await request.json();
 
     const quoteRef = adminDb.collection("quotes").doc(id);
@@ -70,35 +50,32 @@ export async function PUT(
       return NextResponse.json({ error: "Quote not found" }, { status: 404 });
     }
 
-    // Get the existing quote to check for changes
     const existingQuote = quoteDoc.data();
-    
+
     await quoteRef.update({
       ...updateData,
       updatedAt: new Date(),
     });
 
-    // Send notification if admin provided a response (subtotal or finalAmount updated)
-    if (process.env.NODE_ENV === 'production' &&
+    // Send notification if subtotal or finalAmount updated
+    if (process.env.NODE_ENV === "production" &&
         (updateData.subtotal !== undefined || updateData.finalAmount !== undefined)) {
       try {
         const customerEmail = existingQuote?.email;
-        const customerName = existingQuote?.customerName || 'Customer';
-        
+        const customerName = existingQuote?.customerName || "Customer";
+
         if (customerEmail) {
           createQuotationSentNotification(
             existingQuote.userId,
             customerEmail,
             customerName,
             id,
-            updateData.finalAmount || existingQuote.finalAmount || 0,
-            'RWF'
-          ).catch((error: any) => {
-            console.error('Failed to create quotation sent notification:', error);
-          });
+            updateData.finalAmount ?? existingQuote.finalAmount ?? 0,
+            "RWF"
+          ).catch((err) => console.error("Failed to create notification:", err));
         }
-      } catch (error) {
-        console.error('Error sending quotation response notification:', error);
+      } catch (err) {
+        console.error("Error sending quotation notification:", err);
       }
     }
 
@@ -117,17 +94,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const check = await requireRole(request, "canManageQuotes");
+    if (check instanceof NextResponse) return check;
 
-    const userRole = token.role as UserRole;
-    if (!hasPermission(userRole, "canManageQuotes")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const { id } = await params;
 
     const quoteRef = adminDb.collection("quotes").doc(id);
     const quoteDoc = await quoteRef.get();

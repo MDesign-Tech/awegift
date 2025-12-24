@@ -3,7 +3,7 @@ import { QuotationType, QuotationProductType } from "../../../../type";
 import { QUOTE_STATUSES } from "@/lib/quoteStatuses";
 import { adminDb } from "@/lib/firebase/admin";
 import { auth } from "@/auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService.server";
+import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
 import { createQuotationRequestNotification } from "@/lib/notification/helpers";
 
 // POST - Create new quote request

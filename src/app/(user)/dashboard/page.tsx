@@ -3,11 +3,6 @@ import DashboardOverviewClient from "@/components/dashboard/DashboardOverviewCli
 
 export default function DashboardPage() {
   return (
-    <RoleProtectedRoute
-      allowedRoles={["admin"]}
-      loadingMessage="Loading your dashboard..."
-    >
       <DashboardOverviewClient />
-    </RoleProtectedRoute>
   );
 }

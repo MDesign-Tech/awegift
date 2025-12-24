@@ -7,7 +7,7 @@ import { OrderStatus } from "@/lib/orderStatus";
 import { UserRole } from "@/lib/rbac/roles";
 import { PaymentStatus, PaymentMethod, canUpdatePaymentStatus } from "@/lib/orderStatus";
 import { auth } from "@/auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService.server";
+import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
 import { createOrderPaidNotification } from "@/lib/notification/helpers";
 
 export async function POST(request: NextRequest) {

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth as firebaseAuth, db } from '@/lib/firebase/config';
+import { auth as firebaseAuth, db } from '@/lib/firebase/firebaseClient';
 import { collection, query, where, orderBy, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { NotificationData } from '../../type';
 import { UserRole } from '@/lib/rbac/roles';

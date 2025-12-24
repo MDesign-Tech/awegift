@@ -1,3 +1,4 @@
+import ProtectedRoute from "@/components/ProtectedRoute";
 import AccountLayout from "../../../components/account/AccountLayout";
 
 export default function AccountPageLayout({
@@ -5,5 +6,9 @@ export default function AccountPageLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <AccountLayout>{children}</AccountLayout>;
+  return (
+    <ProtectedRoute loadingMessage="Loading your account...">
+      <AccountLayout>{children}</AccountLayout>
+    </ProtectedRoute>
+  )
 }
