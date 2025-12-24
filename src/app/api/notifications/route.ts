@@ -14,7 +14,11 @@ import { adminDb } from '@/lib/firebase/admin';
  */
 export async function GET(request: NextRequest) {
   try {
+    console.log('NEXTAUTH_SECRET present:', !!process.env.NEXTAUTH_SECRET);
+    console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
     const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    console.log('Token retrieved:', !!token);
+    if (token) console.log('Token keys:', Object.keys(token), 'sub:', token.sub, 'id:', token.id, 'role:', token.role);
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const url = new URL(request.url);
