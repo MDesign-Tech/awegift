@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import { getCurrentUserData } from "@/lib/firebase/adminUser";
+import { getCurrentUserData } from "@/lib/firebase/clientUser";
 
 export async function GET() {
   try {
