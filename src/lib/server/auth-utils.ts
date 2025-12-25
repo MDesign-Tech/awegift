@@ -10,31 +10,37 @@ import { hasPermission, UserRole } from "@/lib/rbac/roles";
  * @param permission Permission key from RolePermissions
  * @returns role and userId if valid, otherwise NextResponse
  */
-export async function requireRole(
-  request: NextRequest,
-  permission: keyof typeof hasPermission extends Function ? any : any
-): Promise<{ role: UserRole; userId: string } | NextResponse> {
-  // 1. Get session token
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+export async function requireRole(request: NextRequest, permission: any) {
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+
+  console.log("AUTH DEBUG → TOKEN:", token);
+
   if (!token?.sub) {
+    console.log("AUTH DEBUG → NO TOKEN.SUB");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const userId = token.sub;
+  console.log("AUTH DEBUG → USER ID:", userId);
 
-  // 2. Get authoritative role from Firestore
   const userDoc = await adminDb.collection("users").doc(userId).get();
-  const role: UserRole | null = userDoc.exists ? (userDoc.data()?.role as UserRole) : null;
+  console.log("AUTH DEBUG → USER DOC EXISTS:", userDoc.exists);
+
+  const role = userDoc.exists ? userDoc.data()?.role : null;
+  console.log("AUTH DEBUG → ROLE:", role);
 
   if (!role) {
+    console.log("AUTH DEBUG → NO ROLE");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // 3. Check permission
   if (!hasPermission(role, permission)) {
-    return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // 4. Return valid role and userId
   return { role, userId };
 }
+
