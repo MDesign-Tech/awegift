@@ -75,7 +75,7 @@ export default function CategoryForm({ category, onCancel, onSuccess, refetchCat
         body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
+      if (response.ok) { 
         await refetchCategories();
         toast.success(category ? "Category updated successfully!" : "Category added successfully!");
         // Close modal after success message is shown

@@ -23,6 +23,7 @@ import ProductForm from './ProductForm';
 import PriceFormat from "@/components/PriceFormat";
 import { ProductType } from '../../../type';
 import DashboardSidebar from "./DashboardSidebar";
+import { apiFetch } from "@/lib/fetcher";
 
 export default function DashboardProductsClient() {
   const router = useRouter();
@@ -104,7 +105,7 @@ export default function DashboardProductsClient() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("/api/admin/categories");
+        const res = await apiFetch("/api/admin/categories");
         if (res.ok) {
           const data = await res.json();
 

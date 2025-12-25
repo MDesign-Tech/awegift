@@ -17,11 +17,14 @@ import { hasPermission, getDefaultDashboardRoute } from "@/lib/rbac/roles";
 import { useUserSync } from "@/hooks/useUserSync";
 import PriceFormat from "@/components/PriceFormat";
 import AccessDenied from "./AccessDenied";
+import { apiFetch } from "@/lib/fetcher";
+
 
 interface Stats {
   totalUsers: number;
   totalOrders: number;
   totalRevenue: number;
+  todayRevenue: number;
   totalProducts: number;
   pendingOrders: number;
   completedOrders: number;
@@ -45,18 +48,12 @@ export default function DashboardOverviewClient() {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/stats");
-      if (response.ok) {
-        const data = await response.json();
-
-        // Check for unauthorized error
-        if (data.error === "Unauthorized") {
-          router.push("/auth/signin");
-          return;
-        }
-
+      const response = await apiFetch("/api/admin/stats");
+      if (response) {
+        const data = response as Stats;
         // Ensure numeric values are properly converted
         // Example normalization
+        
         const normalizedStats = {
           ...data,
           totalRevenue: Number(data.totalRevenue) || 0,
