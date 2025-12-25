@@ -117,8 +117,14 @@ export default function QuoteDetailPage() {
     }
   };
 
-  const formatDate = (date: Date | string) => {
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
     const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return "Invalid Date";
     return dateObj.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -195,14 +201,14 @@ export default function QuoteDetailPage() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
             {/* Products */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white w-full overflow-hidden rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold mb-4">Products</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border border-gray-300 min-w-full">
+              <div className="overflow-x-auto max-w-full">
+                <table className="w-full border border-gray-300 min-w-[800px]">
                   <thead>
                     <tr className="bg-gray-50">
                       <th className="text-left py-3 px-4 font-medium text-gray-700 border-b border-gray-300 whitespace-nowrap">
@@ -280,7 +286,7 @@ export default function QuoteDetailPage() {
 
             {/* Pricing */}
             {quote.finalAmount > 0 && (
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white rounded-lg shadow p-6 overflow-auto">
                 <h3 className="text-lg font-semibold mb-4">Pricing</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between">

@@ -34,7 +34,7 @@ export async function GET(
     const quoteData = quoteDoc.data()!;
 
     // Check if the quote belongs to the current user
-    if (quoteData.userId !== user.id) {
+    if (quoteData.email !== user.email) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
@@ -42,10 +42,10 @@ export async function GET(
     const quote: QuotationType = {
       id: quoteDoc.id,
       ...quoteData,
-      createdAt: quoteData.createdAt?.toDate?.() || new Date(quoteData.createdAt),
-      updatedAt: quoteData.updatedAt?.toDate?.() || new Date(quoteData.updatedAt),
-      expirationDate: quoteData.expirationDate?.toDate?.() || new Date(quoteData.expirationDate),
-      validUntil: quoteData.validUntil?.toDate?.() || new Date(quoteData.validUntil),
+      createdAt: quoteData.createdAt?.toDate?.() || (quoteData.createdAt ? new Date(quoteData.createdAt) : new Date()),
+      updatedAt: quoteData.updatedAt?.toDate?.() || (quoteData.updatedAt ? new Date(quoteData.updatedAt) : new Date()),
+      expirationDate: quoteData.expirationDate?.toDate?.() || (quoteData.expirationDate ? new Date(quoteData.expirationDate) : null),
+      validUntil: quoteData.validUntil?.toDate?.() || (quoteData.validUntil ? new Date(quoteData.validUntil) : null),
     } as QuotationType;
 
     return NextResponse.json({ quote });

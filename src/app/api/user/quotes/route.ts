@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Users can only see their own quotes
-    const quotesSnapshot = await adminDb.collection("quotes").where("userId", "==", user.id).get();
+    const quotesSnapshot = await adminDb.collection("quotes").where("email", "==", user.email).get();
 
     const quotes = quotesSnapshot.docs
       .map((doc) => ({

@@ -43,13 +43,8 @@ export default function QuotesList({
   const fetchQuotes = async () => {
     try {
       setLoading(true);
-      const response = await getData("/api/user/quotes");
+      const data = await getData("/api/user/quotes");
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch quotes");
-      }
-
-      const data = await response.json();
       if (data.quotes && Array.isArray(data.quotes)) {
         const sortedQuotes = data.quotes.sort(
           (a: QuotationType, b: QuotationType) =>
@@ -66,8 +61,14 @@ export default function QuotesList({
     }
   };
 
-  const formatDate = (date: string | Date) => {
+  const formatDate = (date: string | Date | null) => {
+    if (!date) return new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
     const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return "Invalid Date";
     return dateObj.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -75,9 +76,11 @@ export default function QuotesList({
     });
   };
 
-  const getTimeAgo = (date: string | Date) => {
+  const getTimeAgo = (date: string | Date | null) => {
+    if (!date) return "Just now";
     const now = new Date();
     const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return "Invalid Date";
     const diffInMs = now.getTime() - dateObj.getTime();
     const diffInHours = diffInMs / (1000 * 60 * 60);
     const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
@@ -144,7 +147,7 @@ export default function QuotesList({
         ></div>
 
         {/* Modal */}
-        <div className="relative w-full max-w-4xl bg-white shadow-xl rounded-lg overflow-hidden z-10 max-h-[90vh] overflow-y-auto">
+        <div className="relative w-full max-w-4xl bg-white shadow-xl rounded-lg overflow-auto z-10 max-h-[90vh]">
           {/* Modal Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div>
@@ -207,12 +210,12 @@ export default function QuotesList({
             </div>
 
             {/* Products */}
-            <div>
+            <div >
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
                 Quotation Products ({selectedQuote.products.length})
               </h4>
               <div className="overflow-x-auto">
-                <table className="w-full border border-gray-300 min-w-full">
+                <table className="w-full border border-gray-300 min-w-[600px]">
                   <thead>
                     <tr className="bg-gray-50">
                       <th className="text-left py-3 px-4 font-medium text-gray-700 border-b border-gray-300 whitespace-nowrap text-sm">

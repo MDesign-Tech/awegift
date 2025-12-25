@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "set NEXT_DISABLE_TURBOPACK=1 && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -24,7 +24,7 @@
     "firebase-admin": "^12.7.0",
     "framer-motion": "^12.23.12",
     "jsonwebtoken": "^9.0.3",
-    "next": "^15.4.6",
+    "next": "^16.1.1-canary.5",
     "next-auth": "^5.0.0-beta.30",
     "next-cloudinary": "^6.17.5",
     "next-sitemap": "^4.2.3",

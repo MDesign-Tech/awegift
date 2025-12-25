@@ -28,10 +28,20 @@ export async function GET(request: NextRequest) {
       password,
       cart,
       wishlist,
+      id,
+      emailVerified,
+      provider,
+      createdAt,
+      updatedAt,
+      role,
       ...safeUserData
     } = userData;
 
-    return NextResponse.json({ ...safeUserData, id: userDoc.id });
+    return NextResponse.json({
+      ...safeUserData,
+      email: userData.email,
+      id: userDoc.id
+    });
   } catch (error) {
     console.error("Profile GET error:", error);
     return NextResponse.json(

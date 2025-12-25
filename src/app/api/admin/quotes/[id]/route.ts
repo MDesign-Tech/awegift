@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireRole } from "@/lib/server/auth-utils";
 import { createQuotationSentNotification } from "@/lib/notification/helpers";
+import { QUOTE_STATUSES } from "@/lib/quoteStatuses";
 
 export async function GET(
   request: NextRequest,
@@ -52,8 +53,15 @@ export async function PUT(
 
     const existingQuote = quoteDoc.data();
 
+    // If admin is updating pricing info, change status to responded
+    const statusUpdate: any = {};
+    if (updateData.subtotal !== undefined || updateData.finalAmount !== undefined || updateData.discount !== undefined || updateData.deliveryFee !== undefined) {
+      statusUpdate.status = QUOTE_STATUSES.RESPONDED;
+    }
+
     await quoteRef.update({
       ...updateData,
+      ...statusUpdate,
       updatedAt: new Date(),
     });
 

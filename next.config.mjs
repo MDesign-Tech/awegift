@@ -4,10 +4,6 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-
   // Cloudflare Pages configuration - remove static export since we have API routes
   trailingSlash: false,
   skipTrailingSlashRedirect: true,
@@ -37,11 +33,6 @@ const nextConfig = {
 
   compress: true,
   productionBrowserSourceMaps: false,
-
-  // Ignore Windows system folders
-  watchOptions: {
-    ignored: ['**/node_modules', '**/System Volume Information'],
-  },
 };
 
 export default nextConfig;

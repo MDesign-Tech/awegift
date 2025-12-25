@@ -35,6 +35,66 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(userId)).data.role == 'admin';
     }
     
+    // Quotes collection rules
+    match /quotes/{quoteId} {
+      // Allow read access for the quote owner or admins
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin(request.auth.uid)
+      );
+
+      // Allow create for authenticated users (their own quotes)
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+
+      // Allow update for admins or the quote owner (with restrictions)
+      allow update: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin(request.auth.uid)
+      );
+
+      // Allow delete for admins only
+      allow delete: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // Orders collection rules
+    match /orders/{orderId} {
+      // Allow read access for the order owner or admins
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin(request.auth.uid)
+      );
+
+      // Allow create for authenticated users (their own orders)
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+
+      // Allow update for admins or the order owner (with restrictions)
+      allow update: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin(request.auth.uid)
+      );
+
+      // Allow delete for admins only
+      allow delete: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // Products collection rules
+    match /products/{productId} {
+      // Allow read for all authenticated users
+      allow read: if request.auth != null;
+
+      // Allow write operations only for admins
+      allow write: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // Categories collection rules
+    match /categories/{categoryId} {
+      // Allow read for all authenticated users
+      allow read: if request.auth != null;
+
+      // Allow write operations only for admins
+      allow write: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
     // Allow authenticated users to read their own user document
     match /users/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
