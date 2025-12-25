@@ -54,4 +54,5 @@ export const config = {
     "/dashboard/:path*", // protect all /dashboard routes
     "/((?!api|_next/static|_next/image|favicon.ico).*)", // optional catch-all
   ],
+  runtime: "nodejs", // ⚡ force Node.js runtime instead of Edge
 };
