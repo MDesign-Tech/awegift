@@ -7,10 +7,6 @@ export async function GET(request: NextRequest) {
   try {
     const check = await requireRole(request, "canViewOrders");
     if (check instanceof NextResponse) return check;
-    const { role, userId } = check;
-
-    // Get token for email if needed for filtering
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
     // Fetch all orders and filter based on role
     const ordersSnapshot = await adminDb.collection("orders").limit(5000).get();
@@ -54,11 +50,6 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Filter based on role
-    if (role === "user") {
-      // Regular users can only see their own orders
-      orders = orders.filter((order) => order.customerEmail === token?.email);
-    }
     // Admin sees all orders (no filter)
 
     return NextResponse.json({ orders });

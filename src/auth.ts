@@ -5,7 +5,6 @@ import GitHubProvider from "next-auth/providers/github";
 import { compare } from "bcryptjs";
 import { adminDb } from "@/lib/firebase/admin";
 import { authConfig } from "./auth.config";
-import { UserRole } from "@/lib/rbac/roles";
 
 const config = {
   ...authConfig,
@@ -99,7 +98,6 @@ const config = {
               },
               cart: [],
               wishlist: [],
-              orders: [],
             };
 
             const docRef = await adminDb.collection("users").add(newUser);

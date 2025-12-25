@@ -5,8 +5,8 @@ import { requireRole } from "@/lib/server/auth-utils";
 
 export async function GET(request: NextRequest) {
   try {
-    // Allow unauthenticated access for public product browsing
-    // Authentication is only required for admin operations (POST, PUT, DELETE)
+    const check = await requireRole(request, "canViewProducts"); // Categories are related to products
+    if (check instanceof NextResponse) return check;
 
     const snapshot = await adminDb.collection("categories").orderBy("name").get();
 
