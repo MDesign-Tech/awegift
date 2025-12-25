@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { requireRole } from "@/lib/server/auth-utils";
@@ -7,6 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     // ✅ Check authentication & permission
     const check = await requireRole(request, "canViewAnalytics");
+    console.log("check:", check);
     if (check instanceof NextResponse) return check;
 
     // Fetch all users, orders, products concurrently

@@ -108,17 +108,16 @@ export default function DashboardProductsClient() {
         if (res.ok) {
           const data = await res.json();
 
-          // Check for unauthorized error
-          if (data.error === "Unauthorized") {
-            router.push("/auth/signin");
-            return;
-          }
-
           const categoryNames = data.map((cat: any) => cat.name);
           setAllCategories(categoryNames);
+        } else {
+          const errorData = await res.json();
+          
+          toast.error(errorData.error || "Failed to fetch categories");
         }
       } catch (err) {
         console.error("Error fetching categories:", err);
+        toast.error("Error fetching categories");
       }
     };
     fetchCategories();
