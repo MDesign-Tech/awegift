@@ -79,10 +79,12 @@ export const canUpdatePaymentStatus = (
 
     case "user":
       // User updates only their own mobile money or online payments
+      const methodToCheck = paymentMethod || newPaymentMethod;
       return (
-        (paymentMethod === PAYMENT_METHODS.MTN ||
-         paymentMethod === PAYMENT_METHODS.AIRTEL ||
-         paymentMethod === PAYMENT_METHODS.ONLINE) &&
+        methodToCheck &&
+        (methodToCheck === PAYMENT_METHODS.MTN ||
+          methodToCheck === PAYMENT_METHODS.AIRTEL ||
+          methodToCheck === PAYMENT_METHODS.ONLINE) &&
         currentPaymentStatus === PAYMENT_STATUSES.PENDING &&
         newPaymentStatus === PAYMENT_STATUSES.PAID
       );

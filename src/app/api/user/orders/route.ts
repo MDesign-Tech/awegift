@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "../../../../../auth";
-import { db } from "@/lib/firebase/config";
-import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
+import { auth } from "@/auth";
+import { adminDb } from "@/lib/firebase/admin";
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,9 +14,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's orders from their subcollection
-    const userOrdersRef = collection(db, "users", session.user.id, "orders");
-    const ordersQuery = query(userOrdersRef, orderBy("createdAt", "desc"));
-    const ordersSnapshot = await getDocs(ordersQuery);
+    const userOrdersRef = adminDb.collection("users").doc(session.user.id).collection("orders");
+    const ordersSnapshot = await userOrdersRef.orderBy("createdAt", "desc").get();
 
     const orders = ordersSnapshot.docs.map((doc) => ({
       id: doc.id,

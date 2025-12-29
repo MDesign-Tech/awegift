@@ -1,22 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { ProductType } from "../../../../../../type";
-import { hasPermission, UserRole } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
+import { requireRole } from "@/lib/server/auth-utils";
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as UserRole;
-    if (!hasPermission(userRole, "canViewProducts")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request, "canViewProducts");
+    if (check instanceof NextResponse) return check;
 
     const { searchParams } = new URL(request.url);
     const searchQuery = searchParams.get('q') || '';
@@ -28,8 +18,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch all products and filter client-side for simplicity
     // In production, you might want to use Firestore queries for better performance
-    const productsRef = collection(db, "products");
-    const snapshot = await getDocs(productsRef);
+    const snapshot = await adminDb.collection("products").limit(5000).get();
 
     const allProducts = snapshot.docs.map(doc => ({
       id: doc.id,

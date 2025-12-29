@@ -1,13 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  doc,
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -20,9 +12,8 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", email));
-    const snapshot = await getDocs(q);
+    const usersRef = adminDb.collection("users");
+    const snapshot = await usersRef.where("email", "==", email).get();
 
     if (snapshot.empty) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -42,7 +33,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    await updateDoc(doc(db, "users", userDoc.id), {
+    await adminDb.collection("users").doc(userDoc.id).update({
       "profile.addresses": addresses,
       updatedAt: new Date().toISOString(),
     });

@@ -9,22 +9,9 @@ import {
   PaymentStatus,
   PaymentMethod,
 } from "@/lib/orderStatus";
-import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  doc,
-  getDocs,
-  getDoc,
-  updateDoc,
-  setDoc,
-  addDoc,
-  query,
-  where,
-  orderBy,
-  serverTimestamp,
-} from "firebase/firestore";
-import { auth } from "../../../../auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { adminDb } from "@/lib/firebase/admin";
+import { auth } from "@/auth";
+import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
 
 // GET - Fetch orders based on user role
 export async function GET(request: NextRequest) {
@@ -42,12 +29,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Users can only see their own orders
-    const ordersQuery = query(
-      collection(db, "orders"),
-      where("userId", "==", user.id)
-    );
+    const ordersQuery = adminDb.collection("orders").where("userId", "==", user.id);
 
-    const ordersSnapshot = await getDocs(ordersQuery);
+    const ordersSnapshot = await ordersQuery.get();
 
     const orders = ordersSnapshot.docs
       .map((doc) => ({
@@ -112,9 +96,9 @@ export async function POST(request: NextRequest) {
     };
 
     // Add to orders collection with auto-generated ID
-    const docRef = await addDoc(collection(db, "orders"), newOrder);
+    const docRef = await adminDb.collection("orders").add(newOrder);
 
-    await updateDoc(docRef, { id: docRef.id });
+    await docRef.update({ id: docRef.id });
 
     
 

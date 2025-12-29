@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { ORDER_STATUSES } from "@/lib/orderStatus";
 import {
-  PAYMENT_STATUSES,
-  PAYMENT_METHODS,
+  PAYMENT_STATUSES,
+  PAYMENT_METHODS,
 } from "@/lib/orderStatus";
-import { db } from "@/lib/firebase/config";
-import { collection, doc, setDoc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
+import admin from "firebase-admin";
 // IMPORTANT: convertPrice is now an async function
 import { convertPrice, formatCurrency } from "@/lib/currency";
 
@@ -21,23 +21,23 @@ export const POST = async (request: NextRequest) => {
     let orderTotal = orderAmount;
     let existingOrder = null;
 
-    // If orderId is provided, fetch the existing order
-    if (orderId) {
-      try {
-        const orderRef = doc(db, "orders", orderId);
-        const orderDoc = await getDoc(orderRef);
+// If orderId is provided, fetch the existing order
+if (orderId) {
+  try {
+    const orderRef = adminDb.collection("orders").doc(orderId);
+    const orderDoc = await orderRef.get();
 
-        if (orderDoc.exists()) {
-          existingOrder = orderDoc.data();
-          orderItems = existingOrder.items;
-          orderTotal = existingOrder.totalAmount;
-          orderAddress = existingOrder.orderAddress;
-        }
-      } catch (error) {
-        console.warn("Failed to fetch existing order, proceeding as new order:", error);
-        existingOrder = null;
-      }
-    }
+    if (orderDoc.exists) {
+      existingOrder = orderDoc.data()!;
+      orderItems = existingOrder.items;
+      orderTotal = existingOrder.totalAmount;
+      orderAddress = existingOrder.orderAddress;
+    }
+  } catch (error) {
+    console.warn("Failed to fetch existing order, proceeding as new order:", error);
+    existingOrder = null;
+  }
+}
 
     // --- Start of Currency Conversion Update ---
     
@@ -166,26 +166,26 @@ export const POST = async (request: NextRequest) => {
       customer_email: email,
     });
 
-    // If existing order, update it for online payment
-    if (existingOrder) {
-      const orderRef = doc(db, "orders", orderId);
-      await updateDoc(orderRef, {
-        paymentMethod: PAYMENT_METHODS.ONLINE,
-        paymentStatus: PAYMENT_STATUSES.PENDING,
-        updatedAt: serverTimestamp(),
-        paymentHistory: [
-          ...(existingOrder.paymentHistory || []),
-          {
-            status: PAYMENT_STATUSES.PENDING,
-            timestamp: new Date().toISOString(),
-            updatedBy: email,
-            userRole: "user",
-            method: PAYMENT_METHODS.ONLINE,
-            notes: "Stripe checkout session created",
-          },
-        ],
-      });
-    }
+// If existing order, update it for online payment
+if (existingOrder) {
+  const orderRef = adminDb.collection("orders").doc(orderId);
+  await orderRef.update({
+    paymentMethod: PAYMENT_METHODS.ONLINE,
+    paymentStatus: PAYMENT_STATUSES.PENDING,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    paymentHistory: [
+      ...(existingOrder.paymentHistory || []),
+      {
+        status: PAYMENT_STATUSES.PENDING,
+        timestamp: new Date().toISOString(),
+        updatedBy: email,
+        userRole: "user",
+        method: PAYMENT_METHODS.ONLINE,
+        notes: "Stripe checkout session created",
+      },
+    ],
+  });
+}
 
     // Only create order if it's a new order (no orderId provided or order doesn't exist)
     if (!existingOrder) {
@@ -195,10 +195,10 @@ export const POST = async (request: NextRequest) => {
         .substr(2, 9)
         .toUpperCase()}`;
 
-      // Create the order in the database
-      try {
-        const orderRef = doc(db, "orders", finalOrderId);
-        await setDoc(orderRef, {
+// Create the order in the database
+try {
+  const orderRef = adminDb.collection("orders").doc(finalOrderId);
+  await orderRef.set({
           id: finalOrderId,
           orderId: finalOrderId,
           email,
@@ -224,9 +224,9 @@ export const POST = async (request: NextRequest) => {
           status: ORDER_STATUSES.PENDING,
           paymentStatus: PAYMENT_STATUSES.PENDING,
           paymentMethod: PAYMENT_METHODS.ONLINE,
-          userId: "", // Will be set when processing
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
+userId: "", // Will be set when processing
+createdAt: admin.firestore.FieldValue.serverTimestamp(),
+updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           statusHistory: [
             {
               status: ORDER_STATUSES.PENDING,

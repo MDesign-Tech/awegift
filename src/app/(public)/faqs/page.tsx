@@ -3,8 +3,6 @@
 //import { useState } from "react";
 import Container from "@/components/Container";
 import Title from "@/components/Title";
-// import { Metadata } from "next";
-import { useState } from "react";
 import {
   FiChevronDown,
   FiChevronRight,
@@ -12,11 +10,15 @@ import {
   FiSearch,
 } from "react-icons/fi";
 
+<<<<<<<<< Temporary merge branch 1
+/* 🔹 MOVE ALL DATA HERE */
+=========
 // export const metadata: Metadata = {
 //   title: "FAQs - AweGift",
 //   description: "Frequently Asked Questions - Find answers to common questions about AweGift",
 // };
 
+>>>>>>>>> Temporary merge branch 2
 const faqCategories = [
   {
     id: "orders",

@@ -14,10 +14,13 @@
 
   --color-theme-color: #ed4c07;
   --color-light-bg: #fff6f1;
+  --color-dark-bg: #000000;
   --color-theme-white: #ffffff;
-  --color-border-color: #f0e5df;
   --color-accent-color: #ff6b2c;
   --color-light-text: #5b4a42;
+  --color-dark-text: #000000;
+  --color-primary-text: #101828;
+
 }
 
 /* Utilities layer */

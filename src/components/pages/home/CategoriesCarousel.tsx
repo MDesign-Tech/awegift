@@ -9,7 +9,7 @@ import type { CategoryType } from "../../../../type";
 
 const ImageFallback = () => (
   <svg
-    className="h-16 w-16 text-gray-400"
+    className="h-20 w-20 text-gray-400"
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
@@ -24,11 +24,11 @@ const ImageFallback = () => (
 );
 
 interface CategoriesCarouselProps {
-   categories: CategoryType[];
+  categories: CategoryType[];
 }
 
 const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
-   categories,
+  categories,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -43,10 +43,11 @@ const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
       if (window.innerWidth >= 1024) return 5; // lg
       if (window.innerWidth >= 768) return 4; // md
       if (window.innerWidth >= 640) return 3; // sm
-      return 2; // xs
+      return 3; // xs
     }
-    return 6;
+    return 2;
   };
+
 
   const [itemsPerView, setItemsPerView] = useState(getItemsPerView);
 
@@ -144,14 +145,14 @@ const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
 
         {/* Carousel Container */}
         {categories.length > 0 ? (
-          <div className="relative mx-4 md:mx-0">
+          <div className="relative mx-auto max-w-full">
             {/* Navigation Buttons */}
             {needsScrolling && (
               <>
                 <button
                   onClick={goToPrevious}
                   disabled={currentIndex === 0}
-                  className={`absolute left-0 top-[30%] -translate-y-1/2 z-10 border border-gray-200 rounded-full p-3 transition-all duration-300 group -ml-6 ${currentIndex === 0
+                  className={`absolute left-0 top-[30%] -translate-y-1/2 z-10 border border-gray-200 rounded-full p-2 md:p-3 transition-all duration-300 group -ml-4 ${currentIndex === 0
                       ? "bg-gray-100 cursor-not-allowed opacity-50"
                       : "bg-white shadow-lg hover:shadow-xl hover:bg-gray-50 cursor-pointer"
                     }`}
@@ -159,8 +160,8 @@ const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
                 >
                   <FaArrowLeft
                     className={`transition-colors duration-300 ${currentIndex === 0
-                        ? "text-gray-400"
-                        : "text-gray-600 group-hover:text-gray-800"
+                      ? "text-gray-400"
+                      : "text-gray-600 group-hover:text-gray-800"
                       }`}
                   />
                 </button>
@@ -168,7 +169,7 @@ const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
                 <button
                   onClick={goToNext}
                   disabled={currentIndex === maxIndex}
-                  className={`absolute right-0 top-[30%] -translate-y-1/2 z-10 border border-gray-200 rounded-full p-3 transition-all duration-300 group -mr-6 ${currentIndex === maxIndex
+                  className={`absolute right-0 top-[30%] -translate-y-1/2 z-10 border border-gray-200 rounded-full p-2 md:p-3 transition-all duration-300 group -mr-4 ${currentIndex === maxIndex
                       ? "bg-gray-100 cursor-not-allowed opacity-50"
                       : "bg-white shadow-lg hover:shadow-xl hover:bg-gray-50 cursor-pointer"
                     }`}
@@ -176,8 +177,8 @@ const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
                 >
                   <FaArrowRight
                     className={`transition-colors duration-300 ${currentIndex === maxIndex
-                        ? "text-gray-400"
-                        : "text-gray-600 group-hover:text-gray-800"
+                      ? "text-gray-400"
+                      : "text-gray-600 group-hover:text-gray-800"
                       }`}
                   />
                 </button>
@@ -199,8 +200,7 @@ const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
               <div
                 className="flex justify-center transition-transform duration-500 ease-in-out"
                 style={{
-                  transform: `translateX(-${(currentIndex / categories.length) * 100
-                    }%)`,
+                  transform: `translateX(-${(currentIndex / categories.length) * 100}%)`,
                   width: `${(categories.length / itemsPerView) * 100}%`,
                 }}
               >
@@ -208,12 +208,12 @@ const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
                   <div
                     key={category.slug}
                     className="flex-shrink-0 px-2"
-                    style={{ width: `${70 / categories.length}%` }}
+                    style={{ width: `${100 / categories.length}%` }}
                   >
                     <Link href={`/products?category=${category.slug}`}>
                       <div className="group cursor-pointer">
                         {/* Image Container with Rectangle Border */}
-                        <div className="relative mb-3 border border-gray-200 rounded-lg aspect-square bg-gradient-to-br from-gray-100 to-gray-200 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
+                        <div className="relative mb-3 border border-gray-200 rounded-lg aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
                           {/* Multiple layered shadows for depth */}
                           <div className="absolute inset-0 shadow-inner"></div>
                           <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-white/20"></div>
@@ -247,7 +247,7 @@ const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
                           <h3 className="font-semibold text-gray-900 group-hover:text-theme-color transition-colors duration-300 text-sm">
                             {category.name}
                           </h3>
-    
+
                         </div>
                       </div>
                     </Link>
@@ -266,8 +266,8 @@ const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
                       setCurrentIndex(index);
                     }}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentIndex
-                        ? "bg-theme-color w-8"
-                        : "bg-gray-300 hover:bg-gray-400"
+                      ? "bg-theme-color w-8"
+                      : "bg-gray-300 hover:bg-gray-400"
                       }`}
                     aria-label={`Go to slide ${index + 1}`}
                   />
@@ -287,7 +287,7 @@ const CategoriesCarousel: React.FC<CategoriesCarouselProps> = ({
         <div className="text-center mt-8">
           <Link
             href="/categories"
-            className="inline-flex items-center px-6 py-3 bg-theme-color text-white rounded-full hover:bg-accent-color transition-colors duration-300 shadow-md hover:shadow-lg"
+            className="inline-flex items-center px-4 py-2 md:px-6 md:py-3 bg-theme-color text-white rounded-full hover:bg-accent-color transition-colors duration-300 shadow-md hover:shadow-lg"
           >
             View All Categories
             <FaArrowRight className="ml-2" />

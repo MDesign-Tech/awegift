@@ -21,6 +21,7 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiLoader,
+  FiRefreshCw,
 } from "react-icons/fi";
 
 interface User extends UserData {
@@ -48,12 +49,16 @@ export default function DashboardUsersClient() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
 
   const userRole = user?.role || "user";
+
+
 
   useEffect(() => {
     if (userRole && !userLoading) {
@@ -74,6 +79,12 @@ export default function DashboardUsersClient() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchUsers();
+    setIsRefreshing(false);
   };
 
   const handleEditUser = (user: User) => {
@@ -261,7 +272,7 @@ export default function DashboardUsersClient() {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="px-4 sm:px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-blue-50">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-2 flex-col sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center mb-4 sm:mb-0">
             <FiShield className="h-5 w-5 sm:h-6 sm:w-6 text-theme-color mr-2" />
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
@@ -273,7 +284,7 @@ export default function DashboardUsersClient() {
               </span>
             )}
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center flex-wrap space-x-2">
             {userRole && hasPermission(userRole as UserRole, "canDeleteUsers") && users.filter(u => u.role !== "admin").length > 0 && (
               <button
                 onClick={() => {
@@ -295,13 +306,14 @@ export default function DashboardUsersClient() {
                 Delete {selectedUsers.length} Selected
               </button>
             )}
-            <div className="text-sm text-gray-600">
-              <FiUserCheck className="inline h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">
-                Role assignment & user management
-              </span>
-              <span className="sm:hidden">Manage users</span>
-            </div>
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+              title="Refresh users"
+            >
+              <FiRefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
       </div>
@@ -483,11 +495,10 @@ export default function DashboardUsersClient() {
                   <button
                     key={i + 1}
                     onClick={() => handlePageChange(i + 1)}
-                    className={`px-3 py-2 text-sm font-medium rounded-md ${
-                      currentPage === i + 1
+                    className={`px-3 py-2 text-sm font-medium rounded-md ${currentPage === i + 1
                         ? "bg-theme-color text-white"
                         : "text-gray-500 bg-white border border-gray-300 hover:bg-gray-50"
-                    }`}
+                      }`}
                   >
                     {i + 1}
                   </button>
@@ -547,8 +558,8 @@ export default function DashboardUsersClient() {
                     {editForm.name
                       ? editForm.name.charAt(0).toUpperCase()
                       : editingUser.name
-                      ? editingUser.name.charAt(0).toUpperCase()
-                      : "U"}
+                        ? editingUser.name.charAt(0).toUpperCase()
+                        : "U"}
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 mt-2">

@@ -5,7 +5,10 @@ import { getData } from "../helpers";
 import { getCategoriesWithCounts } from "../helpers/productHelpers";
 import { Metadata } from "next";
 import Link from "next/link";
-import { absoluteUrl } from "../../../../config";
+import { CategoryType } from "../../../../type";
+
+type CategoryWithCount = CategoryType & { productCount: number };
+type EnrichedCategory = CategoryWithCount & { count: number };
 
 export const metadata: Metadata = {
   title: "Product Categories | AweGift - Shop by Category",
@@ -35,37 +38,33 @@ export const metadata: Metadata = {
 };
 
 export default async function CategoriesPage() {
-  // Fetch categories and all products data
-  const [categoriesData, allProductsData] = await Promise.all([
-    getData(absoluteUrl(`/api/categories`)), // Get categories from admin API
-    getData(absoluteUrl(`/api/products?limit=0`)), // Get all products
-  ]);
+  // Fetch categories with product counts from API
+  const categoriesData = await getData(`/api/categories`) as CategoryWithCount[];
 
   console.log("Categories Data:", categoriesData);
-  // Get categories with product counts
-  const categoriesWithCounts = getCategoriesWithCounts(
-    allProductsData?.products || []
-  );
 
-  // Combine API categories with counts
+  // Map to Category interface expected by InfiniteCategoryGrid
   const enrichedCategories =
-    categoriesData?.map((category: any) => ({
-      ...category,
-      count:
-        categoriesWithCounts.find((c) => c.slug === category.slug)?.count || 0,
+    categoriesData?.map((category) => ({
+      slug: category.slug,
+      name: category.name,
+      url: category.image || "",
+      description: category.description || "",
+      count: category.productCount || 0,
     })) || [];
 
   return (
     <Container className="py-10">
       {/* Page Header */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Shop by Categories
+      <div className="flex justify-between mb-6">
+       <div>
+         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          Categories
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Discover our wide range of product categories. Find exactly what
-          you&apos;re looking for with our carefully curated collections.
+          Discover our wide range of product categories.
         </p>
+       </div>
 
         {/* Breadcrumb */}
         <nav className="mt-6 text-sm">
@@ -84,8 +83,8 @@ export default async function CategoriesPage() {
       {/* Categories Grid */}
       <InfiniteCategoryGrid
         initialCategories={enrichedCategories}
-        totalProducts={allProductsData?.total || 0}
-        allProducts={allProductsData?.products || []}
+        totalProducts={enrichedCategories.reduce((sum: number, cat) => sum + cat.count, 0)}
+        allProducts={[]}
       />
     </Container>
   );

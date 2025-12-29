@@ -61,7 +61,7 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
     },
     {
       id: "quotes",
-      label: "Quotes",
+      label: "Quotations",
       icon: "💬",
       path: "/account/quotes",
     },

@@ -52,18 +52,14 @@ export default function RegisterForm() {
         toast.success("Account created successfully!");
 
         // Auto sign in after registration
-        const result = await signIn("credentials", {
+        await signIn("credentials", {
           email,
           password,
-          redirect: false,
+          callbackUrl: "/",
         });
 
-        if (result?.ok) {
-          router.push("/");
-          router.refresh();
-        } else {
-          router.push("/auth/signin");
-        }
+        // Force full page reload to ensure session data is applied
+        window.location.href = "/";
       } else {
         toast.error(data.error || "Registration failed");
       }

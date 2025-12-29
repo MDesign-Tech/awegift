@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import ProductSection from "./ProductSection";
 import ProductSectionSkeleton from "@/components/skeletons/ProductSectionSkeleton";
-import { getBestSellers } from "@/app/(user)/helpers/productHelpers";
 import { ProductType } from "../../../../type";
 
 const BestSellersSection = () => {
@@ -14,12 +13,11 @@ const BestSellersSection = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/products?limit=0");
+        const response = await fetch("/api/products/featured?limit=0");
         if (response.ok) {
           const data = await response.json();
-          const allProducts = data?.products || [];
-          const bestSellers = getBestSellers(allProducts);
-          setProducts(bestSellers);
+          const featuredProducts = data?.products || [];
+          setProducts(featuredProducts);
         }
       } catch (error) {
         console.error("Error fetching best sellers:", error);

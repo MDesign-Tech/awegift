@@ -8,6 +8,7 @@ interface CategoryWithId {
   slug: string;
   description: string;
   image: string;
+  isFeatured?: boolean;
   productCount?: number;
   meta?: {
     createdAt: string;
@@ -20,8 +21,10 @@ interface InfiniteCategoryListProps {
   onView: (category: CategoryWithId) => void;
   onEdit: (category: CategoryWithId) => void;
   onDelete: (category: CategoryWithId) => void;
+  onToggleFeatured: (category: CategoryWithId) => void;
   isRefreshing: boolean;
   itemsPerPage?: number;
+  updatingFeatured?: Set<string>;
 }
 
 const InfiniteCategoryList = ({
@@ -29,8 +32,10 @@ const InfiniteCategoryList = ({
   onView,
   onEdit,
   onDelete,
+  onToggleFeatured,
   isRefreshing,
   itemsPerPage = 20,
+  updatingFeatured = new Set(),
 }: InfiniteCategoryListProps) => {
   const [displayedCategories, setDisplayedCategories] = useState<CategoryWithId[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -143,6 +148,28 @@ const InfiniteCategoryList = ({
                   </div>
                 </div>
               </div>
+            </td>
+            <td className="px-3 py-4 whitespace-nowrap">
+              <label className="flex items-center">
+                {updatingFeatured.has(category.id) ? (
+                  <>
+                    <FiLoader className="animate-spin w-4 h-4 text-theme-color" />
+                    <span className="ml-2 text-xs font-medium text-gray-700">updating...</span>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      type="checkbox"
+                      checked={category.isFeatured || false}
+                      onChange={() => onToggleFeatured(category)}
+                      className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color disabled:opacity-50"
+                      title="Toggle Featured Status"
+                      disabled={isRefreshing}
+                    />
+                    <span className="ml-2 text-xs font-medium text-gray-700">Featured</span>
+                  </>
+                )}
+              </label>
             </td>
             <td className="px-3 py-4 whitespace-nowrap">
               <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">

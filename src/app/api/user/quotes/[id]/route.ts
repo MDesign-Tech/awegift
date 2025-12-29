@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { QuoteType } from "../../../../../../type";
-import { db } from "@/lib/firebase/config";
-import {
-  doc,
-  getDoc,
-} from "firebase/firestore";
-import { auth } from "../../../../../../auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { QuotationType } from "../../../../../../type";
+import { adminDb } from "@/lib/firebase/admin";
+import { auth } from "@/auth";
+import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
 
 // GET - Fetch single quote by ID
 export async function GET(
@@ -29,28 +25,28 @@ export async function GET(
     const { id: quoteId } = await params;
 
     // Get the specific quote document
-    const quoteDoc = await getDoc(doc(db, "quotes", quoteId));
+    const quoteDoc = await adminDb.collection("quotes").doc(quoteId).get();
 
-    if (!quoteDoc.exists()) {
+    if (!quoteDoc.exists) {
       return NextResponse.json({ error: "Quote not found" }, { status: 404 });
     }
 
-    const quoteData = quoteDoc.data();
+    const quoteData = quoteDoc.data()!;
 
     // Check if the quote belongs to the current user
-    if (quoteData.userId !== user.id) {
+    if (quoteData.email !== user.email) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     // Convert Firestore timestamps to Date objects
-    const quote: QuoteType = {
+    const quote: QuotationType = {
       id: quoteDoc.id,
       ...quoteData,
-      createdAt: quoteData.createdAt?.toDate?.() || new Date(quoteData.createdAt),
-      updatedAt: quoteData.updatedAt?.toDate?.() || new Date(quoteData.updatedAt),
-      expirationDate: quoteData.expirationDate?.toDate?.() || new Date(quoteData.expirationDate),
-      validUntil: quoteData.validUntil?.toDate?.() || new Date(quoteData.validUntil),
-    } as QuoteType;
+      createdAt: quoteData.createdAt?.toDate?.() || (quoteData.createdAt ? new Date(quoteData.createdAt) : new Date()),
+      updatedAt: quoteData.updatedAt?.toDate?.() || (quoteData.updatedAt ? new Date(quoteData.updatedAt) : new Date()),
+      expirationDate: quoteData.expirationDate?.toDate?.() || (quoteData.expirationDate ? new Date(quoteData.expirationDate) : null),
+      validUntil: quoteData.validUntil?.toDate?.() || (quoteData.validUntil ? new Date(quoteData.validUntil) : null),
+    } as QuotationType;
 
     return NextResponse.json({ quote });
   } catch (error) {

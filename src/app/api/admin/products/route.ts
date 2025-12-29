@@ -1,22 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, writeBatch, limit } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { ProductType } from "../../../../../type";
-import { hasPermission, UserRole } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
+import { requireRole } from "@/lib/server/auth-utils";
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as UserRole;
-    if (!hasPermission(userRole, "canViewProducts")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request, "canViewProducts");
+    if (check instanceof NextResponse) return check;
 
     const { searchParams } = new URL(request.url);
     const limitParam = parseInt(searchParams.get('limit') || '20');
@@ -25,11 +15,7 @@ export async function GET(request: NextRequest) {
     const categoryFilters = searchParams.getAll('category').map(cat => cat.trim()).filter(Boolean);
 
     // Fetch products with optional search and category filtering
-    const productsRef = collection(db, "products");
-    let productsQuery = query(productsRef, orderBy("title", "asc"));
-
-    // First, get all documents to apply search/filtering
-    const snapshot = await getDocs(productsQuery);
+    const snapshot = await adminDb.collection("products").limit(5000).get();
     let allDocs = snapshot.docs;
 
     // Apply search filter if provided

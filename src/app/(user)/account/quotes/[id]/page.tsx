@@ -17,13 +17,13 @@ import {
   FiArrowLeft,
 } from "react-icons/fi";
 import Link from "next/link";
-import { QuoteType, QuoteMessage, QuoteProductType } from "../../../../../../type";
+import { QuotationType, QuotationMessage, QuotationProductType } from "../../../../../../type";
 import { getStatusDisplayInfo } from "@/lib/quoteStatuses";
 
 export default function QuoteDetailPage() {
   const { id } = useParams();
   const { data: session } = useSession();
-  const [quote, setQuote] = useState<QuoteType | null>(null);
+  const [quote, setQuote] = useState<QuotationType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
@@ -117,8 +117,14 @@ export default function QuoteDetailPage() {
     }
   };
 
-  const formatDate = (date: Date | string) => {
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
     const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return "Invalid Date";
     return dateObj.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -151,14 +157,14 @@ export default function QuoteDetailPage() {
           <div className="text-center">
             <div className="text-red-600 mb-2">⚠️</div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {error || "Quote not found"}
+              {error || "Quotation not found"}
             </h3>
             <Link
               href="/account/quotes"
               className="inline-flex items-center text-theme-color hover:text-theme-color/80"
             >
               <FiArrowLeft className="w-4 h-4 mr-2" />
-              Back to Quotes
+              Back to Quotations
             </Link>
           </div>
         </Container>
@@ -176,12 +182,12 @@ export default function QuoteDetailPage() {
             className="inline-flex items-center text-theme-color hover:text-theme-color/80 mb-4"
           >
             <FiArrowLeft className="w-4 h-4 mr-2" />
-            Back to Quotes
+            Back to Quotations
           </Link>
           <div className="flex items-center justify-between">
             <div>
               <Title className="text-2xl font-bold mb-2">
-                Quote {quote.id}
+                Quotation {quote.id}
               </Title>
               <p className="text-gray-600">
                 Submitted on {formatDate(quote.createdAt)}
@@ -195,14 +201,14 @@ export default function QuoteDetailPage() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
             {/* Products */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white w-full overflow-hidden rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold mb-4">Products</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border border-gray-300 min-w-full">
+              <div className="overflow-x-auto max-w-full">
+                <table className="w-full border border-gray-300 min-w-[800px]">
                   <thead>
                     <tr className="bg-gray-50">
                       <th className="text-left py-3 px-4 font-medium text-gray-700 border-b border-gray-300 whitespace-nowrap">
@@ -223,7 +229,7 @@ export default function QuoteDetailPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {quote.products.map((product: QuoteProductType, index: number) => (
+                    {quote.products.map((product: QuotationProductType, index: number) => (
                       <tr key={`${product.productId || 'custom'}-${index}`} className="border-b border-gray-200 hover:bg-gray-50">
                         <td className="py-3 px-4 text-sm text-gray-900">
                           {product.productId ? (
@@ -267,7 +273,7 @@ export default function QuoteDetailPage() {
                       <span className="text-theme-white text-xs">ℹ</span>
                     </div>
                     <div>
-                      <h4 className="text-sm font-medium text-gray-900 mb-1">Quote Status: Pending</h4>
+                      <h4 className="text-sm font-medium text-gray-900 mb-1">Quotation Status: Pending</h4>
                       <p className="text-sm text-light-text">
                         Unit prices and total prices will be provided by our team after reviewing your quote request.
                         You'll receive an email notification once your quote is processed.
@@ -280,7 +286,7 @@ export default function QuoteDetailPage() {
 
             {/* Pricing */}
             {quote.finalAmount > 0 && (
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white rounded-lg shadow p-6 overflow-auto">
                 <h3 className="text-lg font-semibold mb-4">Pricing</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between">
@@ -317,14 +323,14 @@ export default function QuoteDetailPage() {
                     className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
                   >
                     <FiCheckCircle className="w-4 h-4 mr-2" />
-                    Accept Quote
+                    Accept Quotation
                   </button>
                   <button
                     onClick={handleRejectQuote}
                     className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center"
                   >
                     <FiXCircle className="w-4 h-4 mr-2" />
-                    Reject Quote
+                    Reject Quotation
                   </button>
                 </div>
               </div>
@@ -347,7 +353,7 @@ export default function QuoteDetailPage() {
                     No messages yet. The seller will respond soon.
                   </p>
                 ) : (
-                  quote.messages.map((message: QuoteMessage, index: number) => (
+                  quote.messages.map((message: QuotationMessage, index: number) => (
                     <div
                       key={index}
                       className={`p-3 rounded-lg ${
@@ -396,7 +402,7 @@ export default function QuoteDetailPage() {
 
             {/* Quote Info */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Quote Information</h3>
+              <h3 className="text-lg font-semibold mb-4">Quotation Information</h3>
               <div className="space-y-3 text-sm">
                 <div>
                   <span className="font-medium">Status:</span>{" "}

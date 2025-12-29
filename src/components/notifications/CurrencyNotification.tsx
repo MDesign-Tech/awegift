@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 import { useEffect, useState } from "react";
 import { FiCheck, FiX } from "react-icons/fi";
 
@@ -60,15 +60,17 @@ const CurrencyNotification = ({
   return (
     <>
       {/* Backdrop - subtle overlay */}
-      <div className="fixed inset-0 z-[100] pointer-events-none" />
+      <div
+        className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-sm"
+        onClick={handleClose}
+      />
 
       {/* Notification Modal */}
       <div
-        className={`fixed bottom-6 right-6 z-[100] transform transition-all duration-300 ease-out ${
-          isVisible
+        className={`fixed bottom-6 right-6 z-[101] transform transition-all duration-300 ease-out ${isVisible
             ? "translate-y-0 opacity-100 scale-100"
             : "translate-y-4 opacity-0 scale-95"
-        }`}
+          }`}
       >
         <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden min-w-80 max-w-sm backdrop-blur-sm">
           {/* Header with success indicator */}
@@ -93,7 +95,7 @@ const CurrencyNotification = ({
           <div className="p-4">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-12 h-12 bg-gradient-to-br from-theme-color/10 to-sky-color/10 rounded-lg flex items-center justify-center border border-theme-color/20">
-                <img className="w-12 h-12 rounded-full object-cover" src={currencySymbol} alt={currencyCode} />
+                <span className="text-2xl font-bold text-theme-color">{currencySymbol}</span>
               </div>
               <div>
                 <p className="text-gray-900 font-medium text-sm">

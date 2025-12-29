@@ -1,21 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, writeBatch, doc } from "firebase/firestore";
-import { hasPermission, UserRole } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
+import { adminDb } from "@/lib/firebase/admin";
+import { requireRole } from "@/lib/server/auth-utils";
 
 export async function DELETE(request: NextRequest) {
   try {
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as UserRole;
-    if (!hasPermission(userRole, "canDeleteProducts")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request, "canDeleteProducts");
+    if (check instanceof NextResponse) return check;
 
     const { productIds } = await request.json();
 
@@ -23,7 +13,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Product IDs array required" }, { status: 400 });
     }
 
-    const batch = writeBatch(db);
     const validProductIds: string[] = [];
 
     productIds.forEach((productId: any) => {
@@ -37,12 +26,11 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No valid product IDs provided" }, { status: 400 });
     }
 
-    validProductIds.forEach((productId) => {
-      const productRef = doc(db, "products", productId);
-      batch.delete(productRef);
-    });
+    const deletePromises = validProductIds.map(productId =>
+      adminDb.collection("products").doc(productId).delete()
+    );
 
-    await batch.commit();
+    await Promise.all(deletePromises);
 
     return NextResponse.json({
       message: "Products deleted successfully",

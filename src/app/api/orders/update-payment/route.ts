@@ -1,23 +1,14 @@
 
 
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  doc,
-  getDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { OrderData, OrderStatusHistory } from "../../../../../type";
 import { OrderStatus } from "@/lib/orderStatus";
 import { UserRole } from "@/lib/rbac/roles";
-import { PaymentStatus, canUpdatePaymentStatus } from "@/lib/orderStatus";
-import { auth } from "../../../../../auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { PaymentStatus, PaymentMethod, canUpdatePaymentStatus } from "@/lib/orderStatus";
+import { auth } from "@/auth";
+import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
+import { createOrderPaidNotification } from "@/lib/notification/helpers";
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,10 +39,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Users can only update their own orders
-    const orderRef = doc(db, "orders", orderId);
-    const orderDoc = await getDoc(orderRef);
+    const orderRef = adminDb.collection("orders").doc(orderId);
+    const orderDoc = await orderRef.get();
 
-    if (!orderDoc.exists()) {
+    if (!orderDoc.exists) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
@@ -62,15 +53,17 @@ export async function POST(request: NextRequest) {
     }
 
     const currentPaymentStatus = currentOrder.paymentStatus;
+    const normalizedCurrentMethod = currentOrder.paymentMethod?.toLowerCase() as PaymentMethod;
+    const normalizedNewMethod = paymentMethod?.toLowerCase() as PaymentMethod;
 
     // Check if user has permission to update payment status
     const userRole = user.role || "user";
-    if (!canUpdatePaymentStatus(userRole, currentOrder.paymentMethod as any, currentPaymentStatus, paymentStatus, paymentMethod)) {
+    if (!canUpdatePaymentStatus(userRole, normalizedCurrentMethod, currentPaymentStatus, paymentStatus, normalizedNewMethod)) {
       return NextResponse.json({ error: "Insufficient permissions to update payment status" }, { status: 403 });
     }
 
     const updateData: any = {
-      updatedAt: serverTimestamp(),
+      updatedAt: new Date(),
       updatedBy: session.user.email,
     };
 
@@ -80,8 +73,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle payment method update
-    if (paymentMethod && paymentMethod !== currentOrder.paymentMethod) {
-      updateData.paymentMethod = paymentMethod;
+    if (paymentMethod && paymentMethod.toLowerCase() !== currentOrder.paymentMethod?.toLowerCase()) {
+      updateData.paymentMethod = paymentMethod.toLowerCase();
     }
 
     // Handle payment screenshot update
@@ -103,7 +96,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Update the order
-    await updateDoc(orderRef, updateData);
+    await orderRef.update(updateData);
+
+    // Send notification if payment status changed to paid
+    if (paymentStatus && paymentStatus !== currentPaymentStatus && paymentStatus === "paid") {
+      try {
+        await createOrderPaidNotification(
+          user.id,
+          orderId,
+          currentOrder.totalAmount,
+          'RWF'
+        );
+      } catch (notificationError) {
+        console.error("Failed to send payment status notification:", notificationError);
+      }
+    }
 
     return NextResponse.json({
       message: "Order updated successfully",

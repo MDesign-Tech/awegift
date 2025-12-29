@@ -21,13 +21,8 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
       <div className="bg-white border border-gray-200 rounded-xl hover:shadow-xl hover:shadow-black/5 transition-all duration-300 overflow-hidden group">
         <div className="flex">
           {/* Image Section */}
-          <div className="w-48 h-48 flex-shrink-0 relative group/image">
-            <Link
-              href={{
-                pathname: `/products/${product?.id}`,
-                query: { id: product?.id },
-              }}
-            >
+          <div className="w-48 h-48 flex-shrink-0 bg-light-bg relative group/image">
+            <Link href={`/products/${product?.id}`}>
               {product?.thumbnail ? (
                 <img
                   src={product.thumbnail}
@@ -35,7 +30,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
                   className="w-full h-full object-cover group-hover/image:scale-105 transition-transform duration-300"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                <div className="w-full h-full flex items-center justify-center bg-light-bg">
                   <svg
                     className="h-12 w-12 text-gray-400"
                     fill="none"
@@ -57,15 +52,16 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
               <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
                 -{Math.round(product.discountPercentage)}% OFF
               </div>
-            )}
+            )} */}
 
-            {product?.stock === 0 && (
+              {/* Quick Actions */}
+              {product?.stock === 0 && (
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                 <div className="bg-red-500 text-white px-3 py-2 rounded-lg font-bold text-sm">
                   OUT OF STOCK
                 </div>
               </div>
-            )} */}
+            )}
 
             {/* Quick Actions */}
             <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover/image:opacity-100 transition-opacity">
@@ -91,20 +87,15 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
                     >
                       <FaWhatsapp />
                     </a>
-                    {product?.brand && (
+                    {/* {product?.brand && (
                       <span className="text-xs text-theme-color font-medium">
                         {product.brand}
                       </span>
-                    )}
+                    )} */}
                   </div>
                 </div>
 
-                <Link
-                  href={{
-                    pathname: `/products/${product?.id}`,
-                    query: { id: product?.id },
-                  }}
-                >
+                <Link href={`/products/${product?.id}`}>
                   <h3 className="text-lg font-semibold text-gray-900 hover:text-theme-color transition-colors line-clamp-2 mb-3">
                     {product?.title}
                   </h3>
@@ -186,13 +177,8 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
   return (
     <div className="bg-white border border-gray-200 rounded-xl hover:shadow-xl hover:shadow-black/10 transition-all duration-300 overflow-hidden group transform hover:-translate-y-1">
       {/* Image Section */}
-      <div className="relative aspect-square overflow-hidden bg-gray-50">
-        <Link
-          href={{
-            pathname: `/products/${product?.id}`,
-            query: { id: product?.id },
-          }}
-        >
+      <div className="relative aspect-square overflow-hidden bg-light-bg">
+        <Link href={`/products/${product?.id}`}>
           {product?.thumbnail ? (
             <img
               src={product.thumbnail}
@@ -200,7 +186,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <div className="w-full h-full flex items-center justify-center bg-light-bg">
               <svg
                 className="h-12 w-12 text-gray-400"
                 fill="none"
@@ -270,12 +256,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
           </div>
         </div>
 
-        <Link
-          href={{
-            pathname: `/products/${product?.id}`,
-            query: { id: product?.id },
-          }}
-        >
+        <Link href={`/products/${product?.id}`}>
           <h3 className="font-semibold text-gray-900 hover:text-theme-color transition-colors truncate mb-3 leading-tight text-sm">
             {product?.title}
           </h3>

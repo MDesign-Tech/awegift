@@ -74,8 +74,7 @@ export interface UserData {
   email: string;
   image?: string;
   role: UserRole;
-  createdAt: string;
-  updatedAt: string;
+  
   emailVerified: boolean;
   provider?: string;
 
@@ -93,6 +92,8 @@ export interface UserData {
 
   cart: ProductType[];
   wishlist: ProductType[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ---------------------- ORDER -----------------------
@@ -107,7 +108,6 @@ export interface OrderData {
   items: OrderItem[];
   totalAmount: number;
 
-  // Removed shippingAddress → renamed to local trade location
   orderAddress: Address;
 
   paymentMethod: PaymentMethod;
@@ -153,60 +153,39 @@ export interface CategoryType {
   slug: string;
   description: string;
   image: string;
+  isFeatured?: boolean;
   meta?: {
     createdAt: string;
     updatedAt: string;
   };
 }
 
-// ---------------------- NOTIFICATION -----------------------
-
-export interface NotificationType {
-  id: string;
-  userId?: string;
-  title: string;
-  message: string;
-
-  // Local trading notification types
-  type:
-  | "order"
-  | "payment"
-  | "quote"
-  | "system"
-  | "promotion";
-
-  read: boolean;
-  createdAt: Date;
-  updatedAt?: Date;
-  readAt?: Date | null;
-}
-
-// ---------------------- QUOTE PRODUCT -----------------------
-export interface QuoteProductType {
+// ---------------------- QUOTATION PRODUCT -----------------------
+export interface QuotationProductType {
   productId: string | null;     // If not found, treat as custom product
   name: string;
   quantity: number;
   unitPrice?: number;           // Optional until admin sets price
   totalPrice?: number;
-  notes?: string;               // Additional user information
+  notes?: string;               // Admin notes for the product
 }
 
 // ---------------------- MESSAGE THREAD (NEGOTIATION CHAT) ----
-export interface QuoteMessage {
+export interface QuotationMessage {
   sender: "user" | "admin";
   message: string;
   timestamp: Date;
   attachments?: string[];
 }
 
-// ---------------------- MAIN QUOTE TYPE -----------------------
-export interface QuoteType {
+// ---------------------- MAIN QUOTATION TYPE -----------------------
+export interface QuotationType {
   id: string;
   userId: string;
   email: string;
   phone?: string | null;
 
-  products: QuoteProductType[];
+  products: QuotationProductType[];
 
   subtotal: number;                 // products total before discounts
   discount?: number;                // admin can add discount if giving offer
@@ -222,7 +201,7 @@ export interface QuoteType {
   | "rejected"                    // user or admin rejected
   | "expired";                    // price expired
 
-  messages: QuoteMessage[];         // negotiation history
+  messages: QuotationMessage[];         // negotiation history
   userNotes?: string;               // user extra info
   adminNote?: string;               // admin-only notes (private)
 
@@ -241,3 +220,183 @@ export interface QuoteType {
 }
 
 
+// Email types and interfaces for Awegift email system
+
+export type EmailType =
+  // Customer order lifecycle
+  | "ORDER_CREATED" // when user places order
+  | "ORDER_CONFIRMED" // when admin confirms order
+  | "ORDER_PAID" // payment confirmed 
+  | "ORDER_READY" // when admin marks order ready
+  | "ORDER_COMPLETED" // when user confirms receipt or admin marks completed
+  | "ORDER_CANCELLED" // when order is cancelled
+  | "ORDER_FAILED" // payment failed
+  | "ORDER_REFUNDED" // when refund is processed
+
+  // Quotation flow
+  | "QUOTATION_RECEIVED" // when admin receives a quotation request
+  | "QUOTATION_SENT" // when admin sends a quotation response
+  | "QUOTATION_ACCEPTED" // when user accepts the quotation
+  | "QUOTATION_REJECTED" // when user or admin rejects the quotation
+
+  // Account & security
+  | "WELCOME" // upon account creation
+  | "EMAIL_VERIFICATION" // upon signup
+  | "PASSWORD_RESET" // for forgotten passwords
+  | "SECURITY_ALERT" // notify user of security issues when new device/login detected
+
+  // product updates
+  | "NEW_PRODUCT_LAUNCH" // new product available to customers
+
+  // Admin alerts
+  | "ADMIN_NEW_USER" // notify admin of new user registrations
+  | "ADMIN_NEW_ORDER" // notify admin of new order
+  | "ADMIN_NEW_QUOTATION" // notify admin of new quotation request
+
+export interface EmailPayload {
+  type: EmailType;
+  to: string;
+  name?: string;
+  order?: OrderEmailData;
+  quotation?: QuotationEmailData;
+  productLaunchInfo?: ProductLounchEmailData;
+  orderStatus?: string;
+}
+
+export interface EmailData {
+  type: EmailType;
+  to: string;
+  name?: string;
+  order?: OrderEmailData;
+  quotation?: QuotationEmailData;
+  productLaunchInfo?: ProductLounchEmailData;
+  orderStatus?: string;
+}
+
+
+export interface OrderEmailData {
+  orderId: string;
+  items: Array<{
+    name: string;
+    quantity: number;
+    price: number;
+  }>;
+  total: number;
+  subtotal: number;
+  deliveryFee: number;
+  currency: string;
+  deliveryAddress?: string;
+  estimatedDelivery?: string;
+}
+
+export interface QuotationEmailData {
+  quotationId: string;
+  items: Array<{
+    name: string;
+    quantity: number;
+    price: number;
+  }>;
+  total: number;
+  subtotal: number;
+  currency: string;
+  validityPeriod?: string;
+  contactInfo?: string;
+}
+
+export interface ProductLounchEmailData {
+  productName: string;
+  description: string;
+  price: number;
+  currency: string;
+  image: string;
+  detailsUrl: string;
+}
+
+export interface EmailTemplate {
+  subject: string;
+  html: string;
+  text: string;
+}
+
+export interface EmailResponse {
+  success: boolean;
+  messageId?: string;
+  error?: string;
+}
+
+
+import { Timestamp } from 'firebase/firestore';
+
+export type NotificationScope = 'personal' | 'admin';
+
+export type NotificationType =
+  // Customer order lifecycle
+  | "ORDER_CREATED" // when user places order
+  | "ORDER_CONFIRMED" // when admin confirms order
+  | "ORDER_PAID" // payment confirmed 
+  | "ORDER_READY" // when admin marks order ready
+  | "ORDER_COMPLETED" // when user confirms receipt or admin marks completed
+  | "ORDER_CANCELLED" // when order is cancelled
+  | "ORDER_FAILED" // payment failed
+  | "ORDER_REFUNDED" // when refund is processed
+
+  // Quotation flow
+  | "QUOTATION_RECEIVED" // when admin receives a quotation request
+  | "QUOTATION_SENT" // when admin sends a quotation response
+  | "QUOTATION_ACCEPTED" // when user accepts the quotation
+  | "QUOTATION_REJECTED" // when user or admin rejects the quotation
+
+  // Account & security
+  | "EMAIL_VERIFICATION" // upon signup
+  | "PASSWORD_RESET" // for forgotten passwords
+  | "ACCOUNT_UPDATED" // profile changes
+  | "SECURITY_ALERT" // notify user of security issues when new device/login detected
+
+  // product updates
+  | "NEW_PRODUCT_LAUNCH" // new product available to customers
+
+  // Admin alerts
+  | "ADMIN_NEW_USER" // notify admin of new user registrations
+  | "ADMIN_NEW_ORDER" // notify admin of new order
+  | "ADMIN_PAYMENT_FAILED" // notify admin of payment issues
+  | "ADMIN_LOW_STOCK" // notify admin of low stock products
+  | "ADMIN_NEW_QUOTATION" // notify admin of new quotation request
+  | "ADMIN_ORDER_CANCELLED"; // notify admin of cancelled orders
+
+export interface NotificationData {
+  id?: string;
+  recipientId: string;
+  recipientRole: UserRole;
+  scope: NotificationScope;
+  type: NotificationType;
+  title: string;
+  message: string;
+  url: string;
+  isRead: boolean;
+  createdAt: Date | Timestamp;
+  data?: any;
+}
+
+
+export interface CreateNotificationPayload {
+  recipientId: string;
+  recipientRole: UserRole;
+  scope: NotificationScope;
+  type: NotificationType;
+  title: string;
+  message: string;
+  url: string;
+  data?: any;
+}
+
+
+export interface NotificationResponse {
+  success: boolean;
+  notificationId?: string;
+  emailResult?: {
+    success: boolean;
+    messageId?: string;
+    error?: string;
+  };
+  error?: string;
+}

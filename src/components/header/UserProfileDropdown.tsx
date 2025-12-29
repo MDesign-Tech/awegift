@@ -14,7 +14,7 @@ import {
 import { signOut } from "next-auth/react";
 import { getDefaultDashboardRoute, getRoleDisplayName } from "@/lib/rbac/roles";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useNotifications } from "@/components/NotificationProvider";
 
 interface UserProfileDropdownProps {
   user: {
@@ -37,7 +37,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user: currentUser } = useCurrentUser();
-  const { notifications } = useNotifications();
+  const { unreadCount } = useNotifications();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -91,7 +91,6 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
     "admin"
   ].includes(currentUser.role as any);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
   const displayCount = unreadCount > 9 ? "9+" : unreadCount.toString();
 
   const menuItems: MenuItem[] = [
@@ -154,7 +153,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
         className="flex items-center gap-2 cursor-pointer group"
       >
         <Link href="/account" className="flex items-center">
-          <div className="border border-gray-500 w-10 h-10 rounded-full text-xl overflow-hidden">
+          <div className="border  border-gray-500 w-8 h-8 md:w-10 md:h-10 rounded-full text-xl overflow-hidden">
             {user?.image ? (
               <img
                 src={user.image}
@@ -162,7 +161,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
                 className="w-full h-full rounded-full object-cover"
               />
             ) : (
-              <div className="w-full h-full rounded-full bg-gray-300 flex items-center justify-center">
+              <div className="w-full h-full  rounded-full bg-gray-300 flex items-center justify-center">
                 <span className="text-lg font-semibold text-gray-600">
                   {user?.name?.charAt(0)?.toUpperCase() || "U"}
                 </span>
@@ -175,7 +174,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
             e.preventDefault();
             toggleDropdown();
           }}
-          className="text-xs group-hover:text-sky-color cursor-pointer duration-300"
+          className="text-xs hidden md:block group-hover:text-sky-color cursor-pointer duration-300"
         >
           <p>Hello, {user?.name}</p>
           <p>view profile</p>

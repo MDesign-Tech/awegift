@@ -21,17 +21,17 @@ import {
 } from "react-icons/fi";
 
 import PriceFormat from "@/components/PriceFormat";
-import { QuoteType, QuoteProductType, QuoteMessage } from '../../../type';
+import { QuotationType, QuotationProductType, QuotationMessage } from '../../../type';
 
 
 export default function DashboardQuotesClient() {
   const { data: session } = useSession();
   const { user, isAdmin } = useCurrentUser();
   const router = useRouter();
-  const [quotes, setQuotes] = useState<QuoteType[]>([]);
-  const [filteredQuotes, setFilteredQuotes] = useState<QuoteType[]>([]);
+  const [quotes, setQuotes] = useState<QuotationType[]>([]);
+  const [filteredQuotes, setFilteredQuotes] = useState<QuotationType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingQuote, setEditingQuote] = useState<QuoteType | null>(null);
+  const [editingQuote, setEditingQuote] = useState<QuotationType | null>(null);
   const [userRole, setUserRole] = useState<string>("");
 
   // Date filtering states
@@ -43,7 +43,7 @@ export default function DashboardQuotesClient() {
   const [quotesPerPage] = useState(20);
 
   // Modal states
-  const [deleteQuoteModal, setDeleteQuoteModal] = useState<QuoteType | null>(null);
+  const [deleteQuoteModal, setDeleteQuoteModal] = useState<QuotationType | null>(null);
   const [deleteAllModal, setDeleteAllModal] = useState(false);
   const [deleteSelectedModal, setDeleteSelectedModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -155,7 +155,7 @@ export default function DashboardQuotesClient() {
     }
   }, [selectedQuotes, currentQuotes]);
 
-  const handleDeleteQuote = async (quote: QuoteType) => {
+  const handleDeleteQuote = async (quote: QuotationType) => {
     setDeleteQuoteModal(quote);
   };
 
@@ -269,7 +269,7 @@ export default function DashboardQuotesClient() {
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-gray-900">
-            Quotes Management ({filteredQuotes.length})
+            Quotations Management ({filteredQuotes.length})
           </h2>
           {userRole && hasPermission(userRole as any, "canManageQuotes") && (
             <div className="flex items-center space-x-2">
@@ -344,7 +344,7 @@ export default function DashboardQuotesClient() {
                 />
               </th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                Quote
+                Quotation
               </th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                 Customer
@@ -453,11 +453,11 @@ export default function DashboardQuotesClient() {
       {filteredQuotes.length === 0 && !loading && (
         <div className="px-6 py-12 text-center">
           <FiPackage className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No quotes</h3>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">No quotations</h3>
           <p className="mt-1 text-sm text-gray-500">
             {startDate || endDate
-              ? "No quotes match your date criteria"
-              : "No quotes have been requested yet"}
+              ? "No quotations match your date criteria"
+              : "No quotations have been requested yet"}
           </p>
         </div>
       )}
@@ -470,7 +470,7 @@ export default function DashboardQuotesClient() {
             <div className="px-6 py-4">
               <h3 className="text-lg font-medium text-gray-900 flex items-center">
                 <FiTrash2 className="mr-2 h-5 w-5 text-red-600" />
-                Delete Quote
+                Delete Quotation
               </h3>
               <p className="mt-2 text-sm text-gray-600">
                 Are you sure you want to delete quote{" "}
@@ -537,7 +537,7 @@ export default function DashboardQuotesClient() {
           <div className="bg-white rounded-lg max-w-md w-full">
             <div className="px-6 py-4">
               <h3 className="text-lg font-medium text-gray-900">
-                Delete All Quotes
+                Delete All Quotations
               </h3>
               <p className="mt-2 text-sm text-gray-600">
                 Are you sure you want to delete ALL quotes? This action will

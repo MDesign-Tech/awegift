@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { hasPermission } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
-import { db } from "@/lib/firebase/config";
+import { adminDb } from "@/lib/firebase/admin";
+import { requireRole } from "@/lib/server/auth-utils";
 import {
-  doc,
-  updateDoc,
-  getDoc,
-  deleteDoc,
-  collection,
-  getDocs,
-} from "firebase/firestore";
+  createOrderReadyNotification,
+  createOrderCompletedNotification,
+  createOrderCancelledNotification,
+  createOrderFailedNotification,
+  createOrderRefundedNotification,
+  createAdminOrderCancelledNotification
+} from "@/lib/notification/helpers";
 
 export async function PUT(
   request: NextRequest,
@@ -17,16 +16,8 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as any;
-    if (!hasPermission(userRole, "canUpdateOrders")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request, "canUpdateOrders");
+    if (check instanceof NextResponse) return check;
 
     const orderId = id;
     const body = await request.json();
@@ -38,20 +29,45 @@ export async function PUT(
 
     // Try to update order in orders collection first
     try {
-      const orderRef = doc(db, "orders", orderId);
-      const orderDoc = await getDoc(orderRef);
+      const orderRef = adminDb.collection("orders").doc(orderId);
+      const orderDoc = await orderRef.get();
 
-      if (orderDoc.exists()) {
-        const currentOrderData = orderDoc.data();
-        const oldStatus = currentOrderData.status;
-        const newStatus = updates.status;
+      if (orderDoc.exists) {
+        const currentOrder = orderDoc.data();
 
-        await updateDoc(orderRef, {
+        await orderRef.update({
           ...updates,
           updatedAt: new Date().toISOString(),
         });
 
-        // TODO: Send notification if status changed (notification system not implemented)
+        // Send notification if status changed
+        if (updates.status && updates.status !== currentOrder?.status && currentOrder?.userId) {
+          try {
+            switch (updates.status.toLowerCase()) {
+              case 'ready':
+                await createOrderReadyNotification(currentOrder.userId, orderId);
+                break;
+              case 'completed':
+                await createOrderCompletedNotification(currentOrder.userId, orderId);
+                break;
+              case 'cancelled':
+                await createOrderCancelledNotification(currentOrder.userId, orderId);
+                await createAdminOrderCancelledNotification('admin', orderId, currentOrder.customerName || 'Customer');
+                break;
+              case 'failed':
+                await createOrderFailedNotification(currentOrder.userId, orderId);
+                break;
+              case 'refunded':
+                await createOrderRefundedNotification(currentOrder.userId, orderId, currentOrder.totalAmount, 'RWF');
+                break;
+              default:
+                // No specific notification for other statuses
+                break;
+            }
+          } catch (notificationError) {
+            console.error("Failed to send order status notification:", notificationError);
+          }
+        }
 
         return NextResponse.json({
           success: true,
@@ -61,35 +77,6 @@ export async function PUT(
       }
     } catch (orderError) {
       console.log("Order not found in orders collection, checking user orders");
-    }
-
-    // If userId provided, update the order in user's orders array
-    if (userId) {
-      const userRef = doc(db, "users", userId);
-      const userDoc = await getDoc(userRef);
-
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        const orders = userData.orders || [];
-
-        const orderIndex = orders.findIndex(
-          (order: any) => order.id === orderId
-        );
-        if (orderIndex !== -1) {
-          orders[orderIndex] = {
-            ...orders[orderIndex],
-            ...updates,
-            updatedAt: new Date().toISOString(),
-          };
-
-          await updateDoc(userRef, { orders });
-          return NextResponse.json({
-            success: true,
-            updated: "user_orders",
-            orderId,
-          });
-        }
-      }
     }
 
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
@@ -108,16 +95,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as any;
-    if (!hasPermission(userRole, "canDeleteOrders")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request, "canDeleteOrders");
+    if (check instanceof NextResponse) return check;
 
     const orderId = id;
 
@@ -130,41 +109,16 @@ export async function DELETE(
 
     // Try to delete from orders collection first
     try {
-      const orderRef = doc(db, "orders", orderId);
-      const orderDoc = await getDoc(orderRef);
+      const orderRef = adminDb.collection("orders").doc(orderId);
+      const orderDoc = await orderRef.get();
 
-      if (orderDoc.exists()) {
-        await deleteDoc(orderRef);
+      if (orderDoc.exists) {
+        await orderRef.delete();
         deleted = true;
         deletedFrom.push("orders_collection");
       }
     } catch (orderError) {
       console.log("Order not found in orders collection, checking user orders");
-    }
-
-    // Search through all users and remove the order from any user's orders array
-    const usersRef = collection(db, "users");
-    const usersSnapshot = await getDocs(usersRef);
-
-    for (const userDoc of usersSnapshot.docs) {
-      const userData = userDoc.data();
-      if (userData.orders && Array.isArray(userData.orders)) {
-        const originalOrdersLength = userData.orders.length;
-        const filteredOrders = userData.orders.filter(
-          (order: any) => order.id !== orderId
-        );
-
-        // If order was found and removed
-        if (filteredOrders.length !== originalOrdersLength) {
-          const userRef = doc(db, "users", userDoc.id);
-          await updateDoc(userRef, {
-            orders: filteredOrders,
-            updatedAt: new Date().toISOString(),
-          });
-          deleted = true;
-          deletedFrom.push(`user_orders:${userDoc.id}`);
-        }
-      }
     }
 
     if (!deleted) {
@@ -192,16 +146,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    // Check authentication and permissions
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = token.role as any;
-    if (!hasPermission(userRole, "canViewOrders")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const check = await requireRole(request, "canViewOrders");
+    if (check instanceof NextResponse) return check;
 
     const orderId = id;
 
@@ -211,10 +157,10 @@ export async function GET(
 
     // Try to get order from orders collection first
     try {
-      const orderRef = doc(db, "orders", orderId);
-      const orderDoc = await getDoc(orderRef);
+      const orderRef = adminDb.collection("orders").doc(orderId);
+      const orderDoc = await orderRef.get();
 
-      if (orderDoc.exists()) {
+      if (orderDoc.exists) {
         return NextResponse.json({
           order: { id: orderDoc.id, ...orderDoc.data() },
           source: "orders_collection",
@@ -222,28 +168,6 @@ export async function GET(
       }
     } catch (orderError) {
       console.log("Order not found in orders collection, checking user orders");
-    }
-
-    // Search in all users' orders
-    const usersRef = collection(db, "users");
-    const usersSnapshot = await getDocs(usersRef);
-
-    for (const userDoc of usersSnapshot.docs) {
-      const userData = userDoc.data();
-      if (userData.orders && Array.isArray(userData.orders)) {
-        const foundOrder = userData.orders.find(
-          (order: any) => order.id === orderId
-        );
-        if (foundOrder) {
-          return NextResponse.json({
-            order: foundOrder,
-            userId: userDoc.id,
-            customerName: userData.name || userData.displayName,
-            customerEmail: userData.email,
-            source: "user_orders",
-          });
-        }
-      }
     }
 
     return NextResponse.json({ error: "Order not found" }, { status: 404 });

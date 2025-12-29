@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/config";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
 import { ProductType } from "../../../../type";
 
 export async function GET(request: NextRequest) {
@@ -14,9 +13,9 @@ export async function GET(request: NextRequest) {
     const categoryFilters = searchParams.getAll("category").map(cat => cat.trim()).filter(Boolean);
 
     // Fetch products ordered by creation date
-    const productsRef = collection(db, "products");
-    const productsQuery = query(productsRef, orderBy("meta.createdAt", "desc"));
-    const snapshot = await getDocs(productsQuery);
+    const productsRef = adminDb.collection("products");
+    const productsQuery = productsRef.orderBy("meta.createdAt", "desc");
+    const snapshot = await productsQuery.get();
 
     let allDocs = snapshot.docs;
 

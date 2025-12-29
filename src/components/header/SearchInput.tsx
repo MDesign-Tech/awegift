@@ -80,7 +80,6 @@ const SearchInput = () => {
             isLoading ? (
               <div className="py-8 px-5 text-center">
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#ed4c07] border-t-transparent"></div>
                   <div className="flex space-x-1">
                     <div
                       className="w-2 h-2 bg-[#ed4c07] rounded-full animate-bounce"
@@ -105,10 +104,7 @@ const SearchInput = () => {
                 {filteredProducts?.map((item: ProductType, index: number) => (
                   <Link
                     key={`${item?.id}-${index}`}
-                    href={{
-                      pathname: `/products/${item?.id}`,
-                      query: { id: item?.id },
-                    }}
+                    href={`/products/${item?.id}`}
                     onClick={handleProductClick}
                     className="flex items-center gap-x-2 text-base font-medium hover:bg-light-text/30 px-3 py-1.5 border-b border-gray-100 last:border-b-0"
                   >
@@ -158,10 +154,7 @@ const SearchInput = () => {
                 {suggestedProducts?.map((item: ProductType, index: number) => (
                   <Link
                     key={`${item?.id}-${index}`}
-                    href={{
-                      pathname: `/products/${item?.id}`,
-                      query: { id: item?.id },
-                    }}
+                    href={`/products/${item?.id}`}
                     onClick={handleProductClick}
                     className="flex items-center gap-x-2 text-base font-medium hover:bg-light-text/30 px-3 py-1.5 border-b border-gray-100 last:border-b-0"
                   >

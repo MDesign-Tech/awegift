@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "../../../../../auth"
-import { db } from "@/lib/firebase/config";
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { auth } from "@/auth";
+import { adminDb } from "@/lib/firebase/admin";
+import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
 import { OrderData } from "../../../../../type";
 
 export async function GET(
@@ -33,9 +32,9 @@ export async function GET(
     }
 
     // Get the order by document ID
-    const orderDoc = await getDoc(doc(db, "orders", orderId));
+    const orderDoc = await adminDb.collection("orders").doc(orderId).get();
 
-    if (!orderDoc.exists()) {
+    if (!orderDoc.exists) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 

@@ -53,12 +53,19 @@ export const useInfiniteProducts = (
 
       const response = await fetch(`${apiEndpoint}?${params}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch products');
+        if (response.status === 401) {
+          router.push("/auth/signin");
+          return;
+        } else if (response.status === 403) {
+          throw new Error('Insufficient permissions');
+        } else {
+          throw new Error('Failed to fetch products');
+        }
       }
 
       const data = await response.json();
 
-      // Check for unauthorized error
+      // Check for unauthorized error (fallback)
       if (data.error === "Unauthorized") {
         router.push("/auth/signin");
         return;

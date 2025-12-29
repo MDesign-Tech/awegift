@@ -67,11 +67,19 @@ export default function OrdersList({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    try {
+      const dateObj = new Date(dateString);
+      if (isNaN(dateObj.getTime())) {
+        return "Invalid Date";
+      }
+      return dateObj.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch (error) {
+      return "Invalid Date";
+    }
   };
 
   const openOrderModal = (order: OrderData) => {

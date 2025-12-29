@@ -35,13 +35,8 @@ const ProductCard = ({ product }: Props) => {
   return (
     <div className="bg-white border border-gray-200 rounded-xl hover:shadow-xl hover:shadow-black/10 transition-all duration-300 overflow-hidden group transform hover:-translate-y-1 relative">
       {/* Image Section */}
-      <div className="relative aspect-square overflow-hidden bg-gray-50">
-        <Link
-          href={{
-            pathname: `/products/${product?.id}`,
-            query: { id: product?.id },
-          }}
-        >
+      <div className="relative aspect-square overflow-hidden bg-light-bg">
+        <Link href={`/products/${product?.id}`}>
           {product?.thumbnail ? (
             <img
               src={product.thumbnail}
@@ -49,7 +44,7 @@ const ProductCard = ({ product }: Props) => {
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <div className="w-full h-full flex items-center justify-center bg-light-bg">
               <svg
                 className="h-8 w-8 text-gray-400"
                 fill="none"
@@ -110,20 +105,15 @@ const ProductCard = ({ product }: Props) => {
             >
               <FaWhatsapp />
             </a>
-            {product?.brand && (
+            {/* {product?.brand && (
               <span className="text-xs text-theme-color font-medium">
                 {product.brand}
               </span>
-            )}
+            )} */}
           </div>
         </div>
 
-        <Link
-          href={{
-            pathname: `/products/${product?.id}`,
-            query: { id: product?.id },
-          }}
-        >
+        <Link href={`/products/${product?.id}`}>
           <h3 className="font-semibold text-gray-900 hover:text-theme-color transition-colors line-clamp-1 mb-3 leading-tight">
             {product?.title}
           </h3>

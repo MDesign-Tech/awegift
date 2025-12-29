@@ -1,17 +1,10 @@
 import{ NextRequest, NextResponse } from "next/server";
-import { QuoteType, QuoteProductType } from "../../../../type";
+import { QuotationType, QuotationProductType } from "../../../../type";
 import { QUOTE_STATUSES } from "@/lib/quoteStatuses";
-import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  setDoc,
-  doc,
-  serverTimestamp,
-} from "firebase/firestore";
-import { auth } from "../../../../auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/userService";
+import { adminDb } from "@/lib/firebase/admin";
+import { auth } from "@/auth";
+import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
+import { createQuotationRequestNotification } from "@/lib/notification/helpers";
 
 // POST - Create new quote request
 export async function POST(request: NextRequest) {
@@ -28,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { products, userNotes, email, phone }: {
-      products: QuoteProductType[];
+      products: QuotationProductType[];
       userNotes: string;
       email?: string;
       phone?: string;
@@ -72,7 +65,7 @@ export async function POST(request: NextRequest) {
     const validUntil = new Date(expirationDate);
 
     // Create new quote
-    const newQuote: QuoteType = {
+    const newQuote: QuotationType = {
       id: quoteId,
       userId: user?.id || `guest_${Date.now()}`, // Use guest ID for non-logged-in users
       email: user?.email || email!,
@@ -94,11 +87,27 @@ export async function POST(request: NextRequest) {
     };
 
     // Add to quotes collection with custom ID
-    await setDoc(doc(db, "quotes", quoteId), {
+    await adminDb.collection("quotes").doc(quoteId).set({
       ...newQuote,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
+
+    // Send notification to admin about new quotation request
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        createQuotationRequestNotification(
+          'admin', // Admin user ID - should be configurable
+          quoteId,
+          user?.name || 'Customer',
+          products.length
+        ).catch(error => {
+          console.error('Failed to create quotation request notification:', error);
+        });
+      } catch (error) {
+        console.error('Error sending quotation request notification:', error);
+      }
+    }
 
     return NextResponse.json({
       success: true,

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { FiArrowRight, FiPackage } from "react-icons/fi";
+import { getData } from "../../../app/(user)/helpers";
 
 import type { CategoryType } from "../../../../type";
 
@@ -56,7 +57,7 @@ const CategoryCard: React.FC<{ category: Category; index: number }> = ({
       className={`relative bg-white rounded-2xl shadow-md overflow-hidden h-full border transition-all duration-500 ${
         isDisabled
           ? "border-gray-200 opacity-60 cursor-not-allowed"
-          : "group border-gray-100 hover:border-blue-200 hover:shadow-2xl transform hover:-translate-y-3 hover:scale-[1.02]"
+          : "group border-gray-100 hover:border-accent-color hover:shadow-2xl transform hover:-translate-y-3 hover:scale-[1.02]"
       }`}
     >
       {/* Image Container */}
@@ -94,7 +95,7 @@ const CategoryCard: React.FC<{ category: Category; index: number }> = ({
         {!isDisabled && (
           <>
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-0 bg-gradient-to-br from-theme-color/10 to-accent-color/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </>
         )}
 
@@ -103,7 +104,7 @@ const CategoryCard: React.FC<{ category: Category; index: number }> = ({
           className={`absolute top-3 left-3 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg transition-transform duration-300 ${
             isDisabled
               ? "bg-gray-500"
-              : "bg-gradient-to-r from-blue-600 to-blue-700 transform group-hover:scale-110"
+              : "bg-gradient-to-r from-theme-color to-accent-color transform group-hover:scale-110"
           }`}
         >
           {productCount} items
@@ -112,7 +113,7 @@ const CategoryCard: React.FC<{ category: Category; index: number }> = ({
         {/* Category Icon with Enhanced Animation - Only for enabled categories */}
         {!isDisabled && (
           <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-4 translate-y-[-4px] group-hover:translate-x-0 group-hover:translate-y-0 group-hover:rotate-12">
-            <FiPackage className="w-4 h-4 text-blue-600" />
+            <FiPackage className="w-4 h-4 text-theme-color" />
           </div>
         )}
 
@@ -137,73 +138,41 @@ const CategoryCard: React.FC<{ category: Category; index: number }> = ({
 
       {/* Content with Enhanced Typography */}
       <div className="p-4 lg:p-5 relative">
-        <h3
-          className={`text-base lg:text-lg font-bold mb-2 transition-colors duration-300 line-clamp-1 ${
-            isDisabled
-              ? "text-gray-500"
-              : "text-gray-900 group-hover:text-blue-600 group-hover:tracking-wide"
-          }`}
-        >
-          {categoryName}
-        </h3>
-        <p
-          className={`text-sm lg:text-base mb-4 line-clamp-2 transition-colors duration-300 ${
-            isDisabled
-              ? "text-gray-400"
-              : "text-gray-600 group-hover:text-gray-700"
-          }`}
-        >
-          {isDisabled ? "Currently no products available" : description}
-        </p>
-
-        {/* Enhanced Action Button */}
         <div className="flex items-center justify-between">
-          <span
-            className={`text-sm font-medium transition-colors duration-300 ${
+          <h3
+            className={`text-base lg:text-lg font-bold transition-colors duration-300 line-clamp-1 ${
               isDisabled
-                ? "text-gray-400"
-                : "text-gray-500 group-hover:text-blue-600"
+                ? "text-gray-500"
+                : "text-gray-900 group-hover:text-theme-color group-hover:tracking-wide"
             }`}
           >
-            {isDisabled ? "Not Available" : "View Products"}
-          </span>
+            {categoryName}
+          </h3>
           <div
             className={`flex items-center transition-all duration-300 ${
               isDisabled
                 ? "text-gray-400"
-                : "text-blue-600 group-hover:text-blue-700 transform group-hover:scale-110"
+                : "text-theme-color group-hover:text-accent-color"
             }`}
           >
-            <div
-              className={`rounded-full p-2 transition-colors duration-300 ${
-                isDisabled
-                  ? "bg-gray-100"
-                  : "bg-blue-50 group-hover:bg-blue-100"
-              }`}
-            >
-              <FiArrowRight
-                className={`w-4 h-4 transition-transform duration-300 ${
-                  isDisabled ? "" : "transform group-hover:translate-x-1"
-                }`}
-              />
-            </div>
+            <FiArrowRight className="w-4 h-4" />
           </div>
         </div>
 
         {/* Bottom Glow Effect - Only for enabled categories */}
         {!isDisabled && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-theme-color to-accent-color transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
         )}
       </div>
 
       {/* Enhanced Border Effect - Only for enabled categories */}
       {!isDisabled && (
-        <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-300 rounded-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+        <div className="absolute inset-0 border-2 border-transparent group-hover:border-accent-color rounded-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
       )}
 
       {/* Corner Accent - Only for enabled categories */}
       {!isDisabled && (
-        <div className="absolute top-0 right-0 w-0 h-0 border-l-[30px] border-l-transparent border-t-[30px] border-t-blue-500 opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
+        <div className="absolute top-0 right-0 w-0 h-0 border-l-[30px] border-l-transparent border-t-[30px] border-t-theme-color opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
       )}
     </div>
   );
@@ -240,9 +209,7 @@ const InfiniteCategoryGrid: React.FC<InfiniteCategoryGridProps> = ({
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/categories");
-        if (!res.ok) throw new Error("Failed to load categories");
-        const data = await res.json();
+        const data = await getData("/api/categories");
 
         // Support different response shapes: array or { categories: [] }
         const list: CategoryType[] = Array.isArray(data)
@@ -332,25 +299,25 @@ const InfiniteCategoryGrid: React.FC<InfiniteCategoryGridProps> = ({
   return (
     <div className="space-y-8">
       {/* Stats */}
-      <div className="text-center bg-gray-50 rounded-xl p-6">
+      <div className="text-center bg-light-bg rounded-xl p-6">
         <div className="flex flex-col sm:flex-row justify-center items-center gap-8">
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-3xl font-bold text-theme-color">
               {allCategories.length}
             </div>
-            <div className="text-gray-600">Total Categories</div>
+            <div className="text-light-text">Total Categories</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-3xl font-bold text-accent-color">
               {totalProducts}+
             </div>
-            <div className="text-gray-600">Products</div>
+            <div className="text-light-text">Products</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600">
+            <div className="text-3xl font-bold text-theme-color">
               {totalBrands}+
             </div>
-            <div className="text-gray-600">Brands</div>
+            <div className="text-light-text">Brands</div>
           </div>
         </div>
       </div>
@@ -376,23 +343,23 @@ const InfiniteCategoryGrid: React.FC<InfiniteCategoryGridProps> = ({
       <div className="text-center py-8">
         {loading && (
           <div className="flex items-center justify-center gap-2">
-            <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-gray-600">Loading more categories...</span>
+            <div className="w-6 h-6 border-2 border-theme-color border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-light-text">Loading more categories...</span>
           </div>
         )}
 
         {!hasMore && !loading && (
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8">
-            <div className="text-2xl font-bold text-gray-900 mb-2">
+          <div className="bg-gradient-to-r from-theme-color/10 to-accent-color/10 rounded-2xl p-8">
+            <div className="text-2xl font-bold text-light-text mb-2">
               🎉 You&apos;ve seen it all!
             </div>
-            <p className="text-gray-600 mb-6">
+            <p className="text-light-text mb-6">
               You&apos;ve explored all our {initialCategories.length}{" "}
               categories. Ready to start shopping?
             </p>
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
+              className="inline-flex items-center gap-2 bg-theme-color hover:bg-accent-color text-theme-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
             >
               Browse All Products
               <FiArrowRight className="w-4 h-4" />
@@ -403,24 +370,24 @@ const InfiniteCategoryGrid: React.FC<InfiniteCategoryGridProps> = ({
 
       {/* Call to Action - Only show if more categories available */}
       {hasMore && !loading && (
-        <div className="text-center mt-12 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">
+        <div className="text-center mt-12 bg-gradient-to-r from-theme-color/10 to-accent-color/10 rounded-2xl p-8">
+          <h3 className="text-2xl font-bold text-light-text mb-2">
             Can&apos;t find what you&apos;re looking for?
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-light-text mb-6">
             Browse all our products or use our search feature to find exactly
             what you need.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/products"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
+              className="bg-theme-color hover:bg-accent-color text-theme-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
             >
               View All Products
             </Link>
             <Link
               href="/products?search="
-              className="bg-white hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-lg font-medium border border-gray-300 transition-colors duration-200"
+              className="bg-theme-white hover:bg-light-bg text-light-text px-6 py-3 rounded-lg font-medium border border-border-color transition-colors duration-200"
             >
               Search Products
             </Link>

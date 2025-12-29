@@ -1,5 +1,13 @@
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 import DashboardCategoriesClient from "@/components/dashboard/DashboardCategoriesClient";
 
 export default function CategoriesPage() {
-  return <DashboardCategoriesClient />;
+  return (
+    <RoleProtectedRoute
+          allowedRoles={["admin"]}
+          loadingMessage="Loading categories..."
+        >
+      <DashboardCategoriesClient />
+    </RoleProtectedRoute>
+  )
 }

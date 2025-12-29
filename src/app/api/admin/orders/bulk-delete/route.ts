@@ -1,65 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
-import { hasPermission } from "@/lib/rbac/roles";
-import { db } from "@/lib/firebase/config";
-import {
-  collection,
-  getDocs,
-  doc,
-  deleteDoc,
-  writeBatch,
-} from "firebase/firestore";
+import { adminDb } from "@/lib/firebase/admin";
+import { requireRole } from "@/lib/server/auth-utils";
 
 export async function DELETE(request: NextRequest) {
   try {
-    // TODO: Add proper authentication and permission checks
+    const check = await requireRole(request, "canDeleteOrders");
+    if (check instanceof NextResponse) return check;
 
-    const { orderIds } = await request.json();
+    let orderIds: string[] | undefined;
 
-    if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
-      return NextResponse.json(
-        { error: "Order IDs array required" },
-        { status: 400 }
-      );
+    // Check if request has a body
+    const contentLength = request.headers.get('content-length');
+    if (contentLength && parseInt(contentLength) > 0) {
+      const body = await request.json();
+      orderIds = body.orderIds;
     }
 
-    // Use batch delete for better performance
-    const batch = writeBatch(db);
+    const batch = adminDb.batch();
 
-    // Delete orders from the orders collection
-    for (const orderId of orderIds) {
-      const orderRef = doc(db, "orders", orderId);
-      batch.delete(orderRef);
-    }
+    if (orderIds && orderIds.length > 0) {
+      // Delete selected orders
+      orderIds.forEach((id) => {
+        const docRef = adminDb.collection("orders").doc(id);
+        batch.delete(docRef);
+      });
 
-    // Also need to remove these orders from user documents
-    // First find all users who might have these orders
-    const usersRef = collection(db, "users");
-    const usersSnapshot = await getDocs(usersRef);
+      await batch.commit();
 
-    usersSnapshot.docs.forEach((userDoc) => {
-      const userData = userDoc.data();
-      if (userData.orders && Array.isArray(userData.orders)) {
-        const filteredOrders = userData.orders.filter(
-          (order: any) => !orderIds.includes(order.id)
-        );
+      return NextResponse.json({
+        message: `Successfully deleted ${orderIds.length} orders`,
+        deletedCount: orderIds.length
+      });
+    } else {
+      // Delete all orders
+      const snapshot = await adminDb.collection("orders").get();
 
-        if (filteredOrders.length !== userData.orders.length) {
-          // This user had some of the deleted orders
-          const userRef = doc(db, "users", userDoc.id);
-          batch.update(userRef, { orders: filteredOrders });
-        }
+      if (snapshot.empty) {
+        return NextResponse.json({ message: "No orders to delete", deletedCount: 0 });
       }
-    });
 
-    // Commit the batch
-    await batch.commit();
+      snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
 
-    return NextResponse.json({
-      success: true,
-      deletedCount: orderIds.length,
-    });
+      await batch.commit();
+
+      return NextResponse.json({
+        message: "All orders deleted successfully",
+        deletedCount: snapshot.docs.length
+      });
+    }
   } catch (error) {
-    console.error("Error bulk deleting orders:", error);
+    console.error("Error deleting orders:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

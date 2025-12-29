@@ -1,9 +1,9 @@
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { FirestoreUser } from "@/lib/firebase/userService";
+import { UserData } from "../../type";
 
 export function useCurrentUser(): {
-  user: FirestoreUser | null;
+  user: UserData | null;
   isAdmin: boolean;
   isAuthenticated: boolean;
   userId: string | null;
