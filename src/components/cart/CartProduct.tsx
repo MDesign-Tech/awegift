@@ -5,7 +5,7 @@ import PriceFormat from "../PriceFormat";
 import AddToCartButton from "../AddToCartButton";
 import { IoClose } from "react-icons/io5";
 import { useDispatch } from "react-redux";
-import { removeFromCart } from "@/redux/shofySlice";
+import { removeFromCart } from "@/redux/aweGiftSlice";
 import toast from "react-hot-toast";
 import { FaCheck } from "react-icons/fa";
 

@@ -101,7 +101,7 @@ export default function RegisterForm() {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-theme-color focus:border-theme-color"
               placeholder="Enter your full name"
             />
           </div>
@@ -123,7 +123,7 @@ export default function RegisterForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-theme-color focus:border-theme-color"
               placeholder="Enter your email"
             />
           </div>
@@ -145,7 +145,7 @@ export default function RegisterForm() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-theme-color focus:border-theme-color"
               placeholder="Enter your password"
               minLength={6}
             />
@@ -182,7 +182,7 @@ export default function RegisterForm() {
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-theme-color focus:border-theme-color"
               placeholder="Confirm your password"
             />
             <button
@@ -207,18 +207,18 @@ export default function RegisterForm() {
             required
             checked={agreeTerms}
             onChange={(e) => setAgreeTerms(e.target.checked)}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            className="h-4 w-4 text-theme-color focus:ring-theme-color border-gray-300 rounded accent-theme-color"
           />
           <label
             htmlFor="agree-terms"
             className="ml-2 block text-sm text-gray-900"
           >
             I agree to the{" "}
-            <Link href="/terms" className="text-blue-600 hover:text-blue-500">
+            <Link href="/terms" className="text-theme-color hover:text-accent-color">
               Terms and Conditions
             </Link>{" "}
             and{" "}
-            <Link href="/privacy" className="text-blue-600 hover:text-blue-500">
+            <Link href="/privacy" className="text-theme-color hover:text-accent-color">
               Privacy Policy
             </Link>
           </label>
@@ -228,7 +228,7 @@ export default function RegisterForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-theme-color hover:bg-accent-color focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-color disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "Creating account..." : "Create account"}
           </button>
@@ -271,7 +271,7 @@ export default function RegisterForm() {
           Already have an account?{" "}
           <Link
             href="/auth/signin"
-            className="font-medium text-blue-600 hover:text-blue-500"
+            className="font-medium text-theme-color hover:text-accent-color"
           >
             Sign in
           </Link>

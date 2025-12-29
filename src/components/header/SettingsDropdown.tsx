@@ -1,8 +1,10 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { IoChevronDownSharp } from "react-icons/io5";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+
 import {
   FiUser,
   FiSettings,
@@ -20,7 +22,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 
 const SettingsDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { data: session } = useSession();
+  const { user } = useCurrentUser();
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { notifications } = useNotifications();
@@ -50,7 +52,7 @@ const SettingsDropdown = () => {
   };
 
   // Don't show settings if user is not logged in
-  if (!session?.user) {
+  if (!user) {
     return null;
   }
 
@@ -98,19 +100,7 @@ const SettingsDropdown = () => {
       label: "Privacy & Security",
       path: "/account/settings",
       description: "Account security settings",
-    },
-    {
-      icon: FiStar,
-      label: "Reviews",
-      path: "/account/reviews",
-      description: "Your product reviews",
-    },
-    {
-      icon: FiHelpCircle,
-      label: "Help & Support",
-      path: "/help",
-      description: "Get help and support",
-    },
+    }
   ];
 
   return (
@@ -136,10 +126,10 @@ const SettingsDropdown = () => {
           {/* User Info Header */}
           <div className="px-4 py-3 border-b border-gray-100">
             <div className="flex items-center gap-3">
-              {session?.user?.image ? (
+              {user?.image ? (
                 <img
-                  src={session.user.image}
-                  alt={session?.user?.name || "Profile"}
+                  src={user?.image}
+                  alt={user?.name || "Profile"}
                   className="w-8 h-8 rounded-full object-cover"
                 />
               ) : (
@@ -149,10 +139,10 @@ const SettingsDropdown = () => {
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  {session?.user?.name || "User"}
+                  {user?.name || "User"}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
-                  {session?.user?.email}
+                  {user?.email}
                 </p>
               </div>
             </div>

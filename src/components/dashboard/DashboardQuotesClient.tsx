@@ -292,7 +292,7 @@ export default function DashboardQuotesClient() {
               </button>
               <button
                 onClick={fetchQuotes}
-                className="flex items-center px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+                className="flex items-center px-3 py-2 bg-theme-color text-white rounded-lg hover:bg-accent-color transition-colors text-sm"
               >
                 <FiRefreshCw className="mr-2 h-4 w-4" />
                 Refresh
@@ -313,7 +313,7 @@ export default function DashboardQuotesClient() {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-theme-color"
             />
           </div>
           <div className="flex-1">
@@ -324,7 +324,7 @@ export default function DashboardQuotesClient() {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-theme-color"
             />
           </div>
         </div>
@@ -340,7 +340,7 @@ export default function DashboardQuotesClient() {
                   type="checkbox"
                   checked={selectAll && currentQuotes.length > 0}
                   onChange={handleSelectAll}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
                 />
               </th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
@@ -371,7 +371,7 @@ export default function DashboardQuotesClient() {
                     type="checkbox"
                     checked={selectedQuotes.includes(quote.id)}
                     onChange={() => handleSelectQuote(quote.id)}
-                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
                   />
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap">
@@ -420,14 +420,14 @@ export default function DashboardQuotesClient() {
                   <div className="flex items-center space-x-1">
                     <button
                       onClick={() => router.push(`/dashboard/quotes/${quote.id}`)}
-                      className="p-1 text-blue-600 hover:text-blue-900 transition-colors"
+                      className="p-1 text-theme-color hover:text-accent-color transition-colors"
                       title="View Details"
                     >
                       <FiEye size={14} />
                     </button>
                     <button
                       onClick={() => router.push(`/dashboard/quotes/${quote.id}`)}
-                      className="p-1 text-indigo-600 hover:text-indigo-900 transition-colors"
+                      className="p-1 text-theme-color hover:text-accent-color transition-colors"
                       title="Edit Quote"
                     >
                       <FiEdit2 size={14} />

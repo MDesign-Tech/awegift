@@ -389,7 +389,7 @@ export default function DashboardOrdersClient() {
               </button>
               <button
                 onClick={fetchOrders}
-                className="flex items-center px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+                className="flex items-center px-3 py-2 bg-theme-color text-white rounded-lg hover:bg-accent-color transition-colors text-sm"
               >
                 <FiRefreshCw className="mr-2 h-4 w-4" />
                 Refresh
@@ -411,7 +411,7 @@ export default function DashboardOrdersClient() {
                 placeholder="Search by Order ID, Customer, Email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-theme-color"
               />
             </div>
           </div>
@@ -421,7 +421,7 @@ export default function DashboardOrdersClient() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-theme-color"
             >
               <option value="all">All Status</option>
               {Object.values(ORDER_STATUSES).map((status: string) => (
@@ -437,7 +437,7 @@ export default function DashboardOrdersClient() {
             <select
               value={paymentFilter}
               onChange={(e) => setPaymentFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-theme-color"
             >
               <option value="all">All Payments</option>
               {Object.values(PAYMENT_STATUSES).map((status: string) => (
@@ -460,7 +460,7 @@ export default function DashboardOrdersClient() {
                   type="checkbox"
                   checked={selectAll && currentOrders.length > 0}
                   onChange={handleSelectAll}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
                 />
               </th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
@@ -494,7 +494,7 @@ export default function DashboardOrdersClient() {
                     type="checkbox"
                     checked={selectedOrders.includes(order.id)}
                     onChange={() => handleSelectOrder(order.id)}
-                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
                   />
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap">
@@ -525,7 +525,7 @@ export default function DashboardOrdersClient() {
                     <select
                       value={newStatus}
                       onChange={(e) => setNewStatus(e.target.value)}
-                      className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
+                      className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-theme-color focus:border-theme-color w-full"
                     >
                       <option value="">Select Status</option>
                       {userRole && getNextPossibleStatuses(userRole, order.status).map((status) => (
@@ -547,7 +547,7 @@ export default function DashboardOrdersClient() {
                     <select
                       value={newPaymentStatus}
                       onChange={(e) => setNewPaymentStatus(e.target.value)}
-                      className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
+                      className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-theme-color focus:border-theme-color w-full"
                     >
                       <option value="">Select Payment</option>
                       {Object.values(PAYMENT_STATUSES).map((status: string) => (
@@ -628,7 +628,7 @@ export default function DashboardOrdersClient() {
                     <div className="flex items-center space-x-1">
                       <button
                         onClick={() => setViewOrderModal(order)}
-                        className="p-1 text-blue-600 hover:text-blue-900 transition-colors"
+                        className="p-1 text-theme-color hover:text-accent-color transition-colors"
                         title="View Details"
                       >
                         <FiEye size={14} />
@@ -638,7 +638,7 @@ export default function DashboardOrdersClient() {
                           setEditingOrder(order);
                           setNewStatus(order.status);
                         }}
-                        className="p-1 text-indigo-600 hover:text-indigo-900 transition-colors"
+                        className="p-1 text-theme-color hover:text-accent-color transition-colors"
                         title="Edit Status"
                       >
                         <FiEdit2 size={14} />

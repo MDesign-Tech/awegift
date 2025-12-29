@@ -12,13 +12,12 @@
   --font-title-font: Open Sans, sans-serif;
   --font-body-font: Montserrat, sans-serif;
 
-  --color-theme-color: #0c55aa;
-  --color-light-bg: #f4f7f9;
+  --color-theme-color: #ed4c07;
+  --color-light-bg: #fff6f1;
   --color-theme-white: #ffffff;
-  --color-light-yellow: #ffd43a;
-  --color-border-color: #eaebed;
-  --color-sky-color: #0989ff;
-  --color-light-text: #55585b;
+  --color-border-color: #f0e5df;
+  --color-accent-color: #ff6b2c;
+  --color-light-text: #5b4a42;
 }
 
 /* Utilities layer */

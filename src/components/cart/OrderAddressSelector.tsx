@@ -179,7 +179,7 @@ export default function OrderAddressSelector({
                         Selected Delivery Address
                       </span>
                       {selectedAddress.isDefault && (
-                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        <span className="ml-2 text-xs bg-light-bg text-light-text px-2 py-1 rounded-full">
                           Default
                         </span>
                       )}
@@ -200,7 +200,7 @@ export default function OrderAddressSelector({
                     key={address.id || index}
                     className={`border rounded-lg p-3 cursor-pointer transition-all ${
                       selectedAddress?.id === address.id
-                        ? "border-theme-color bg-blue-50"
+                        ? "border-theme-color bg-light-bg"
                         : "border-gray-200 hover:border-gray-300"
                     }`}
                     onClick={() => handleAddressSelect(address)}
@@ -212,7 +212,7 @@ export default function OrderAddressSelector({
                             <FiCheck className="text-theme-color mr-2 text-sm" />
                           )}
                           {address.isDefault && (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full mr-2">
+                            <span className="text-xs bg-light-bg text-light-text px-2 py-1 rounded-full mr-2">
                               Default
                             </span>
                           )}

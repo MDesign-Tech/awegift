@@ -41,8 +41,8 @@ export const getOffers = (products: ProductType[]): ProductType[] => {
   if (!products || products.length === 0) return [];
 
   let offers = products
-    .filter((product) => product.discountPercentage > 0)
-    .sort((a, b) => b.discountPercentage - a.discountPercentage);
+    .filter((product) => product.discount > 0)
+    .sort((a, b) => b.discount - a.discount);
 
   // Fallback: if no discounts available, get lowest priced products
   if (offers.length < 8) {
@@ -52,29 +52,15 @@ export const getOffers = (products: ProductType[]): ProductType[] => {
   return offers.slice(0, 8);
 };
 
-// Helper function to get featured products (high rating, good stock, popular categories)
+// Helper function to get featured products (products marked as featured)
 export const getFeaturedProducts = (products: ProductType[]): ProductType[] => {
   if (!products || products.length === 0) return [];
 
-  const popularCategories = [
-    "smartphones",
-    "laptops",
-    "beauty",
-    "home-decoration",
-    "fragrances",
-    "skin-care",
-  ];
-
   let featured = products
-    .filter(
-      (product) =>
-        product.rating >= 3.5 &&
-        product.stock > 10 &&
-        product.categories && product.categories.some(cat => popularCategories.includes(cat.toLowerCase()))
-    )
+    .filter((product) => product.isFeatured)
     .sort((a, b) => b.rating - a.rating);
 
-  // Fallback: if not enough products, get highest rated products
+  // Fallback: if not enough featured products, get highest rated products
   if (featured.length < 8) {
     featured = products
       .filter((product) => product.rating >= 3.0)

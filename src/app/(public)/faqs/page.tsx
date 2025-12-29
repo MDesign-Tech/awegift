@@ -1,8 +1,10 @@
-"use client";
+"use client"
 
-import { useState } from "react";
+//import { useState } from "react";
 import Container from "@/components/Container";
 import Title from "@/components/Title";
+// import { Metadata } from "next";
+import { useState } from "react";
 import {
   FiChevronDown,
   FiChevronRight,
@@ -10,7 +12,11 @@ import {
   FiSearch,
 } from "react-icons/fi";
 
-/* 🔹 MOVE ALL DATA HERE */
+// export const metadata: Metadata = {
+//   title: "FAQs - AweGift",
+//   description: "Frequently Asked Questions - Find answers to common questions about AweGift",
+// };
+
 const faqCategories = [
   {
     id: "orders",

@@ -263,7 +263,7 @@ export default function DashboardUsersClient() {
       <div className="px-4 sm:px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-blue-50">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center mb-4 sm:mb-0">
-            <FiShield className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 mr-2" />
+            <FiShield className="h-5 w-5 sm:h-6 sm:w-6 text-theme-color mr-2" />
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
               Users Management ({users.length})
             </h2>
@@ -317,7 +317,7 @@ export default function DashboardUsersClient() {
                   checked={selectAll}
                   onChange={handleSelectAll}
                   disabled={currentUsers.filter((user) => user.id !== session?.user?.id).length === 0}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </th>
               <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -349,15 +349,15 @@ export default function DashboardUsersClient() {
                     checked={selectedUsers.includes(user.id)}
                     onChange={() => handleSelectUser(user.id)}
                     disabled={user.id === session?.user?.id || user.role === "admin"}
-                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </td>
                 <td className="px-4 sm:px-6 py-4">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10">
                       {user.name ? (
-                        <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                          <span className="text-xs sm:text-sm font-medium text-indigo-800">
+                        <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-light-bg flex items-center justify-center">
+                          <span className="text-xs sm:text-sm font-medium text-light-text">
                             {user.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
@@ -420,7 +420,7 @@ export default function DashboardUsersClient() {
                     {userRole && hasPermission(userRole as UserRole, "canUpdateUsers") && user.id !== session?.user?.id && (
                       <button
                         onClick={() => handleEditUser(user)}
-                        className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                        className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-light-text bg-light-bg hover:bg-accent-color/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-color transition-colors"
                         title="Edit User"
                       >
                         <FiEdit2 size={14} className="mr-1" />
@@ -485,7 +485,7 @@ export default function DashboardUsersClient() {
                     onClick={() => handlePageChange(i + 1)}
                     className={`px-3 py-2 text-sm font-medium rounded-md ${
                       currentPage === i + 1
-                        ? "bg-indigo-600 text-white"
+                        ? "bg-theme-color text-white"
                         : "text-gray-500 bg-white border border-gray-300 hover:bg-gray-50"
                     }`}
                   >
@@ -519,9 +519,9 @@ export default function DashboardUsersClient() {
           }}
         >
           <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-auto max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-blue-50">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-light-bg to-accent-color/10">
               <div className="flex items-center">
-                <FiEdit2 className="h-6 w-6 text-indigo-600 mr-3" />
+                <FiEdit2 className="h-6 w-6 text-theme-color mr-3" />
                 <h3 className="text-xl font-semibold text-gray-900">
                   Edit User Details
                 </h3>
@@ -577,7 +577,7 @@ export default function DashboardUsersClient() {
                         onChange={(e) =>
                           setEditForm({ ...editForm, name: e.target.value })
                         }
-                        className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                        className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-theme-color transition-colors"
                         placeholder="Enter full name"
                         required
                       />
@@ -597,7 +597,7 @@ export default function DashboardUsersClient() {
                         onChange={(e) =>
                           setEditForm({ ...editForm, email: e.target.value })
                         }
-                        className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                        className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-theme-color transition-colors"
                         placeholder="Enter email address"
                         required
                       />
@@ -627,7 +627,7 @@ export default function DashboardUsersClient() {
                       onChange={(e) =>
                         setEditForm({ ...editForm, role: e.target.value })
                       }
-                      className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition-colors"
+                      className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-theme-color bg-white transition-colors"
                       required
                     >
                       {Object.keys(ROLE_PERMISSIONS)
@@ -639,13 +639,13 @@ export default function DashboardUsersClient() {
                         ))}
                     </select>
                   </div>
-                  <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                    <p className="text-xs text-blue-800">
+                  <div className="mt-3 p-3 bg-light-bg border border-border-color rounded-md">
+                    <p className="text-xs text-light-text">
                       <strong>Current:</strong>{" "}
                       {getRoleDisplayName(editingUser.role as UserRole)} →
                       <strong> New:</strong> {getRoleDisplayName(editForm.role as UserRole)}
                     </p>
-                    <p className="text-xs text-blue-600 mt-1">
+                    <p className="text-xs text-theme-color mt-1">
                       User will be notified of role changes via email
                     </p>
                   </div>
@@ -705,7 +705,7 @@ export default function DashboardUsersClient() {
               <button
                 onClick={handleSaveUser}
                 disabled={!editForm.name.trim() || !editForm.email.trim() || isUpdatingUser}
-                className="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                className="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-theme-color hover:bg-accent-color focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-color transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 {isUpdatingUser ? (
                   <>
@@ -726,7 +726,7 @@ export default function DashboardUsersClient() {
                   setEditForm({ name: "", email: "", role: "" });
                 }}
                 disabled={isUpdatingUser}
-                className="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                className="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-color transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 <FiX className="mr-2 h-4 w-4" />
                 Cancel
@@ -834,7 +834,7 @@ export default function DashboardUsersClient() {
                   setUserToDelete(null);
                 }}
                 disabled={isDeletingUser}
-                className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-color transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FiX className="mr-2 h-4 w-4" />
                 Cancel
@@ -947,7 +947,7 @@ export default function DashboardUsersClient() {
               <button
                 onClick={() => setShowDeleteSelectedModal(false)}
                 disabled={isDeleting}
-                className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50"
+                className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-color transition-colors disabled:opacity-50"
               >
                 <FiX className="mr-2 h-4 w-4" />
                 Cancel

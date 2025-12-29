@@ -44,7 +44,7 @@ const OrderActions = ({
       {showViewDetails && (
         <Link
           href={`/dashboard/admin/orders/${orderId}`}
-          className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded"
+          className="p-1 text-theme-color hover:text-accent-color hover:bg-light-bg rounded"
           title="View Details"
         >
           <FiEye className="w-4 h-4" />

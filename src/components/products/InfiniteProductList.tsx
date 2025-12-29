@@ -121,7 +121,7 @@ const InfiniteProductList = ({
       {/* Header with controls */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-4 bg-white border border-gray-200 rounded-lg">
         <div className="text-sm text-gray-600">
-          Showing {sortedProducts.length} of {products.length} products
+          Showing All products
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
@@ -137,10 +137,10 @@ const InfiniteProductList = ({
               id="sort"
               value={currentSort}
               onChange={(e) => handleSortChange(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent"
             >
               {sortOptions.map((option) => (
-                <option key={option.value} value={option.value}>
+                <option className="text-theme-color active:bg-theme-color" key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
@@ -153,7 +153,7 @@ const InfiniteProductList = ({
               onClick={() => setViewMode("grid")}
               className={`p-2 rounded ${
                 viewMode === "grid"
-                  ? "bg-blue-500 text-white"
+                  ? "bg-accent-color text-white"
                   : "bg-gray-200 text-gray-600 hover:bg-gray-300"
               }`}
               title="Grid View"
@@ -164,7 +164,7 @@ const InfiniteProductList = ({
               onClick={() => setViewMode("list")}
               className={`p-2 rounded ${
                 viewMode === "list"
-                  ? "bg-blue-500 text-white"
+                  ? "bg-accent-color text-white"
                   : "bg-gray-200 text-gray-600 hover:bg-gray-300"
               }`}
               title="List View"

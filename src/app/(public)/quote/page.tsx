@@ -462,9 +462,10 @@ export default function QuotePage() {
                   <button
                     type="button"
                     onClick={addProductRow}
-                    className="inline-flex items-center gap-2 text-theme-color font-medium"
+                    className="flex items-center mt-3 px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-theme-color text-sm"
                   >
-                    <FiPlus /> Add another product
+                    <FiPlus className="mr-2 h-4 w-4" />
+                    Add another product
                   </button>
                 </div>
               </div>

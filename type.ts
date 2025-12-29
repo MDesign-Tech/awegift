@@ -20,24 +20,23 @@ export interface ProductType {
   price: number;
   stock: number;
   minimumOrderQuantity: number;
-  availabilityStatus: string;
-  discountPercentage: number;
+  discount: number;
+  currency: string;
+  isActive: boolean;
+  isFeatured: boolean;
   weight: number;
   dimensions: {
     width: number;
     height: number;
-    depth: number;
   };
   images: string[];
   thumbnail: string;
   tags: string[];
+  colors: string[];
   returnPolicy: string;
   reviews: Review[];
   rating: number;
   warrantyInformation: string;
-
-  // Removed shippingInformation
-  // Local trading doesn't use shipping
 
   quantity?: number;
 
@@ -167,14 +166,14 @@ export interface NotificationType {
   userId?: string;
   title: string;
   message: string;
- 
+
   // Local trading notification types
   type:
-    | "order"
-    | "payment"
-    | "quote"
-    | "system"
-    | "promotion";
+  | "order"
+  | "payment"
+  | "quote"
+  | "system"
+  | "promotion";
 
   read: boolean;
   createdAt: Date;
@@ -215,13 +214,13 @@ export interface QuoteType {
   finalAmount: number;              // subtotal - discount + delivery
 
   status:
-    | "pending"                     // user requested, waiting for admin
-    | "responded"                   // admin sent price
-    | "waiting_customer"            // admin asked user more info
-    | "negotiation"                 // back-and-forth messaging
-    | "accepted"                    // user accepted price
-    | "rejected"                    // user or admin rejected
-    | "expired";                    // price expired
+  | "pending"                     // user requested, waiting for admin
+  | "responded"                   // admin sent price
+  | "waiting_customer"            // admin asked user more info
+  | "negotiation"                 // back-and-forth messaging
+  | "accepted"                    // user accepted price
+  | "rejected"                    // user or admin rejected
+  | "expired";                    // price expired
 
   messages: QuoteMessage[];         // negotiation history
   userNotes?: string;               // user extra info

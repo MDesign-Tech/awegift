@@ -127,13 +127,13 @@ const ActiveFilters = () => {
         {activeFilters.map((filter, index) => (
           <div
             key={index}
-            className="inline-flex items-center gap-2 bg-blue-50 text-blue-800 text-sm px-3 py-1 rounded-full border border-blue-200"
+            className="inline-flex items-center gap-2 bg-light-bg text-light-text text-sm px-3 py-1 rounded-full border border-border-color"
           >
             <span className="font-medium">{filter.label}:</span>
             <span>{filter.displayValue}</span>
             <button
               onClick={() => removeFilter(filter.type, filter.value)}
-              className="flex items-center justify-center w-4 h-4 bg-blue-200 hover:bg-blue-300 rounded-full transition-colors ml-1"
+              className="flex items-center justify-center w-4 h-4 bg-light-bg hover:bg-accent-color rounded-full transition-colors ml-1"
             >
               <FaTimes className="w-2 h-2" />
             </button>

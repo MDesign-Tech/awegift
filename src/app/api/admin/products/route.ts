@@ -54,10 +54,14 @@ export async function GET(request: NextRequest) {
     const totalCount = allDocs.length;
     const paginatedDocs = allDocs.slice(offsetParam, offsetParam + limitParam);
 
-    const products = paginatedDocs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as ProductType[];
+    const products = paginatedDocs.map(doc => {
+      const data = doc.data() as any;
+      const { id: _, ...productData } = data;
+      return {
+        id: doc.id,
+        ...productData,
+      };
+    }) as ProductType[];
 
     console.log("Fetched products:", products.length, "offset:", offsetParam, "limit:", limitParam, "search:", searchQuery, "categories:", categoryFilters);
 

@@ -97,7 +97,7 @@ const InfiniteCategoryList = ({
             <td className="px-3 py-4 whitespace-nowrap">
               <input
                 type="checkbox"
-                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color disabled:opacity-50"
                 disabled={isRefreshing}
               />
             </td>
@@ -158,7 +158,7 @@ const InfiniteCategoryList = ({
               <div className="flex items-center space-x-1">
                 <button
                   onClick={() => onView(category)}
-                  className="p-1 text-blue-600 hover:text-blue-900 transition-colors disabled:opacity-50"
+                  className="p-1 text-theme-color hover:text-accent-color transition-colors disabled:opacity-50"
                   title="View"
                   disabled={isRefreshing}
                 >
@@ -166,7 +166,7 @@ const InfiniteCategoryList = ({
                 </button>
                 <button
                   onClick={() => onEdit(category)}
-                  className="p-1 text-indigo-600 hover:text-indigo-900 transition-colors disabled:opacity-50"
+                  className="p-1 text-theme-color hover:text-accent-color transition-colors disabled:opacity-50"
                   title="Edit"
                   disabled={isRefreshing}
                 >

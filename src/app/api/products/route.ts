@@ -40,6 +40,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Active filter - only return active products
+    allDocs = allDocs.filter((doc) => {
+      const data = doc.data() as ProductType;
+      return data.isActive !== false;
+    });
+
     // Total number of matched products
     const totalCount = allDocs.length;
 
@@ -47,10 +53,14 @@ export async function GET(request: NextRequest) {
 
     // ✔ limit=0 → return ALL products
     if (limitParam === 0) {
-      products = allDocs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as ProductType[];
+      products = allDocs.map((doc) => {
+        const data = doc.data() as any;
+        const { id: _, ...productData } = data;
+        return {
+          id: doc.id,
+          ...productData,
+        };
+      }) as ProductType[];
     } else {
       // Normal pagination
       const paginatedDocs = allDocs.slice(
@@ -58,10 +68,14 @@ export async function GET(request: NextRequest) {
         offsetParam + limitParam
       );
 
-      products = paginatedDocs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as ProductType[];
+      products = paginatedDocs.map((doc) => {
+        const data = doc.data() as any;
+        const { id: _, ...productData } = data;
+        return {
+          id: doc.id,
+          ...productData,
+        };
+      }) as ProductType[];
     }
 
     return NextResponse.json({

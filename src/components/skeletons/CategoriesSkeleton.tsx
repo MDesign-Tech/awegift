@@ -20,22 +20,21 @@ const CategoriesSkeleton = () => {
         {/* Skeleton Carousel */}
         <div className="relative mx-4 md:mx-0">
           <div className="overflow-hidden">
-            <div className="flex gap-4">
+            <div className="flex justify-center gap-4">
               {Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="flex-shrink-0 w-48">
+                <div key={index} className="flex-shrink-0 w-32">
                   <div className="group">
                     {/* Image Container Skeleton */}
-                    <div className="relative mb-4 rounded-full aspect-square bg-gradient-to-br from-gray-200 to-gray-300 shadow-lg animate-pulse">
+                    <div className="relative mb-3 border border-gray-200 rounded-lg aspect-square bg-gradient-to-br from-gray-200 to-gray-300 shadow-md animate-pulse">
 
                       {/* Skeleton image placeholder */}
-                      <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-full">
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-lg">
                       </div>
                     </div>
 
                     {/* Category Info Skeleton */}
-                    <div className="text-center space-y-1">
-                      <div className="h-4 bg-gray-300 rounded animate-pulse mx-auto w-20"></div>
-                      <div className="h-3 bg-gray-200 rounded animate-pulse mx-auto w-32"></div>
+                    <div className="text-center space-y-1 px-2">
+                      <div className="h-3 bg-gray-300 rounded animate-pulse mx-auto w-16"></div>                     
                     </div>
                   </div>
                 </div>

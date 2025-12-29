@@ -65,7 +65,7 @@ export default function DashboardHeaderToggle() {
         setHeaderVisible(!headerVisible);
       }}
       onMouseDown={(e) => e.preventDefault()}
-      className="fixed top-4 right-4 z-50 bg-theme-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="fixed top-4 right-4 z-50 bg-theme-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-accent-color"
       aria-label="Toggle header"
       type="button"
     >

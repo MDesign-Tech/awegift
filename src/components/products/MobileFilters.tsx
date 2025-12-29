@@ -86,7 +86,7 @@ const MobileFilters = ({ isOpen, onClose }: Props) => {
               </button>
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                className="flex-1 px-4 py-2 bg-theme-color text-white rounded-md hover:bg-accent-color transition-colors"
               >
                 Apply
               </button>
