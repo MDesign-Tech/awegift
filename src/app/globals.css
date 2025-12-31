@@ -1,5 +1,6 @@
 /* Import Google Fonts first */
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 /* Tailwind and base imports with layers */
 @import "./base.css" layer(components);
@@ -7,7 +8,7 @@
 
 /* Your theme variables */
 @theme {
-  --font-sans: Jost, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+  --font-sans: "Plus Jakarta Sans", Jost, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-title-font: Open Sans, sans-serif;
   --font-body-font: Montserrat, sans-serif;
@@ -21,12 +22,230 @@
   --color-dark-text: #000000;
   --color-primary-text: #101828;
 
+  /* New Theme Colors */
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-glow: var(--primary-glow);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  /* Hero Specific */
+  --color-hero-primary: var(--hero-primary);
+  --color-hero-accent: var(--hero-accent);
+  --color-hero-text: var(--hero-text);
+  --color-hero-bg: var(--hero-bg);
+  --color-hero-card-shadow: var(--hero-card-shadow);
+
+  /* Shadows */
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+  --shadow-glow: var(--shadow-glow);
+  --shadow-button: var(--shadow-button);
+  --shadow-button-hover: var(--shadow-button-hover);
+
+  /* Animations */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-fade-in: fade-in 0.5s ease-out forwards;
+  --animate-scale-in: scale-in 0.3s ease-out forwards;
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-wiggle: wiggle 0.5s ease-in-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scale-in {
+    0% {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes pulse-glow {
+
+    0%,
+    100% {
+      box-shadow: 0 0 20px hsl(var(--hero-primary) / 0.3);
+    }
+
+    50% {
+      box-shadow: 0 0 40px hsl(var(--hero-primary) / 0.5);
+    }
+  }
+
+  @keyframes wiggle {
+
+    0%,
+    100% {
+      transform: rotate(-3deg);
+    }
+
+    50% {
+      transform: rotate(3deg);
+    }
+  }
+}
+
+/* Base Variables */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 13% 9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 9%;
+
+    --primary: 16 91% 48%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 16 100% 58%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 13% 9%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 18 100% 59%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 16 91% 48%;
+
+    --radius: 0rem;
+
+    /* Custom Hero Colors */
+    --hero-primary: 16 91% 48%;
+    --hero-accent: 18 100% 59%;
+    --hero-text: 220 13% 9%;
+    --hero-bg: 220 14% 97%;
+    --hero-card-shadow: 220 25% 12%;
+
+    /* Shadows */
+    --shadow-card: 0 4px 24px -8px hsl(var(--hero-card-shadow) / 0.1);
+    --shadow-card-hover: 0 12px 40px -12px hsl(var(--hero-card-shadow) / 0.2);
+    --shadow-glow: 0 0 60px hsl(var(--hero-primary) / 0.4);
+    --shadow-button: 0 4px 16px -4px hsl(var(--hero-primary) / 0.5);
+    --shadow-button-hover: 0 8px 24px -4px hsl(var(--hero-primary) / 0.6);
+  }
+
+  .dark {
+    --background: 220 13% 6%;
+    --foreground: 0 0% 98%;
+
+    --card: 220 13% 10%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 220 13% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 16 91% 52%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 16 100% 62%;
+
+    --secondary: 220 13% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 220 13% 15%;
+    --muted-foreground: 220 9% 65%;
+
+    --accent: 18 100% 59%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 20%;
+    --input: 220 13% 20%;
+    --ring: 16 91% 52%;
+
+    --hero-primary: 16 91% 52%;
+    --hero-accent: 18 100% 62%;
+    --hero-text: 0 0% 98%;
+    --hero-bg: 220 13% 8%;
+    --hero-card-shadow: 0 0% 0%;
+
+    --shadow-card: 0 4px 24px -8px hsl(var(--hero-card-shadow) / 0.3);
+    --shadow-card-hover: 0 12px 40px -12px hsl(var(--hero-card-shadow) / 0.5);
+  }
 }
 
 /* Utilities layer */
 @layer utilities {
   .headerTopMenu {
     @apply flex items-center gap-x-1 border-r border-r-gray-400 px-4;
+  }
+
+  .text-balance {
+    text-wrap: balance;
   }
 }
 
@@ -37,4 +256,16 @@ button:hover {
 
 button:disabled:hover {
   cursor: not-allowed;
+}
+
+/* Custom animation for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

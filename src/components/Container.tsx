@@ -1,12 +1,14 @@
-import { twMerge } from "tailwind-merge";
-interface Props {
-  children: React.ReactNode;
+import { cn } from "@/lib/utils";
+import { ReactNode } from "react";
+
+interface ContainerProps {
+  children: ReactNode;
   className?: string;
 }
 
-const Container = ({ children, className }: Props) => {
+const Container = ({ children, className }: ContainerProps) => {
   return (
-    <div className={twMerge("max-w-[1140px] mx-auto px-4 lg:px-0", className)}>
+    <div className={cn("w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8", className)}>
       {children}
     </div>
   );

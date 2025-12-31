@@ -25,31 +25,7 @@ const Category = ({ categories = [], allProducts = [] }: CategoryProps) => {
     ).length;
   };
 
-  // Helper function to get count for special categories
-  const getSpecialCategoryCount = (categoryName: string): number => {
-    if (!allProducts || allProducts.length === 0) return 0;
 
-    switch (categoryName) {
-      case "bestsellers":
-        // Products with rating >= 4.5 or high review count
-        return allProducts.filter(
-          (product: ProductType) =>
-            product.rating >= 4.5 ||
-            (product.reviews && product.reviews.length > 50)
-        ).length;
-      case "new":
-        // Products from last few categories (simulated new arrivals)
-        return Math.floor(allProducts.length * 0.15); // Assume 15% are new
-      default:
-        return 0;
-    }
-  };
-
-  // Special categories that should appear at the top
-  const specialCategories = [
-    { name: "bestsellers", label: "Best Sellers" },
-    { name: "new", label: "New Arrivals" },
-  ];
 
   const handleCategoryClick = (categoryName: string) => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));
@@ -99,53 +75,55 @@ const Category = ({ categories = [], allProducts = [] }: CategoryProps) => {
           >
             <div className="pt-2 pb-4">
               <div className="space-y-2">
-                {/* Special Categories */}
-                {specialCategories.map((category, index) => {
-                   const isActive = currentCategories.includes(category.name);
-                  const count = getSpecialCategoryCount(category.name);
+                {/* All Option */}
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="category-all"
+                    name="category"
+                    checked={currentCategories.length === 0}
+                    onChange={() => {
+                      const current = new URLSearchParams(Array.from(searchParams.entries()));
+                      current.delete("category");
+                      router.push(`/products?${current.toString()}`);
+                    }}
+                    className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
+                  />
+                  <button
+                    onClick={() => {
+                      const current = new URLSearchParams(Array.from(searchParams.entries()));
+                      current.delete("category");
+                      router.push(`/products?${current.toString()}`);
+                    }}
+                    className="ml-2 text-sm font-medium text-gray-900 hover:text-theme-color transition-colors flex-1 text-left"
+                  >
+                    All ({allProducts.length})
+                  </button>
+                </div>
+
+                {/* Regular Categories */}
+                {categories.map((category, index) => {
+                  const isActive = currentCategories.includes(category.name);
+                  const count = getProductCountForCategory(category.name);
                   return (
-                    <div key={`special-${index}`} className="flex items-center">
+                    <div key={index} className="flex items-center">
                       <input
-                          type="checkbox"
-                          id={`category-${category.name}`}
-                          name="category"
-                          checked={isActive}
-                          onChange={() => {}}
-                          className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
-                        />
+                        type="checkbox"
+                        id={`category-${category.name}`}
+                        name="category"
+                        checked={isActive}
+                        onChange={() => { }}
+                        className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
+                      />
                       <button
                         onClick={() => handleCategoryClick(category.name)}
                         className="ml-2 text-sm font-medium text-gray-900 hover:text-theme-color transition-colors flex-1 text-left"
                       >
-                        {category.label} ({count})
+                        {category.name} ({count})
                       </button>
                     </div>
                   );
                 })}
-
-                {/* Regular Categories */}
-                {categories.map((category, index) => {
-                    const isActive = currentCategories.includes(category.name);
-                   const count = getProductCountForCategory(category.name);
-                   return (
-                     <div key={index} className="flex items-center">
-                       <input
-                         type="checkbox"
-                         id={`category-${category.name}`}
-                         name="category"
-                         checked={isActive}
-                         onChange={() => {}}
-                         className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color"
-                       />
-                       <button
-                         onClick={() => handleCategoryClick(category.name)}
-                         className="ml-2 text-sm font-medium text-gray-900 hover:text-theme-color transition-colors flex-1 text-left"
-                       >
-                         {category.name} ({count})
-                       </button>
-                     </div>
-                   );
-                 })}
               </div>
             </div>
           </motion.div>

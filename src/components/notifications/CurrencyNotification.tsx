@@ -1,4 +1,4 @@
- "use client";
+"use client";
 import { useEffect, useState } from "react";
 import { FiCheck, FiX } from "react-icons/fi";
 
@@ -59,17 +59,12 @@ const CurrencyNotification = ({
 
   return (
     <>
-      {/* Backdrop - subtle overlay */}
-      <div
-        className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-sm"
-        onClick={handleClose}
-      />
 
       {/* Notification Modal */}
       <div
         className={`fixed bottom-6 right-6 z-[101] transform transition-all duration-300 ease-out ${isVisible
-            ? "translate-y-0 opacity-100 scale-100"
-            : "translate-y-4 opacity-0 scale-95"
+          ? "translate-y-0 opacity-100 scale-100"
+          : "translate-y-4 opacity-0 scale-95"
           }`}
       >
         <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden min-w-80 max-w-sm backdrop-blur-sm">

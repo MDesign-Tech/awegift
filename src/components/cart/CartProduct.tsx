@@ -16,7 +16,7 @@ const CartProduct = ({ product }: { product: ProductType }) => {
     toast.success(`${product?.title.substring(0, 20)} deleted successfully!`);
   };
   return (
-    <div className="flex py-6 sm:py-10">
+    <div className="flex py-6 sm:py-10 overflow-hidden">
       <Link
         href={`/products/${product?.id}`}
         className="h-24 w-24 sm:h-48 sm:w-48 border border-sky-color/30 hover:border-sky-color overflow-hidden flex items-center justify-center rounded-md"
@@ -46,10 +46,10 @@ const CartProduct = ({ product }: { product: ProductType }) => {
         )}
       </Link>
       {/* Details */}
-      <div className="ml-4 sm:ml-6 flex flex-1 flex-col justify-between">
+      <div className="ml-4 sm:ml-6 flex flex-1 flex-col justify-between min-w-0">
         <div className="relative pr-9 sm:grid sm:grid-cols-4 sm:gap-x-6 sm:pr-0">
           <div className="flex flex-col gap-1 col-span-3">
-            <h3 className="text-base font-semibold w-full">
+            <h3 className="text-base font-semibold w-full truncate">
               {product?.title.substring(0, 80)}
             </h3>
             <p className="text-xs">
@@ -58,7 +58,7 @@ const CartProduct = ({ product }: { product: ProductType }) => {
             <p className="text-xs">
               Category: <span className="font-medium">{product?.categories && product.categories.length > 0 ? product.categories.join(", ") : "No category"}</span>
             </p>
-            <div className="flex items-center gap-6 mt-2">
+            <div className="flex flex-wrap items-center gap-4 mt-2">
               <PriceFormat
                 amount={product?.price * product?.quantity!}
                 className="text-base font-semibold"

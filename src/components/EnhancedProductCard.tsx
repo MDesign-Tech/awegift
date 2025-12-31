@@ -54,8 +54,8 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
               </div>
             )} */}
 
-              {/* Quick Actions */}
-              {product?.stock === 0 && (
+            {/* Quick Actions */}
+            {product?.stock === 0 && (
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                 <div className="bg-red-500 text-white px-3 py-2 rounded-lg font-bold text-sm">
                   OUT OF STOCK
@@ -69,103 +69,54 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
             </div>
           </div>
 
+
+
           {/* Content Section */}
-          <div className="flex-1 p-6">
-            <div className="flex justify-between h-full">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <p className="text-sm text-gray-500 uppercase tracking-wide">
-                    {product?.categories && product.categories.length > 0 ? product.categories[0] : "No category"}
-                  </p>
-                  <div className="flex bg- px-2 py-1 rounded-full items-center gap-1">
-                    <a
-                      href={`https://wa.me/250781990310?text=Hi%20I%20need%20more%20about%20this%20product%20(${encodeURIComponent(product?.title || "this product")})`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-green-500 hover:text-green-700 transition-colors duration-200 text-sm"
-                      title="Contact us on WhatsApp"
-                    >
-                      <FaWhatsapp />
-                    </a>
-                    {/* {product?.brand && (
-                      <span className="text-xs text-theme-color font-medium">
-                        {product.brand}
-                      </span>
-                    )} */}
-                  </div>
-                </div>
-
-                <Link href={`/products/${product?.id}`}>
-                  <h3 className="text-lg font-semibold text-gray-900 hover:text-theme-color transition-colors line-clamp-2 mb-3">
-                    {product?.title}
-                  </h3>
-                </Link>
-
-                <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-                  {product?.description}
+          <div className="flex-1 p-4 sm:p-6 flex flex-col min-w-0">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-sm text-gray-500 uppercase tracking-wide truncate">
+                  {product?.categories && product.categories.length > 0 ? product.categories[0] : "No category"}
                 </p>
+                <div className="flex bg-light-bg px-2 py-1 rounded-full items-center gap-1 flex-shrink-0">
+                  <a
+                    href={`https://wa.me/250781990310?text=Hi%20I%20need%20more%20about%20this%20product%20(${encodeURIComponent(product?.title || "this product")})`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-500 hover:text-green-700 transition-colors duration-200 text-sm"
+                    title="Contact us on WhatsApp"
+                  >
+                    <FaWhatsapp />
+                  </a>
+                </div>
+              </div>
 
-                {/* <div className="flex items-center gap-3 mb-4">
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <FaStar
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < Math.floor(product?.rating)
-                            ? "text-yellow-400"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    ({product?.rating}) • {product?.reviews?.length || 0}{" "}
-                    reviews
-                  </span>
-                </div> */}
+              <Link href={`/products/${product?.id}`}>
+                <h3 className="text-lg font-semibold text-gray-900 hover:text-theme-color transition-colors line-clamp-1 sm:line-clamp-2 mb-2">
+                  {product?.title}
+                </h3>
+              </Link>
 
+              <p className="text-gray-600 text-sm line-clamp-2 mb-3 hidden sm:block">
+                {product?.description}
+              </p>
+
+              <div className="mb-4">
                 <ProductPrice
                   regularPrice={regularPrice}
                   product={product}
                 />
               </div>
+            </div>
 
-              <div className="flex flex-col justify-between items-end ml-6 min-w-[140px]">
-                {/* <div className="text-right">
-                  <p className="text-sm text-gray-500 mb-1">Availability</p>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`w-2 h-2 rounded-full ${
-                        product?.stock > 10
-                          ? "bg-green-500"
-                          : product?.stock > 0
-                          ? "bg-yellow-500"
-                          : "bg-red-500"
-                      }`}
-                    ></div>
-                    <p
-                      className={`text-sm font-medium ${
-                        product?.stock > 10
-                          ? "text-green-600"
-                          : product?.stock > 0
-                          ? "text-yellow-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {product?.stock > 0
-                        ? `${product.stock} in stock`
-                        : "Out of stock"}
-                    </p>
-                  </div>
-                </div> */}
-
-                <AddToCartButton
-                  product={product}
-                  variant="primary"
-                  size="md"
-                  className="min-w-[120px] shadow-md"
-                />
-              </div>
+            {/* Action Button at Bottom */}
+            <div className="mt-auto pt-2">
+              <AddToCartButton
+                product={product}
+                variant="primary"
+                size="md"
+                className="w-full sm:w-auto shadow-sm"
+              />
             </div>
           </div>
         </div>
