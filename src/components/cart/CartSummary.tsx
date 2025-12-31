@@ -5,7 +5,7 @@ import Button from "../ui/Button";
 import PriceFormat from "../PriceFormat";
 import OrderAddressSelector from "./OrderAddressSelector";
 import { ProductType, Address, OrderData } from "../../../type";
-import { ORDER_STATUSES, PAYMENT_METHODS,PAYMENT_STATUSES } from "@/lib/orderStatus";
+import { ORDER_STATUSES, PAYMENT_METHODS, PAYMENT_STATUSES } from "@/lib/orderStatus";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -61,7 +61,7 @@ const CartSummary = ({ cart }: Props) => {
 
     try {
       setPlacing(true);
-      
+
       const finalTotal = totalAmt;
 
       // Generate order ID
@@ -116,7 +116,7 @@ const CartSummary = ({ cart }: Props) => {
 
         // Clear cart after successful order placement
         dispatch(resetCart());
-        
+
       } else {
         throw new Error("Failed to place order");
       }
@@ -131,7 +131,7 @@ const CartSummary = ({ cart }: Props) => {
   const isCheckoutDisabled = session?.user && (!canPlaceOrder || (!addressLoading && !selectedAddress) || placing);
 
   return (
-    <section className="rounded-lg bg-gray-100 px-4 py-6 sm:p-10 lg:col-span-5 mt-16 lg:mt-0">
+    <section className="rounded-lg bg-gray-100 px-4 py-6 sm:p-10 lg:col-span-5 mt-16 lg:mt-0 overflow-hidden">
       <Title>Cart Summary</Title>
 
       {/* Show different content based on authentication status */}
@@ -183,7 +183,7 @@ const CartSummary = ({ cart }: Props) => {
 
 
       <div className="mt-5 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <Title className="text-lg font-medium">Sub Total</Title>
           <PriceFormat amount={totalAmt} />
         </div>
@@ -191,7 +191,7 @@ const CartSummary = ({ cart }: Props) => {
           <Title className="text-lg font-medium">Discount</Title>
           <PriceFormat amount={discountAmt} />
         </div> */}
-        <div className="border-t border-gray-300 pt-3 flex items-center justify-between">
+        <div className="border-t border-gray-300 pt-3 flex items-center justify-between flex-wrap gap-2">
           <Title className="text-lg font-bold">Total Amount</Title>
           <PriceFormat
             amount={totalAmt}
@@ -200,9 +200,8 @@ const CartSummary = ({ cart }: Props) => {
         </div>
         <Button
           onClick={handleCheckout}
-          className={`mt-4 ${
-            isCheckoutDisabled ? "opacity-50 cursor-not-allowed" : ""
-          }`}
+          className={`mt-4 ${isCheckoutDisabled ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           disabled={isCheckoutDisabled}
         >
           {!session?.user ? (

@@ -13,23 +13,26 @@ const MiddleHeader = () => {
   const { user } = useAuth();
 
   return (
-    <div className="border-b border-b-gray-400">
-      <Container className="py-5 flex items-center gap-4 md:gap-6 lg:gap-20 justify-between ">
+    <div className="border-b border-b-gray-400 relative z-50">
+      <Container className="py-5 flex items-center justify-between gap-4 md:gap-6 lg:gap-20">
         <Logo />
-        <SearchInput />
-        <div className="flex items-center gap-3">
+        {/* Removed central SearchInput */}
+
+        <div className="flex items-center gap-5">
+          {/* Search Icon Trigger */}
+          <SearchInput />
+
           {/* User */}
           {user ? (
             <UserProfileDropdown user={user} />
           ) : (
             <div
-              // href={"/auth/signin"}
               className="flex items-center gap-2 cursor-pointer"
             >
               <div className="border-2 border-gray-700 p-1.5 rounded-full text-xl">
                 <LiaUser />
               </div>
-              <div>
+              <div className="hidden md:block">
                 <Link href={"/auth/signin"}>
                   <p className="text-xs hover:text-sky-color ease-in-out duration-300 cursor-pointer">
                     Hello, Guests

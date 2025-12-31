@@ -105,16 +105,12 @@ export default function DashboardProductsClient() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await apiFetch("/api/admin/categories");
-        if (res.ok) {
-          const data = await res.json();
-
+        const data = await apiFetch("/api/admin/categories");
+        if (data && !data.error) {
           const categoryNames = data.map((cat: any) => cat.name);
           setAllCategories(categoryNames);
         } else {
-          const errorData = await res.json();
-          
-          toast.error(errorData.error || "Failed to fetch categories");
+          toast.error(data?.error || "Failed to fetch categories");
         }
       } catch (err) {
         console.error("Error fetching categories:", err);

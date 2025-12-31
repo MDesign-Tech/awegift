@@ -1,7 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-<url><loc>https://awegift.vercel.app/auth/error</loc><lastmod>2025-12-14T20:55:08.376Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://awegift.vercel.app/auth/register</loc><lastmod>2025-12-14T20:55:08.378Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://awegift.vercel.app/auth/signin</loc><lastmod>2025-12-14T20:55:08.378Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://awegift.vercel.app/unauthorized</loc><lastmod>2025-12-14T20:55:08.378Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/about</loc><lastmod>2025-12-30T22:07:37.933Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/contact</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/faqs</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/inquiry</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/quote</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/account/addresses</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/account/notifications</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/account/orders</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/account</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/account/payment</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/account/quotes</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/account/settings</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/cart</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/checkout</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/dashboard/analytics</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/dashboard/categories</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/dashboard/orders</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/dashboard</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/dashboard/products</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/dashboard/quotes</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/dashboard/users</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/favorite</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>1</priority></url>
+<url><loc>https://awegift.vercel.app/success</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/auth/error</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/auth/register</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/auth/signin</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://awegift.vercel.app/unauthorized</loc><lastmod>2025-12-30T22:07:37.935Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 </urlset>
