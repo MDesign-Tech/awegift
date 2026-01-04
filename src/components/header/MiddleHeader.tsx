@@ -18,17 +18,19 @@ const MiddleHeader = () => {
         <Logo />
         {/* Removed central SearchInput */}
 
+        <div className="flex justify-end md:absolute md:left-1/2 md:-translate-x-1/2 md:justify-center w-full md:w-auto">
+          <SearchInput />
+        </div>
+
         <div className="flex items-center gap-5">
           {/* Search Icon Trigger */}
-          <SearchInput />
+          {/* <SearchInput /> */}
 
           {/* User */}
           {user ? (
             <UserProfileDropdown user={user} />
           ) : (
-            <div
-              className="flex items-center gap-2 cursor-pointer"
-            >
+            <div className="flex items-center gap-2 cursor-pointer">
               <div className="border-2 border-gray-700 p-1.5 rounded-full text-xl">
                 <LiaUser />
               </div>

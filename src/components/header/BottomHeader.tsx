@@ -11,8 +11,8 @@ const BottomHeader = () => {
 
   return (
     <div className="border-b border-b-gray-400">
-      <Container className="flex items-center justify-between py-1">
-        <div className="text-xs md:text-sm font-medium flex items-center gap-5">
+      <Container className="flex items-center justify-between py-4">
+        <div className="text-xs md:text-sm font-medium flex items-center gap-5 uppercase">
           {navigation?.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -28,7 +28,7 @@ const BottomHeader = () => {
             );
           })}
         </div>
-        <p className="text-xs text-gray-400 font-medium hidden md:inline-flex items-center gap-3">
+        <p className="text-sm text-gray-400 font-medium hidden md:inline-flex items-center gap-3">
           Tel: <span className="text-[#ed4c07]">+250 781 990 310</span>
           <span className="text-gray-400">|</span>
           <a
