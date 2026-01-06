@@ -6,7 +6,13 @@ import React from "react";
 const Logo = () => {
   return (
     <Link href={"/"}>
-      <Image src={logo} alt="logo" width={112} height={40} className="w-28" />
+      <Image
+        src={logo}
+        alt="logo"
+        width={200}
+        height={80}
+        className="w-full h-full object-contain"
+      />
     </Link>
   );
 };

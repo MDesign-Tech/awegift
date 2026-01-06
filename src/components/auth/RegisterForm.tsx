@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FaGoogle, FaGithub, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 
 export default function RegisterForm() {
@@ -210,11 +210,17 @@ export default function RegisterForm() {
             className="ml-2 block text-sm text-gray-900"
           >
             I agree to the{" "}
-            <Link href="/terms" className="text-theme-color hover:text-accent-color">
+            <Link
+              href="/terms"
+              className="text-theme-color hover:text-accent-color"
+            >
               Terms and Conditions
             </Link>{" "}
             and{" "}
-            <Link href="/privacy" className="text-theme-color hover:text-accent-color">
+            <Link
+              href="/privacy"
+              className="text-theme-color hover:text-accent-color"
+            >
               Privacy Policy
             </Link>
           </label>
@@ -243,21 +249,13 @@ export default function RegisterForm() {
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3">
+        <div className="mt-6">
           <button
             onClick={() => handleOAuthSignIn("google")}
             className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
           >
             <FaGoogle className="h-5 w-5 text-red-500" />
             <span className="ml-2">Google</span>
-          </button>
-
-          <button
-            onClick={() => handleOAuthSignIn("github")}
-            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-          >
-            <FaGithub className="h-5 w-5 text-gray-900" />
-            <span className="ml-2">GitHub</span>
           </button>
         </div>
       </div>

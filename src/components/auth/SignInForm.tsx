@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FaGoogle, FaGithub, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { signIn } from "next-auth/react";
 import { useAuth } from "@/lib/auth/AuthContext";
@@ -14,34 +14,34 @@ export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { signInWithEmailAndPassword, signInWithGoogle, signInWithGithub } = useAuth();
+  const { signInWithEmailAndPassword, signInWithGoogle, signInWithGithub } =
+    useAuth();
 
- useEffect(() => {
-  if (typeof window === "undefined") return;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
-  const params = new URLSearchParams(window.location.search);
-  const error = params.get("error");
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get("error");
 
-  if (!error) return;
+    if (!error) return;
 
-  const errorMessages: Record<string, string> = {
-    CredentialsSignin: "Invalid email or password",
-    OAuthSignin: "OAuth sign-in failed",
-    OAuthCallback: "OAuth authentication failed",
-    AccessDenied: "Access denied",
-    SessionRequired: "Please sign in to continue",
-  };
+    const errorMessages: Record<string, string> = {
+      CredentialsSignin: "Invalid email or password",
+      OAuthSignin: "OAuth sign-in failed",
+      OAuthCallback: "OAuth authentication failed",
+      AccessDenied: "Access denied",
+      SessionRequired: "Please sign in to continue",
+    };
 
-  toast.error(errorMessages[error] || "Authentication failed");
+    toast.error(errorMessages[error] || "Authentication failed");
 
-  params.delete("error");
-  const newUrl = `${window.location.pathname}${
-    params.toString() ? `?${params.toString()}` : ""
-  }`;
+    params.delete("error");
+    const newUrl = `${window.location.pathname}${
+      params.toString() ? `?${params.toString()}` : ""
+    }`;
 
-  window.history.replaceState({}, "", newUrl);
-}, []);
-
+    window.history.replaceState({}, "", newUrl);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,21 +167,13 @@ export default function SignInForm() {
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3">
+        <div className="mt-6">
           <button
             onClick={() => handleOAuthSignIn("google")}
             className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
           >
             <FaGoogle className="h-5 w-5 text-red-500" />
             <span className="ml-2">Google</span>
-          </button>
-
-          <button
-            onClick={() => handleOAuthSignIn("github")}
-            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-          >
-            <FaGithub className="h-5 w-5 text-gray-900" />
-            <span className="ml-2">GitHub</span>
           </button>
         </div>
       </div>
