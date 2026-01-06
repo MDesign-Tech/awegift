@@ -3,10 +3,10 @@
 import Container from "@/components/Container";
 import OrderSummarySkeleton from "@/components/OrderSummarySkeleton";
 import PriceFormat from "@/components/PriceFormat";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 import { resetCart } from "@/redux/aweGiftSlice";
 import Link from "next/link";
-import { redirect, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
@@ -19,10 +19,15 @@ const SuccessPage = () => {
   const orderId = searchParams.get("order_id");
   const dispatch = useDispatch();
   const { data: session } = useSession();
+  const router = useRouter();
   const [orderProcessed, setOrderProcessed] = useState(false);
   const [orderDetails, setOrderDetails] = useState<any>(null);
 
-  !sessionId && redirect("/");
+  useEffect(() => {
+    if (!sessionId) {
+      router.push("/");
+    }
+  }, [sessionId, router]);
 
   useEffect(() => {
     if (sessionId && session?.user?.email && !orderProcessed) {
@@ -84,16 +89,16 @@ const SuccessPage = () => {
 
   if (!orderProcessed) {
     return (
-      <ProtectedRoute loadingMessage="Processing your order...">
+      <RoleProtectedRoute allowedRoles={["user", "admin"]} loadingMessage="Processing your order...">
         <Container className="py-10">
           <OrderSummarySkeleton />
         </Container>
-      </ProtectedRoute>
+      </RoleProtectedRoute>
     );
   }
 
   return (
-    <ProtectedRoute loadingMessage="Processing your order...">
+    <RoleProtectedRoute allowedRoles={["user", "admin"]} loadingMessage="Processing your order...">
       <Container className="py-10">
         <div className="min-h-[500px] flex flex-col items-center justify-center">
           {/* Success Icon */}
@@ -146,7 +151,7 @@ const SuccessPage = () => {
 
         </div>
       </Container>
-    </ProtectedRoute>
+    </RoleProtectedRoute>
   );
 };
 
