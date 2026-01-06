@@ -20,7 +20,6 @@
     "chalk-ts": "^1.0.0",
     "cloudinary": "^2.8.0",
     "clsx": "^2.1.1",
-    "crypto": "^1.0.1",
     "firebase": "^12.1.0",
     "firebase-admin": "^13.6.0",
     "framer-motion": "^12.23.26",
