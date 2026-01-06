@@ -8,6 +8,17 @@ export async function GET(request: NextRequest) {
   try {
     const token = await getToken({ req: request });
 
+    // Debug logging for production issues
+    console.log("Products API - Token check:", {
+      hasToken: !!token,
+      tokenKeys: token ? Object.keys(token) : null,
+      userAgent: request.headers.get('user-agent'),
+      cookies: request.cookies.getAll().map(c => c.name),
+      nextAuthSessionToken: request.cookies.get('next-auth.session-token')?.value ? 'present' : 'missing',
+      nextAuthUrl: process.env.NEXTAUTH_URL,
+      nodeEnv: process.env.NODE_ENV
+    });
+
     if (!token) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
