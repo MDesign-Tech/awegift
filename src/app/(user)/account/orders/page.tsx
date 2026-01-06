@@ -1,12 +1,11 @@
 import OrdersList from "@/components/account/OrdersList";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
+
 
 export default function OrdersPage() {
   return (
-    <ProtectedRoute loadingMessage="Loading your orders...">
-      <div>
-        <OrdersList showHeader={true} />
-      </div>
-    </ProtectedRoute>
+ <RoleProtectedRoute allowedRoles={["user", "admin"]}>
+    <OrdersList showHeader={true} />
+ </RoleProtectedRoute>
   );
 }

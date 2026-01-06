@@ -127,8 +127,8 @@ The ${this.COMPANY_NAME} Team
   private static generateAdminNewUserEmail(payload: EmailPayload): { subject: string; html: string; text: string } {
     const name = payload.name || 'Admin';
     const subject = `New User Registered - ${this.COMPANY_NAME}`;
-    const html = 
-    `<!DOCTYPE html>
+    const html =
+      `<!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
@@ -177,7 +177,8 @@ The ${this.COMPANY_NAME} Team
 
   private static generateEmailVerificationEmail(payload: EmailPayload): { subject: string; html: string; text: string } {
     const name = payload.name || 'User';
-    const verificationLink = `${this.BASE_URL}/verify-email?token=some-token`; // TODO: Add actual token logic
+    const verificationLink = payload.verificationUrl || `${this.BASE_URL}/auth/verify-email?token=some-token`;
+    const otp = payload.otp || '000000';
     const subject = `Verify your email address - ${this.COMPANY_NAME}`;
 
     const html = `
@@ -191,9 +192,11 @@ The ${this.COMPANY_NAME} Team
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #007bff; }
-          .content { padding: 30px 0; }
+          .content { padding: 30px 0; text-align: center; }
+          .otp-container { background-color: #f4f7ff; border: 2px dashed #007bff; border-radius: 8px; padding: 20px; margin: 25px 0; }
+          .otp-code { font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #007bff; margin: 0; }
           .button { display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0; }
-          .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; }
+          .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; text-align: left; }
         </style>
       </head>
       <body>
@@ -204,11 +207,22 @@ The ${this.COMPANY_NAME} Team
           <div class="content">
             <h2 style="color: #333;">Verify Your Email Address</h2>
             <p>Hi ${name},</p>
-            <p>Thank you for signing up with ${this.COMPANY_NAME}. To complete your registration, please verify your email address by clicking the button below:</p>
+            <p>Thank you for signing up with ${this.COMPANY_NAME}. To complete your registration, please verify your email address using the code below:</p>
+            
+            <div class="otp-container">
+              <p style="margin-bottom: 10px; color: #666;">Verification Code</p>
+              <p class="otp-code">${otp}</p>
+            </div>
+
+            <p>Or simply click the button below to verify automatically:</p>
             <a href="${verificationLink}" class="button">Verify Email Address</a>
-            <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
-            <p><a href="${verificationLink}">${verificationLink}</a></p>
-            <p>This link will expire in 24 hours for security reasons.</p>
+            
+            <div style="margin-top: 20px; font-size: 14px; color: #777;">
+              <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+              <p><a href="${verificationLink}">${verificationLink}</a></p>
+            </div>
+            
+            <p style="font-weight: bold; margin-top: 20px;">This code and link will expire in 10 minutes.</p>
           </div>
           <div class="footer">
             <p>If you didn't create an account with ${this.COMPANY_NAME}, please ignore this email.</p>
@@ -224,11 +238,15 @@ Verify your email address - ${this.COMPANY_NAME}
 
 Hi ${name},
 
-Thank you for signing up with ${this.COMPANY_NAME}. To complete your registration, please verify your email address by clicking the link below:
+Thank you for signing up with ${this.COMPANY_NAME}. To complete your registration, please use the following verification code:
+
+Verification Code: ${otp}
+
+Or click the link below to verify automatically:
 
 ${verificationLink}
 
-This link will expire in 24 hours for security reasons.
+This code and link will expire in 10 minutes for security reasons.
 
 If you didn't create an account with ${this.COMPANY_NAME}, please ignore this email.
 
@@ -239,9 +257,10 @@ The ${this.COMPANY_NAME} Team
     return { subject, html, text };
   }
 
+
   private static generatePasswordResetEmail(payload: EmailPayload): { subject: string; html: string; text: string } {
     const name = payload.name || 'User';
-    const resetLink = `${this.BASE_URL}/reset-password?token=some-token`; // TODO: Add actual token logic
+    const resetLink = payload.resetUrl || `${this.BASE_URL}/auth/reset-password?token=some-token`;
     const subject = `Reset your password - ${this.COMPANY_NAME}`;
 
     const html = `

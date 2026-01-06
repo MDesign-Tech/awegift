@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import Container from "@/components/Container";
 import Title from "@/components/Title";
 import PriceFormat from "@/components/PriceFormat";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 import {
   FiMessageSquare,
   FiSave,
@@ -240,20 +240,20 @@ export default function AdminQuoteDetailPage() {
 
   if (loading) {
     return (
-      <ProtectedRoute loadingMessage="Loading quote details...">
+      <RoleProtectedRoute allowedRoles={["admin"]} loadingMessage="Loading quote details...">
         <Container className="py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded w-1/4"></div>
             <div className="h-64 bg-gray-200 rounded"></div>
           </div>
         </Container>
-      </ProtectedRoute>
+      </RoleProtectedRoute>
     );
   }
 
   if (!quote || !editableQuote) {
     return (
-      <ProtectedRoute loadingMessage="Loading quote details...">
+      <RoleProtectedRoute allowedRoles={["admin"]} loadingMessage="Loading quote details...">
         <Container className="py-8">
           <div className="text-center">
             <div className="text-red-600 mb-2">⚠️</div>
@@ -269,12 +269,12 @@ export default function AdminQuoteDetailPage() {
             </Link>
           </div>
         </Container>
-      </ProtectedRoute>
+      </RoleProtectedRoute>
     );
   }
 
   return (
-    <ProtectedRoute loadingMessage="Loading quote details...">
+    <RoleProtectedRoute allowedRoles={["admin"]} loadingMessage="Loading quote details...">
       <Container className="py-8">
         {/* Header */}
         <div className="mb-6">
@@ -671,6 +671,6 @@ export default function AdminQuoteDetailPage() {
           </div>
         </div>
       </Container>
-    </ProtectedRoute>
+    </RoleProtectedRoute>
   );
 }

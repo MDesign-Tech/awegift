@@ -2,7 +2,6 @@
 
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "react-hot-toast";
-import { AuthProvider } from "@/lib/auth/AuthContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { UserSyncProvider } from "@/components/UserSyncProvider";
 import StateProvider from "@/components/auth/StateProvider";
@@ -35,41 +34,39 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <NetworkProvider>
         <NetworkStatus />
         <StateProvider>
-          <AuthProvider>
-            <UserSyncProvider>
-              <CurrencyProvider>
-                <NotificationProvider scope={currentScope}>
-                  {children}
-                  <Toaster
-                    position="bottom-right"
-                    toastOptions={{
-                      className: '!bg-gray-900 !text-white !border-0',
+          <UserSyncProvider>
+            <CurrencyProvider>
+              <NotificationProvider scope={currentScope}>
+                {children}
+                <Toaster
+                  position="bottom-right"
+                  toastOptions={{
+                    className: '!bg-gray-900 !text-white !border-0',
+                    style: {
+                      background: '#000000',
+                      color: '#ffffff',
+                      border: 'none',
+                    },
+                    success: {
                       style: {
-                        background: '#000000',
-                        color: '#ffffff',
-                        border: 'none',
+                        borderBottom: '2px solid #10b981', // green-500
                       },
-                      success: {
-                        style: {
-                          borderBottom: '2px solid #10b981', // green-500
-                        },
+                    },
+                    error: {
+                      style: {
+                        borderBottom: '2px solid #ef4444', // red-500
                       },
-                      error: {
-                        style: {
-                          borderBottom: '2px solid #ef4444', // red-500
-                        },
+                    },
+                    loading: {
+                      style: {
+                        borderBottom: '2px solid #3b82f6', // blue-500
                       },
-                      loading: {
-                        style: {
-                          borderBottom: '2px solid #3b82f6', // blue-500
-                        },
-                      },
-                    }}
-                  />
-                </NotificationProvider>
-              </CurrencyProvider>
-            </UserSyncProvider>
-          </AuthProvider>
+                    },
+                  }}
+                />
+              </NotificationProvider>
+            </CurrencyProvider>
+          </UserSyncProvider>
         </StateProvider>
       </NetworkProvider>
     </SessionProvider>

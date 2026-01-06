@@ -9,15 +9,6 @@ export default function NotFoundClient() {
 
   return (
     <div className="space-y-4">
-      {/* Current Path Display */}
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-xl mx-auto">
-        <p className="text-red-700">
-          <span className="font-medium">Requested URL:</span>{" "}
-          <code className="bg-red-100 px-2 py-1 rounded text-sm font-mono">
-            {pathname}
-          </code>
-        </p>
-      </div>
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

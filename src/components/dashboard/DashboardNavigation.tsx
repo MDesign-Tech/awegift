@@ -21,7 +21,7 @@ export default function DashboardNavigation() {
 
   // Dashboard tabs based on permissions
   const getDashboardTabs = (userRole: string): TabItem[] => {
-    const basePath = userRole === "admin" ? "/dashboard" : "/account";
+    const basePath = "/dashboard"
 
     const allTabs: TabItem[] = [
       {

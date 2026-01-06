@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FaGoogle, FaGithub, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { signIn } from "next-auth/react";
-import { useAuth } from "@/lib/auth/AuthContext";
 
 export default function SignInForm() {
   const [email, setEmail] = useState("");
@@ -14,33 +13,37 @@ export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { signInWithEmailAndPassword, signInWithGoogle, signInWithGithub } = useAuth();
 
- useEffect(() => {
-  if (typeof window === "undefined") return;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
-  const params = new URLSearchParams(window.location.search);
-  const error = params.get("error");
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get("error");
 
-  if (!error) return;
+    if (!error) return;
 
-  const errorMessages: Record<string, string> = {
-    CredentialsSignin: "Invalid email or password",
-    OAuthSignin: "OAuth sign-in failed",
-    OAuthCallback: "OAuth authentication failed",
-    AccessDenied: "Access denied",
-    SessionRequired: "Please sign in to continue",
-  };
+    if (error === "Please verify your email before signing in.") {
+      toast.error("Please verify your email.");
+      router.push("/auth/verify-email");
+      return;
+    }
 
-  toast.error(errorMessages[error] || "Authentication failed");
+    const errorMessages: Record<string, string> = {
+      CredentialsSignin: "Invalid email or password",
+      OAuthSignin: "OAuth sign-in failed",
+      OAuthCallback: "OAuth authentication failed",
+      AccessDenied: "Access denied",
+      SessionRequired: "Please sign in to continue",
+    };
 
-  params.delete("error");
-  const newUrl = `${window.location.pathname}${
-    params.toString() ? `?${params.toString()}` : ""
-  }`;
+    toast.error(errorMessages[error] || error || "Authentication failed");
 
-  window.history.replaceState({}, "", newUrl);
-}, []);
+    params.delete("error");
+    const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""
+    }`;
+
+    window.history.replaceState({}, "", newUrl);
+  }, [router]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,11 +51,20 @@ export default function SignInForm() {
     setIsLoading(true);
 
     try {
-      const { error } = await signInWithEmailAndPassword(email, password);
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-      if (error) {
-        toast.error(error.message || "Sign in failed");
+      if (result?.error) {
+        if (result.error === "Please verify your email before signing in.") {
+          toast.error("Please verify your email address.");
+          router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
       } else {
+          toast.error(result.error || "Invalid email or password");
+        }
+      } else if (result?.ok) {
         toast.success("Sign in successful!");
         // Force full page reload to ensure session data is applied
         window.location.href = "/";
@@ -64,12 +76,9 @@ export default function SignInForm() {
     }
   };
 
-  const handleOAuthSignIn = async (provider: "google" | "github") => {
+  const handleOAuthSignIn = async (provider: "google") => {
     try {
       await signIn(provider, { callbackUrl: "/" });
-      toast.success("Sign in successful!");
-      // Force full page reload to ensure session data is applied
-      window.location.href = "/";
     } catch (error) {
       toast.error("OAuth sign in failed");
     }
@@ -77,7 +86,7 @@ export default function SignInForm() {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label
             htmlFor="email"
@@ -167,7 +176,7 @@ export default function SignInForm() {
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3">
+        <div className="mt-6">
           <button
             onClick={() => handleOAuthSignIn("google")}
             className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
@@ -175,27 +184,7 @@ export default function SignInForm() {
             <FaGoogle className="h-5 w-5 text-red-500" />
             <span className="ml-2">Google</span>
           </button>
-
-          <button
-            onClick={() => handleOAuthSignIn("github")}
-            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-          >
-            <FaGithub className="h-5 w-5 text-gray-900" />
-            <span className="ml-2">GitHub</span>
-          </button>
         </div>
-      </div>
-
-      <div className="text-center">
-        <span className="text-sm text-gray-600">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/auth/register"
-            className="font-medium text-theme-color hover:text-accent-color"
-          >
-            Sign up
-          </Link>
-        </span>
       </div>
     </div>
   );

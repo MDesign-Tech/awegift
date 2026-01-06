@@ -1,4 +1,4 @@
-import ProtectedRoute from "@/components/ProtectedRoute";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 import AccountLayout from "../../../components/account/AccountLayout";
 
 export default function AccountPageLayout({
@@ -7,8 +7,8 @@ export default function AccountPageLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ProtectedRoute loadingMessage="Loading your account...">
+    <RoleProtectedRoute allowedRoles={["user", "admin"]} loadingMessage="Loading your account...">
       <AccountLayout>{children}</AccountLayout>
-    </ProtectedRoute>
+    </RoleProtectedRoute>
   )
 }

@@ -1,10 +1,11 @@
 import NotificationsClient from "@/components/account/NotificationsClient";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
+
 
 export default function NotificationsPage() {
   return (
-    <ProtectedRoute loadingMessage="Loading your notifications...">
-        <NotificationsClient />
-    </ProtectedRoute>
+    <RoleProtectedRoute allowedRoles={["admin","user"]} loadingMessage="Loading notifications">
+      <NotificationsClient />
+    </RoleProtectedRoute>
   )
 }

@@ -4,13 +4,15 @@ import Container from "../Container";
 import { LiaUser } from "react-icons/lia";
 import Link from "next/link";
 import SearchInput from "./SearchInput";
-import { useAuth } from "@/lib/auth/AuthContext";
 import HeaderIcons from "./HeaderIcons";
 import Logo from "../Logo";
 import UserProfileDropdown from "./UserProfileDropdown";
+import { Session } from "next-auth";
 
-const MiddleHeader = () => {
-  const { user } = useAuth();
+const MiddleHeader = ({ session }: { session: Session | null }) => {
+
+  // If session exists but user data is missing or invalid, treat as unauthenticated
+  const isAuthenticated = session?.user && session.user.email ? true : false;
 
   return (
     <div className="border-b border-b-gray-400 relative z-50">
@@ -18,17 +20,19 @@ const MiddleHeader = () => {
         <Logo />
         {/* Removed central SearchInput */}
 
+        <div className="flex justify-end md:absolute md:left-1/2 md:-translate-x-1/2 md:justify-center w-full md:w-auto">
+          <SearchInput />
+        </div>
+
         <div className="flex items-center gap-5">
           {/* Search Icon Trigger */}
-          <SearchInput />
+          {/* <SearchInput /> */}
 
           {/* User */}
-          {user ? (
-            <UserProfileDropdown user={user} />
+          {isAuthenticated && session?.user ? (
+            <UserProfileDropdown user={session.user} />
           ) : (
-            <div
-              className="flex items-center gap-2 cursor-pointer"
-            >
+            <div className="flex items-center gap-2 cursor-pointer">
               <div className="border-2 border-gray-700 p-1.5 rounded-full text-xl">
                 <LiaUser />
               </div>

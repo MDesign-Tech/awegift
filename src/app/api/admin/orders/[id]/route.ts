@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { requireRole } from "@/lib/server/auth-utils";
+import { getToken } from "next-auth/jwt";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import {
   createOrderReadyNotification,
   createOrderCompletedNotification,
@@ -15,9 +16,24 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = await getToken({ req: request });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = token.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canUpdateOrders")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
-    const check = await requireRole(request, "canUpdateOrders");
-    if (check instanceof NextResponse) return check;
 
     const orderId = id;
     const body = await request.json();
@@ -94,9 +110,24 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = await getToken({ req: request });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = token.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canDeleteOrders")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
-    const check = await requireRole(request, "canDeleteOrders");
-    if (check instanceof NextResponse) return check;
 
     const orderId = id;
 
@@ -145,9 +176,24 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = await getToken({ req: request });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = token.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canViewOrders")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
-    const check = await requireRole(request, "canViewOrders");
-    if (check instanceof NextResponse) return check;
 
     const orderId = id;
 

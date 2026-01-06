@@ -19,9 +19,13 @@ const CurrencyNotification = ({
 }: CurrencyNotificationProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [progress, setProgress] = useState(100);
+  const [isHovered, setIsHovered] = useState(false);
+  const [timerRef, setTimerRef] = useState<NodeJS.Timeout | null>(null);
+  const [progressIntervalRef, setProgressIntervalRef] =
+    useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !isHovered) {
       setIsVisible(true);
       setProgress(100);
 
@@ -35,18 +39,46 @@ const CurrencyNotification = ({
           return prev - 100 / 30; // 30 steps for 3 seconds
         });
       }, 100);
+      setProgressIntervalRef(progressInterval);
 
       // Auto close after 3 seconds
       const timer = setTimeout(() => {
         handleClose();
       }, 3000);
+      setTimerRef(timer);
 
       return () => {
         clearTimeout(timer);
         clearInterval(progressInterval);
       };
     }
-  }, [isOpen]);
+  }, [isOpen, isHovered]);
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    if (timerRef) clearTimeout(timerRef);
+    if (progressIntervalRef) clearInterval(progressIntervalRef);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    // Restart the timer and progress
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev <= 0) {
+          clearInterval(progressInterval);
+          return 0;
+        }
+        return prev - 100 / 30;
+      });
+    }, 100);
+    setProgressIntervalRef(progressInterval);
+
+    const timer = setTimeout(() => {
+      handleClose();
+    }, 3000);
+    setTimerRef(timer);
+  };
 
   const handleClose = () => {
     setIsVisible(false);
@@ -59,13 +91,15 @@ const CurrencyNotification = ({
 
   return (
     <>
-
       {/* Notification Modal */}
       <div
-        className={`fixed bottom-6 right-6 z-[101] transform transition-all duration-300 ease-out ${isVisible
-          ? "translate-y-0 opacity-100 scale-100"
-          : "translate-y-4 opacity-0 scale-95"
-          }`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={`fixed bottom-6 right-6 z-[101] transform transition-all duration-300 ease-out ${
+          isVisible
+            ? "translate-y-0 opacity-100 scale-100"
+            : "translate-y-4 opacity-0 scale-95"
+        }`}
       >
         <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden min-w-80 max-w-sm backdrop-blur-sm">
           {/* Header with success indicator */}
@@ -90,7 +124,9 @@ const CurrencyNotification = ({
           <div className="p-4">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-12 h-12 bg-gradient-to-br from-theme-color/10 to-sky-color/10 rounded-lg flex items-center justify-center border border-theme-color/20">
-                <span className="text-2xl font-bold text-theme-color">{currencySymbol}</span>
+                <span className="text-2xl font-bold text-theme-color">
+                  {currencySymbol}
+                </span>
               </div>
               <div>
                 <p className="text-gray-900 font-medium text-sm">

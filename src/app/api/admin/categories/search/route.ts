@@ -1,12 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { CategoryType } from "../../../../../../type";
-import { requireRole } from "@/lib/server/auth-utils";
+import { getToken } from "next-auth/jwt";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function GET(request: NextRequest) {
   try {
-    const check = await requireRole(request, "canViewProducts");
-    if (check instanceof NextResponse) return check;
+    const token = await getToken({ req: request });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = token.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canViewProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
 
     const { searchParams } = new URL(request.url);
     const searchQuery = searchParams.get('q') || '';

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { requireRole } from "@/lib/server/auth-utils";
+import { getToken } from "next-auth/jwt";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { createQuotationSentNotification } from "@/lib/notification/helpers";
 import { QUOTE_STATUSES } from "@/lib/quoteStatuses";
 
@@ -9,8 +10,22 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const check = await requireRole(request, "canManageQuotes");
-    if (check instanceof NextResponse) return check;
+    const token = await getToken({ req: request });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = token.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canManageQuotes")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
 
     const { id } = await params;
 
@@ -38,8 +53,22 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const check = await requireRole(request, "canManageQuotes");
-    if (check instanceof NextResponse) return check;
+    const token = await getToken({ req: request });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = token.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canManageQuotes")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
 
     const { id } = await params;
     const updateData = await request.json();
@@ -102,8 +131,22 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const check = await requireRole(request, "canManageQuotes");
-    if (check instanceof NextResponse) return check;
+    const token = await getToken({ req: request });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = token.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canManageQuotes")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
 
     const { id } = await params;
 

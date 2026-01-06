@@ -1,11 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { requireRole } from "@/lib/server/auth-utils";
+import { getToken } from "next-auth/jwt";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function DELETE(request: NextRequest) {
   try {
-    const check = await requireRole(request, "canDeleteOrders");
-    if (check instanceof NextResponse) return check;
+    const token = await getToken({ req: request });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = token.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canDeleteOrders")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
 
     const { orderIds } = await request.json();
 

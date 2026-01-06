@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import Container from "./Container";
 import GiftCharacter from "./GiftCharacter";
 import GiftButton from "./GiftButton";
-import FloatingPromoCards from "./FloatingPromoCards";
 
 interface PromoCard {
     id: string;
@@ -126,19 +125,6 @@ const HeroBanner = ({
                         </div>
                     </motion.div>
 
-                    {/* Right Section: Floating Promo Cards */}
-                    <motion.div
-                        className="lg:col-span-2 block sm:hidden lg:block"
-                        initial={{ opacity: 0, x: 30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-                    >
-                        <FloatingPromoCards
-                            promoCards={promoCards}
-                            allImages={allProductImages}
-                            autoRotateInterval={autoSlideInterval}
-                        />
-                    </motion.div>
                 </div>
             </Container>
         </section>

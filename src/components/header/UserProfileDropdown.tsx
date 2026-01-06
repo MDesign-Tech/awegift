@@ -13,7 +13,6 @@ import {
 } from "react-icons/fa";
 import { signOut } from "next-auth/react";
 import { getDefaultDashboardRoute, getRoleDisplayName } from "@/lib/rbac/roles";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useNotifications } from "@/components/NotificationProvider";
 
 interface UserProfileDropdownProps {
@@ -36,7 +35,6 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { user: currentUser } = useCurrentUser();
   const { unreadCount } = useNotifications();
 
   // Close dropdown when clicking outside
@@ -87,9 +85,9 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   };
 
   // Check if user has any admin role
-  const isAdminUser = currentUser?.role && [
+  const isAdminUser = user?.role && [
     "admin"
-  ].includes(currentUser.role as any);
+  ].includes(user.role as any);
 
   const displayCount = unreadCount > 9 ? "9+" : unreadCount.toString();
 
@@ -130,9 +128,9 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
   const adminMenuItems: MenuItem[] = isAdminUser
     ? [
         {
-          href: getDefaultDashboardRoute(currentUser.role as any || "user"),
+          href: getDefaultDashboardRoute(user.role as any || "user"),
           icon: FaShieldAlt,
-          label: `${getRoleDisplayName(currentUser.role as any)} Dashboard`,
+          label: `${getRoleDisplayName(user.role as any)} Dashboard`,
           badge: null,
         },
       ]

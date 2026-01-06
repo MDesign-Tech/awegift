@@ -3,6 +3,7 @@ import { bannerImageOne } from "@/assets";
 export const navigation = [
   { title: "Home", href: "/" },
   { title: "Products", href: "/products" },
+  { title: "Our Services", href: "/services" },
   { title: "Categories", href: "/categories" },
   { title: "About Us", href: "/about" },
   // { title: "Offers", href: "/offers" },
@@ -21,4 +22,3 @@ export const banner = {
   buttonLink: "/products",
   image: { src: bannerImageOne },
 };
-

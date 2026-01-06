@@ -1,13 +1,31 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { CategoryType } from "../../../../../../type";
-import { requireRole } from "@/lib/server/auth-utils";
+import { getToken } from "next-auth/jwt";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = await getToken({ req: request });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = token.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canViewProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const docRef = adminDb.collection("categories").doc(id);
     const docSnap = await docRef.get();
@@ -35,13 +53,28 @@ export async function GET(
 }
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = await getToken({ req: request });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = token.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canUpdateProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
-    const check = await requireRole(request as any, "canUpdateProducts");
-    if (check instanceof NextResponse) return check;
 
     const partialData: Partial<CategoryType> = await request.json();
 
@@ -70,13 +103,28 @@ export async function PATCH(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = await getToken({ req: request });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = token.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canUpdateProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
-    const check = await requireRole(request as any, "canUpdateProducts");
-    if (check instanceof NextResponse) return check;
 
     const categoryData: Partial<Omit<CategoryType, 'id' | 'meta'>> = await request.json();
 
@@ -113,13 +161,28 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = await getToken({ req: request });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = token.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canDeleteProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
-    const check = await requireRole(request as any, "canDeleteProducts");
-    if (check instanceof NextResponse) return check;
 
     const docRef = adminDb.collection("categories").doc(id);
     await docRef.delete();
