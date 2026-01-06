@@ -5,11 +5,16 @@ import { motion, useAnimation } from 'framer-motion';
 import { useScrollProgress } from '@/hooks/useScrollProgress';
 import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import GiftButton from '@/components/GiftButton';
+import GiftCharacter from '@/components/GiftCharacter';
 
 const Banner = () => {
   const heroRef = useRef<HTMLElement>(null);
   const scrollProgress = useScrollProgress(heroRef);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  const [rightImages, setRightImages] = useState<string[]>([]);
+  const [extendedImages, setExtendedImages] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(1); // Start at 1 to show first real image
   const leftControls = useAnimation();
   const rightControls = useAnimation();
 
@@ -21,11 +26,6 @@ const Banner = () => {
     'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=150&fit=crop',
   ];
 
-  const rightImages = [
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop',
-    'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=600&fit=crop',
-  ];
-
   // Entrance animation on load
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -34,15 +34,106 @@ const Banner = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Check screen size for scaling
+  useEffect(() => {
+    const checkScreen = () => {
+      setIsLargeScreen(window.innerWidth >= 1024);
+    };
+    checkScreen();
+    window.addEventListener('resize', checkScreen);
+    return () => window.removeEventListener('resize', checkScreen);
+  }, []);
+
+  // Fetch product images for right banner
+  useEffect(() => {
+    const fetchGalleryImages = async () => {
+      try {
+        const response = await fetch('/api/gallery');
+        const data = await response.json();
+        if (data.images && data.images.length > 0) {
+          setRightImages(data.images);
+          // Create extended array for infinite scrolling: [last, ...images, first]
+          const extended = [data.images[data.images.length - 1], ...data.images, data.images[0]];
+          setExtendedImages(extended);
+        }
+      } catch (error) {
+        console.error('Error fetching gallery images:', error);
+      }
+    };
+    fetchGalleryImages();
+  }, []);
+
+  // Auto slide functionality
+  useEffect(() => {
+    if (extendedImages.length <= 2) return; // Need at least original images + 2 duplicates
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => {
+        const nextIndex = prevIndex + 1;
+        if (nextIndex >= extendedImages.length - 1) {
+          // Reached the duplicated first image, reset to actual first
+          setTimeout(() => {
+            rightControls.set({ x: '-100%' });
+            setCurrentImageIndex(1);
+          }, 500); // After animation completes
+          return nextIndex;
+        }
+        return nextIndex;
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [extendedImages.length, rightControls]);
+
+  // Navigation functions
+  const goToNext = () => {
+    setCurrentImageIndex((prevIndex) => {
+      const nextIndex = prevIndex + 1;
+      if (nextIndex >= extendedImages.length - 1) {
+        // Reached the duplicated first image, reset to actual first
+        setTimeout(() => {
+          rightControls.set({ x: '-100%' });
+          setCurrentImageIndex(1);
+        }, 500);
+        return nextIndex;
+      }
+      return nextIndex;
+    });
+  };
+
+  const goToPrev = () => {
+    setCurrentImageIndex((prevIndex) => {
+      const prevIndexValue = prevIndex - 1;
+      if (prevIndexValue <= 0) {
+        // Reached the duplicated last image, reset to actual last
+        setTimeout(() => {
+          rightControls.set({ x: `${-(extendedImages.length - 2) * 100}%` });
+          setCurrentImageIndex(extendedImages.length - 2);
+        }, 500);
+        return prevIndexValue;
+      }
+      return prevIndexValue;
+    });
+  };
+
+  // Update animation when image index changes
+  useEffect(() => {
+    if (extendedImages.length > 0) {
+      rightControls.start({
+        x: `${-currentImageIndex * 100}%`,
+      });
+    }
+  }, [currentImageIndex, extendedImages.length, rightControls]);
+
   // Calculate transforms based on scroll progress
-  const leftTranslateX = -120 + (isLoaded ? 120 : 0) - (scrollProgress * 500);
-  const rightTranslateX = 120 - (isLoaded ? 120 : 0) + (scrollProgress * 500);
-  const videoScale = 1 + (scrollProgress * 0.6);
+  const leftTranslateX = -120 + (isLoaded ? 120 : 0) - (scrollProgress * 800);
+  const rightTranslateX = 120 - (isLoaded ? 120 : 0) + (scrollProgress * 800);
+  const videoScale = isLargeScreen ? 1 + (scrollProgress * 1.5) : 1;
 
   return (
     <section
       ref={heroRef}
-      className="relative flex min-h-screen w-full bg-light-bg overflow-hidden"
+      className={`relative flex w-full bg-light-bg overflow-hidden ${isLargeScreen ? 'min-h-screen' : 'h-[60vh]'} items-center justify-center px-4 lg:px-8 py-12`}
       style={{ willChange: 'transform' }}
     >
       {/* Central Video Container */}
@@ -82,13 +173,13 @@ const Banner = () => {
             </div>
           </div>
         </motion.div>
-        <div className="relative w-[70%] rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
+        <div className="relative w-[90%] lg:w-[60%] h-max rounded-2xl overflow-hidden shadow-2xl shadow-black/50 z-1">
           <video
             autoPlay
             loop
             muted
             playsInline
-            className="w-full h-full object-cover"
+            className="w-full object-cover"
             poster="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&h=675&fit=crop"
           >
             <source
@@ -105,7 +196,7 @@ const Banner = () => {
 
       {/* Left Floating Cards */}
       <motion.div
-        className="absolute left-0 top-1/3 -translate-y-1/2 flex flex-col gap-4 p-4"
+        className="absolute hidden left-0 top-1/4 -translate-y-1/2 lg:flex flex-col gap-4 p-4 z-0"
         initial={{ x: '-120%' }}
         animate={{
           x: `${leftTranslateX}%`,
@@ -119,7 +210,7 @@ const Banner = () => {
         style={{ willChange: 'transform' }}
       >
         {/* Main large card */}
-        <div className="relative w-48 h-60 md:w-64 md:h-80 rounded-2xl overflow-hidden shadow-xl shadow-black/40 bg-card">
+        <div className="relative w-48 h-60 md:w-70 md:h-40 rounded-2xl overflow-hidden shadow-xl shadow-black/40 bg-card">
           <img
             src={leftImages[0]}
             alt="Featured product"
@@ -128,11 +219,11 @@ const Banner = () => {
         </div>
 
         {/* Smaller cards row */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 absolute bottom-0 left-1/2 -translate-x-1/2">
           {leftImages.slice(1).map((img, idx) => (
             <div
               key={idx}
-              className="w-16 h-12 md:w-20 md:h-16 rounded-lg overflow-hidden shadow-lg shadow-black/30 bg-card"
+              className="w-12 h-12 md:w-16 md:h-16 rounded-lg overflow-hidden shadow-lg shadow-black/30 bg-card"
             >
               <img
                 src={img}
@@ -146,7 +237,7 @@ const Banner = () => {
 
       {/* Right Floating Cards */}
       <motion.div
-        className="absolute right-0 top-1/3 -translate-y-1/2 flex flex-col items-end p-4"
+        className="absolute right-0 top-1/3 -translate-y-1/2 hidden lg:flex flex-col items-end p-4 z-2"
         initial={{ x: '120%' }}
         animate={{
           x: `${rightTranslateX}%`,
@@ -160,28 +251,49 @@ const Banner = () => {
         style={{ willChange: 'transform' }}
       >
         {/* Card with navigation */}
-        <div className="relative w-56 h-72 md:w-72 md:h-96 rounded-2xl overflow-hidden shadow-xl shadow-black/40 bg-card group">
-          <img
-            src={rightImages[0]}
-            alt="Featured portrait"
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+        <div className="relative bg-light-bg  md:w-80 md:h-96 rounded-2xl overflow-hidden shadow-xl shadow-black/40 bg-card group">
+          <motion.div
+            className="flex w-full h-full"
+            animate={rightControls}
+            initial={{ x: '-100%' }}
+            transition={{ type: 'tween', duration: 0.5, ease: 'easeInOut' }}
+          >
+            {extendedImages.map((image, index) => (
+              <img
+                key={index}
+                src={image}
+                alt={`Product ${index + 1}`}
+                className="md:w-80 md:h-96 object-cover flex-shrink-0"
+              />
+            ))}
+          </motion.div>
 
           {/* Navigation arrows */}
           <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-3 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors">
+            <button
+              onClick={goToPrev}
+              className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+            >
               <FaChevronLeft className="w-5 h-5" />
             </button>
-            <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors">
+            <button
+              onClick={goToNext}
+              className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+            >
               <FaChevronRight className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Slide indicators */}
+          {/* Slide indicators - show max 3 dots */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-white" />
-            <div className="w-2 h-2 rounded-full bg-white/40" />
-            <div className="w-2 h-2 rounded-full bg-white/40" />
+            {Array.from({ length: Math.min(rightImages.length, 3) }, (_, i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 rounded-full ${
+                  i === ((currentImageIndex - 1) % 3) ? 'bg-white' : 'bg-white/40'
+                }`}
+              />
+            ))}
           </div>
         </div>
       </motion.div>

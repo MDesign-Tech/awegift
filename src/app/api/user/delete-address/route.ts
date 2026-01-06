@@ -1,19 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { adminDb } from "@/lib/firebase/admin";
 
 export async function DELETE(request: NextRequest) {
   try {
-    const { email, addressIndex } = await request.json();
+    const session = await getServerSession(authOptions);
 
-    if (!email || addressIndex === undefined) {
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { addressIndex } = await request.json();
+
+    if (addressIndex === undefined) {
       return NextResponse.json(
-        { error: "Email and address index are required" },
+        { error: "Address index is required" },
         { status: 400 }
       );
     }
 
     const usersRef = adminDb.collection("users");
-    const snapshot = await usersRef.where("email", "==", email).get();
+    const snapshot = await usersRef.where("email", "==", session.user.email).get();
 
     if (snapshot.empty) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

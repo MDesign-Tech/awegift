@@ -25,8 +25,6 @@ const MiddleHeader = ({ session }: { session: Session | null }) => {
         </div>
 
         <div className="flex items-center gap-5">
-          {/* Search Icon Trigger */}
-          {/* <SearchInput /> */}
 
           {/* User */}
           {isAuthenticated && session?.user ? (
@@ -39,7 +37,7 @@ const MiddleHeader = ({ session }: { session: Session | null }) => {
               <div className="hidden md:block">
                 <Link href={"/auth/signin"}>
                   <p className="text-xs hover:text-sky-color ease-in-out duration-300 cursor-pointer">
-                    Hello, Guests
+                    Guests
                   </p>
                 </Link>
 

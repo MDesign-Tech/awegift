@@ -235,8 +235,8 @@ export interface QuotationType {
 
   attachments?: string[];           // user uploads: design, pictures
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date ;
+  updatedAt: Date ;
 }
 
 

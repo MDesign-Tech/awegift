@@ -1,22 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { adminDb } from "@/lib/firebase/admin";
-import { auth } from "@/auth";
-import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = await fetchUserFromFirestore(session.user.id);
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const { id: quoteId } = await params;
@@ -35,7 +30,7 @@ export async function POST(
 
     const quoteData = quoteDoc.data()!;
 
-    if (quoteData.email !== user.email) {
+    if (quoteData.email !== session.user.email) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 

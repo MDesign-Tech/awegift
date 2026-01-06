@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
+import admin from "firebase-admin";
 import { getToken } from "next-auth/jwt";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { createQuotationSentNotification } from "@/lib/notification/helpers";
@@ -91,7 +92,7 @@ export async function PUT(
     await quoteRef.update({
       ...updateData,
       ...statusUpdate,
-      updatedAt: new Date(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     // Send notification if subtotal or finalAmount updated

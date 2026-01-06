@@ -2,14 +2,16 @@ import{ NextRequest, NextResponse } from "next/server";
 import { QuotationType, QuotationProductType } from "../../../../type";
 import { QUOTE_STATUSES } from "@/lib/quoteStatuses";
 import { adminDb } from "@/lib/firebase/admin";
-import { auth } from "@/auth";
+import admin from "firebase-admin";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
 import { createQuotationRequestNotification } from "@/lib/notification/helpers";
 
 // POST - Create new quote request
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
     let user = null;
 
     // If user is logged in, fetch their data
@@ -82,15 +84,15 @@ export async function POST(request: NextRequest) {
       validUntil,
       notified: false,
       viewed: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date(), // Will be overridden by server timestamp
+      updatedAt: new Date(), // Will be overridden by server timestamp
     };
 
     // Add to quotes collection with custom ID
     await adminDb.collection("quotes").doc(quoteId).set({
       ...newQuote,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     // Send notification to admin about new quotation request
@@ -99,8 +101,7 @@ export async function POST(request: NextRequest) {
         createQuotationRequestNotification(
           'admin', // Admin user ID - should be configurable
           quoteId,
-          user?.name || 'Customer',
-          products.length
+          user?.email || email!
         ).catch(error => {
           console.error('Failed to create quotation request notification:', error);
         });

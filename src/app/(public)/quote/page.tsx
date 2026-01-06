@@ -303,10 +303,9 @@ export default function QuotePage() {
       <Container className="py-20">
         <div className="max-w-2xl mx-auto text-center">
           <div className="bg-green-50 border border-green-200 rounded-lg p-8">
-            <FiCheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            <FiCheckCircle className="size-5 text-green-500" />
             <h1 className="text-3xl font-bold text-gray-800 mb-4">Quotation Request Submitted!</h1>
             <p className="text-lg text-gray-600 mb-6">Thank you for your interest! Our team will review your request and get back to you soon.</p>
-            <p className="text-gray-500 mb-6">Please allow 1-2 business days for our team to process your request.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() => setShowSuccess(false)}
@@ -317,7 +316,7 @@ export default function QuotePage() {
               {session?.user && (
                 <Link
                   href="/account/quotes"
-                  className="bg-theme-white border-1 border-theme-color text-theme-color px-6 py-3 rounded-lg hover:bg-blue-600/90 transition-colors"
+                  className="bg-theme-white border-1 border-theme-color text-theme-color px-6 py-3 rounded-lg transition-colors"
                 >
                   Go to Your Quotations
                 </Link>

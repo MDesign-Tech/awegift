@@ -47,8 +47,14 @@ export default function QuotesList({
 
       if (data.quotes && Array.isArray(data.quotes)) {
         const sortedQuotes = data.quotes.sort(
-          (a: QuotationType, b: QuotationType) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          (a: QuotationType, b: QuotationType) => {
+            const getTime = (date: Date | any) => {
+              if (date instanceof Date) return date.getTime();
+              if (typeof date === 'object' && 'toDate' in date) return date.toDate().getTime();
+              return new Date(date as any).getTime();
+            };
+            return getTime(b.createdAt) - getTime(a.createdAt);
+          }
         );
         setQuotes(sortedQuotes);
         onQuotesChange?.(sortedQuotes);
@@ -61,14 +67,16 @@ export default function QuotesList({
     }
   };
 
-  const formatDate = (date: string | Date | null) => {
-    if (!date) return new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    if (isNaN(dateObj.getTime())) return "Invalid Date";
+  const formatDate = (date: Date | any) => {
+    let dateObj: Date;
+    if (date instanceof Date) {
+      dateObj = date;
+    } else if (typeof date === 'object' && 'toDate' in date) {
+      dateObj = date.toDate();
+    } else {
+      dateObj = new Date(date);
+    }
+    if (!dateObj || isNaN(dateObj.getTime())) return "Invalid Date";
     return dateObj.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -76,11 +84,17 @@ export default function QuotesList({
     });
   };
 
-  const getTimeAgo = (date: string | Date | null) => {
-    if (!date) return "Just now";
+  const getTimeAgo = (date: Date | any) => {
+    let dateObj: Date;
+    if (date instanceof Date) {
+      dateObj = date;
+    } else if (typeof date === 'object' && 'toDate' in date) {
+      dateObj = date.toDate();
+    } else {
+      dateObj = new Date(date);
+    }
+    if (!dateObj || isNaN(dateObj.getTime())) return "Invalid Date";
     const now = new Date();
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    if (isNaN(dateObj.getTime())) return "Invalid Date";
     const diffInMs = now.getTime() - dateObj.getTime();
     const diffInHours = diffInMs / (1000 * 60 * 60);
     const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
@@ -358,12 +372,6 @@ export default function QuotesList({
           Error Loading Quotations
         </h3>
         <p className="text-gray-600 mb-4">{error}</p>
-        <button
-          onClick={fetchQuotes}
-          className="px-4 py-2 bg-theme-color text-white rounded-lg hover:bg-theme-color/90 transition-colors"
-        >
-          Try Again
-        </button>
       </div>
     );
   }

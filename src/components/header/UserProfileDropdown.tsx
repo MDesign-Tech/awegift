@@ -172,9 +172,9 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
             e.preventDefault();
             toggleDropdown();
           }}
-          className="text-xs hidden md:block group-hover:text-sky-color cursor-pointer duration-300"
+          className="text-xs hidden lg:block group-hover:text-sky-color cursor-pointer duration-300"
         >
-          <p>Hello, {user?.name}</p>
+          <p>{user?.name}</p>
           <p>view profile</p>
         </div>
       </div>

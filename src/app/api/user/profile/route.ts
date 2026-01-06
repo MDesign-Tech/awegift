@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { adminDb } from "@/lib/firebase/admin";
 
 export async function GET(request: NextRequest) {
   try {
-    const email = request.nextUrl.searchParams.get("email");
-    if (!email) {
-      return NextResponse.json({ error: "Email required" }, { status: 400 });
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const usersRef = adminDb.collection("users");
-    const snapshot = await usersRef.where("email", "==", email).get();
+    const snapshot = await usersRef.where("email", "==", session.user.email).get();
 
     if (snapshot.empty) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -53,15 +56,17 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { email, name, phone, address, addAddress, image } = body;
+    const session = await getServerSession(authOptions);
 
-    if (!email) {
-      return NextResponse.json({ error: "Email required" }, { status: 400 });
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const body = await request.json();
+    const { name, phone, address, addAddress, image } = body;
+
     const usersRef = adminDb.collection("users");
-    const snapshot = await usersRef.where("email", "==", email).get();
+    const snapshot = await usersRef.where("email", "==", session.user.email).get();
 
     if (snapshot.empty) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

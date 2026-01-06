@@ -3,13 +3,21 @@ import Logo from "@/components/Logo";
 import Link from "next/link";
 import { Metadata } from "next";
 import { FaHome } from "react-icons/fa";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Sign In | AweGift",
   description: "Sign in to your AweGift account",
 };
 
-export default function SignInPage() {
+export default async function SignInPage() {
+  const session = await getServerSession(authOptions);
+
+  if (session) {
+    redirect("/");
+  }
   return (
     <div className="flex min-h-screen">
       {/* Left Side - Full image */}

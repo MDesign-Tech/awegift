@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 
 export default function SignInForm() {
   const [email, setEmail] = useState("");
@@ -13,6 +13,7 @@ export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -48,6 +49,12 @@ export default function SignInForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (session) {
+      toast.error("You are already logged in.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -77,6 +84,11 @@ export default function SignInForm() {
   };
 
   const handleOAuthSignIn = async (provider: "google") => {
+    if (session) {
+      toast.error("You are already logged in.");
+      return;
+    }
+
     try {
       await signIn(provider, { callbackUrl: "/" });
     } catch (error) {
