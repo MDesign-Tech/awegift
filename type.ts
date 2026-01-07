@@ -423,3 +423,11 @@ export interface NotificationResponse {
   };
   error?: string;
 }
+
+export interface ServiceType {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  icon?: string;
+}

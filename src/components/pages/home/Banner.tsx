@@ -125,15 +125,15 @@ const Banner = () => {
 
   // Calculate transforms based on scroll progress
   const leftTranslateX = -120 + (isLoaded ? 120 : 0) - (scrollProgress * 1300);
-  const rightTranslateX = 120 - (isLoaded ? 120 : 0) + (scrollProgress * 1000);
+  const rightTranslateX = 120 - (isLoaded ? 120 : 0) + (scrollProgress * 1300);
   const videoScale = isLargeScreen ? 1 + (scrollProgress * 5) : 1;
 
   return (
-    <div className='w-full bg-dark-bg'>
-    <Container className='container py-4 w-full mx-auto overflow-hidden'>
+    <div className='w-full bg-light-bg overflow-hidden'>
+    <Container className='container  w-full mx-auto overflow-hidden'>
     <section
       ref={heroRef}
-      className="relative gap-2 flex w-full overflow-hidden h-full items-center justify-center lg:justify-between"
+      className="relative gap-2 py-4 flex w-full overflow-hidden h-full items-center justify-center lg:justify-between"
       style={{ willChange: 'transform' }}
     >
       
@@ -153,7 +153,7 @@ const Banner = () => {
         style={{ willChange: 'transform' }}
       >
         {/* Main large card */}
-        <div className="relative bg-light-bg md:w-70 md:h-max rounded-2xl overflow-hidden bg-card">
+        <div className="relative bg-white md:w-70 md:h-max rounded-2xl overflow-hidden">
           <img
             src={leftImages[0]}
             alt="Featured product"
@@ -166,7 +166,7 @@ const Banner = () => {
           {leftImages.slice(1).map((img, idx) => (
             <div
               key={idx}
-              className="w-12 bg-light-bg h-12 md:w-16 md:h-16 rounded-lg overflow-hidden shadow-lg shadow-black/30 bg-card"
+              className="w-12 bg-white h-12 md:w-16 md:h-16 rounded-lg overflow-hidden shadow-lg shadow-black/30 bg-card"
             >
               <img
                 src={img}
@@ -196,7 +196,7 @@ const Banner = () => {
           {/* Text Content */}
           <div className="flex flex-col items-center justify-center gap-4 mb-4">
             <motion.h1
-              className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-[1.1] text-center"
+              className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-dark-text leading-[1.1] text-center"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
@@ -241,7 +241,7 @@ const Banner = () => {
 
       {/* Right Floating Cards */}
       <motion.div
-        className="hidden lg:flex flex-col items-end flex-shrink-0"
+        className="hidden lg:flex -translate-x-18 -translate-y-24 flex-col items-end flex-shrink-0"
         initial={{ x: '120%' }}
         animate={{
           x: `${rightTranslateX}%`,
@@ -255,7 +255,7 @@ const Banner = () => {
         style={{ willChange: 'transform' }}
       >
         {/* Card with navigation */}
-        <div className="relative bg-light-bg md:w-60 md:h-80 rounded-2xl overflow-hidden bg-card group">
+        <div className="relative bg-white md:w-60 md:h-80 rounded-2xl overflow-hidden group">
           <motion.div
             className="flex w-full h-full"
             animate={rightControls}

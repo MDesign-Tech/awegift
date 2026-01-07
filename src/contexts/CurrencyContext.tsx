@@ -35,7 +35,7 @@ const currencyData: Record<CurrencyCode, { symbol: string; name: string; flag: s
 
 // --- 2. API Configuration and Caching (Moved to outside function scope) ---
 
-const API_ENDPOINT = "https://v6.exchangerate-api.com/v6/42e9df5d934bb941cbe19c9e/latest/USD";
+const API_ENDPOINT = "https://open.er-api.com/v6/latest/USD";
 
 interface ExchangeRateData {
     conversion_rates: Record<string, number>;
@@ -103,30 +103,36 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({
         console.log("Fetching new exchange rates from API...");
         try {
             let response = await fetch(API_ENDPOINT);
+            console.log(`Initial API response status: ${response.status}`);
             let retries = 0;
-            const maxRetries = 3;
-            const baseDelay = 1000; // 1 second
+            const maxRetries = 5;
+            const baseDelay = 2000; // 2 seconds
 
             while (response.status === 429 && retries < maxRetries) {
                 retries++;
-                if (retries < maxRetries) {
-                    const delay = baseDelay * Math.pow(2, retries - 1);
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    response = await fetch(API_ENDPOINT);
-                }
+                const delay = baseDelay * Math.pow(2, retries - 1) + Math.random() * 1000; // Add jitter
+                console.log(`Rate limited. Retrying in ${delay}ms... (attempt ${retries}/${maxRetries})`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                response = await fetch(API_ENDPOINT);
+                console.log(`Retry API response status: ${response.status}`);
             }
 
             if (!response.ok) {
-                throw new Error(`API call failed with status: ${response.status}`);
+                console.error(`API response not ok. Status: ${response.status}, StatusText: ${response.statusText}`);
+                if (response.status === 429) {
+                    console.error(`Rate limit exceeded after ${maxRetries} retries. Using fallback rates.`);
+                    setError("Could not fetch real-time rates due to rate limit. Using last known/default rates.");
+                    setIsLoading(false);
+                    return;
+                } else {
+                    throw new Error(`API call failed with status: ${response.status}, ${response.statusText}`);
+                }
             }
 
             const data = await response.json();
+            console.log("API response data:", data);
 
-            if (data.result !== 'success') {
-                throw new Error(`Exchange Rate API error: ${data['error-type'] || 'Unknown Error'}`);
-            }
-
-            const rates = data.conversion_rates as Record<string, number>;
+            const rates = data.rates as Record<string, number>;
 
             // Filter and map rates to your CurrencyCode type
             const filteredRates: Partial<Record<CurrencyCode, number>> = {};
@@ -139,13 +145,14 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({
             // 3. Update cache and state
             cachedExchangeData = {
                 conversion_rates: filteredRates as Record<CurrencyCode, number>,
-                time_next_update_unix: data.time_next_update_unix,
+                time_next_update_unix: (data.time_last_update_unix || Math.floor(Date.now() / 1000)) + 3600, // 1 hour from last update
             };
 
             setExchangeRates(cachedExchangeData.conversion_rates);
 
         } catch (err: any) {
             console.error("Error fetching real-time exchange rates. Falling back to mock data.", err);
+            console.error("Error details:", err.message, err.stack);
             setError("Could not fetch real-time rates. Using last known/default rates.");
             // If fetching fails, we keep the existing or FALLBACK_RATES
         } finally {

@@ -14,16 +14,11 @@ const GiftButton = ({ href, children }: GiftButtonProps) => {
     return (
         <motion.a
             href={href}
-            className="relative inline-flex items-center justify-center gap-3 bg-theme-color text-theme-white px-4 py-2 md:px-8 md:py-4 font-bold text-lg overflow-hidden group shadow-lg rounded-full"
+            className="relative inline-flex items-center justify-center gap-3 text-theme-color px-4 py-2 font-bold text-md overflow-hidden group"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            style={{
-                boxShadow: isHovered
-                    ? "0 12px 40px -8px hsl(var(--hero-primary) / 0.6), 0 0 60px hsl(var(--hero-accent) / 0.3)"
-                    : "0 4px 20px -4px hsl(var(--hero-primary) / 0.4)",
-            }}
         >
             {/* Background Glow Effect */}
             <motion.div
@@ -46,19 +41,19 @@ const GiftButton = ({ href, children }: GiftButtonProps) => {
                     } : {}}
                     transition={{ duration: 0.5 }}
                 >
-                    <FaGift className="w-6 h-6" />
+                    <FaGift className="w-4 h-4" />
 
                     {/* Sparkles on hover */}
                     {isHovered && (
                         <>
                             <motion.span
-                                className="absolute -top-2 -right-2 w-2 h-2 bg-white rounded-full"
+                                className="absolute -top-1 -right-2 w-2 h-2 bg-accent-color rounded-full"
                                 initial={{ opacity: 0, scale: 0 }}
                                 animate={{ opacity: [0, 1, 0], scale: [0, 1.5, 0], y: [-5, -15] }}
                                 transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 0.3 }}
                             />
                             <motion.span
-                                className="absolute -top-1 -left-2 w-1.5 h-1.5 bg-white rounded-full"
+                                className="absolute -top-0 -left-1 w-1.5 h-1.5 bg-accent-color rounded-full"
                                 initial={{ opacity: 0, scale: 0 }}
                                 animate={{ opacity: [0, 1, 0], scale: [0, 1.2, 0], y: [-3, -12] }}
                                 transition={{ duration: 0.5, delay: 0.2, repeat: Infinity, repeatDelay: 0.4 }}

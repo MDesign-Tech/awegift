@@ -38,15 +38,15 @@ const DynamicFeaturedCategories: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Featured Categories
+              Shop by Category
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Explore our curated selection of categories
+              Discover our diverse range of products across various categories
             </p>
           </div>
           <div className="text-center py-10">
             <p className="text-gray-500 text-lg">
-              No featured categories available at the moment.
+              No categories available at the moment.
             </p>
           </div>
         </div>
