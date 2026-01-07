@@ -5,7 +5,7 @@ import ProductSection from "./ProductSection";
 import ProductSectionSkeleton from "@/components/skeletons/ProductSectionSkeleton";
 import { ProductType } from "../../../../type";
 
-const BestSellersSection = () => {
+const Products = () => {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,7 +32,7 @@ const BestSellersSection = () => {
   if (loading) {
     return (
       <ProductSectionSkeleton
-        title="Best Sellers"
+        title="Products"
         subtitle="Our most popular products loved by customers"
       />
     );
@@ -40,12 +40,12 @@ const BestSellersSection = () => {
 
   return (
     <ProductSection
-      title="Best Sellers"
+      title="Products"
       subtitle="Our most popular products loved by customers"
       products={products}
-      viewMoreLink="/products?category=bestsellers"
+      viewMoreLink="/products"
     />
   );
 };
 
-export default BestSellersSection;
+export default Products;

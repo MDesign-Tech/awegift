@@ -1,7 +1,8 @@
 
 import Banner from "@/components/pages/home/Banner";
-import BestSellersSection from "@/components/pages/home/BestSellersSection";
+import Products from "@/components/pages/home/Products";
 import DynamicFeaturedCategories from "@/components/pages/home/DynamicFeaturedCategories";
+import DynamicServicesSection from "@/components/pages/home/DynamicServicesSection";
 import SectionDivider from "@/components/ui/SectionDivider";
 
 export default function Home() {
@@ -14,8 +15,12 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* Best Sellers Section */}
-      <BestSellersSection />
+      <DynamicServicesSection />
+
+      <SectionDivider />
+
+      {/* Products Section */}
+      <Products />
     </main>
   );
 }
