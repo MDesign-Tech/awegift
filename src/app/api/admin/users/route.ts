@@ -1,21 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { UserRole } from "@/lib/rbac/roles";
-import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth"; import { authOptions } from "@/lib/auth";
 import { hasPermission } from "@/lib/rbac/roles";
 
 // GET → fetch all users
 export async function GET(request: NextRequest) {
-  const token = await getToken({ req: request });
+  const session = await getServerSession(authOptions);
 
-  if (!token) {
+  if (!session) {
     return NextResponse.json(
       { error: "Unauthorized - No session found" },
       { status: 401 }
     );
   }
 
-  const userRole = token.role as UserRole;
+  const userRole = session.user.role as UserRole;
   if (!userRole || !hasPermission(userRole, "canViewUsers")) {
     return NextResponse.json(
       { error: "Forbidden - Insufficient permissions" },
@@ -44,16 +44,16 @@ export async function GET(request: NextRequest) {
 
 // PUT → update a user
 export async function PUT(request: NextRequest) {
-  const token = await getToken({ req: request });
+  const session = await getServerSession(authOptions);
 
-  if (!token) {
+  if (!session) {
     return NextResponse.json(
       { error: "Unauthorized - No session found" },
       { status: 401 }
     );
   }
 
-  const userRole = token.role as UserRole;
+  const userRole = session.user.role as UserRole;
   if (!userRole || !hasPermission(userRole, "canUpdateUsers")) {
     return NextResponse.json(
       { error: "Forbidden - Insufficient permissions" },
@@ -77,16 +77,16 @@ export async function PUT(request: NextRequest) {
 
 // DELETE → remove a user
 export async function DELETE(request: NextRequest) {
-  const token = await getToken({ req: request });
+  const session = await getServerSession(authOptions);
 
-  if (!token) {
+  if (!session) {
     return NextResponse.json(
       { error: "Unauthorized - No session found" },
       { status: 401 }
     );
   }
 
-  const userRole = token.role as UserRole;
+  const userRole = session.user.role as UserRole;
   if (!userRole || !hasPermission(userRole, "canDeleteUsers")) {
     return NextResponse.json(
       { error: "Forbidden - Insufficient permissions" },

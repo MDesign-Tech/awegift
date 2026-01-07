@@ -15,14 +15,6 @@ export async function GET() {
     const session = await getServerSession(authOptions);
     const headersInstance = await headers();
 
-    // Debug log session & headers
-    console.log("Analytics API - Session check:", {
-      hasSession: !!session,
-      sessionUser: session?.user,
-      cookies: headersInstance.get("cookie"),
-      nodeEnv: process.env.NODE_ENV,
-    });
-
     // Unauthorized check
     if (!session) {
       return NextResponse.json(
@@ -54,11 +46,6 @@ export async function GET() {
     const products = productsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     // Debug log counts
-    console.log("Fetched counts:", {
-      users: users.length,
-      orders: orders.length,
-      products: products.length,
-    });
 
     // Helper: check if order is paid
     const isPaid = (order: any) => [PAYMENT_STATUSES.PAID].includes(order.paymentStatus);
@@ -84,9 +71,6 @@ export async function GET() {
       cancelledOrders,
       totalProducts: products.length,
     };
-
-    // Debug log final stats
-    console.log("Analytics API - Stats calculated:", stats);
 
     return NextResponse.json(stats);
   } catch (error) {

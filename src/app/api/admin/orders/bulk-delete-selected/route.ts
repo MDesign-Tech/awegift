@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth"; import { authOptions } from "@/lib/auth";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function DELETE(request: NextRequest) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canDeleteOrders")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -51,9 +51,7 @@ export async function DELETE(request: NextRequest) {
             deleted = true;
           }
         } catch (orderError) {
-          console.log(
-            `Order ${orderId} not found in orders collection, checking user orders`
-          );
+          // Order not found in orders collection
         }
 
         if (deleted) {
@@ -62,7 +60,6 @@ export async function DELETE(request: NextRequest) {
           results.notFound.push(orderId);
         }
       } catch (error) {
-        console.error(`Error deleting order ${orderId}:`, error);
         results.errors.push({
           orderId,
           error: error instanceof Error ? error.message : "Unknown error",
@@ -76,7 +73,6 @@ export async function DELETE(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error("Error in bulk delete selected orders:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import {
   createOrderReadyNotification,
@@ -16,16 +17,16 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canUpdateOrders")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -81,7 +82,7 @@ export async function PUT(
                 break;
             }
           } catch (notificationError) {
-            console.error("Failed to send order status notification:", notificationError);
+            // Failed to send notification
           }
         }
 
@@ -92,12 +93,11 @@ export async function PUT(
         });
       }
     } catch (orderError) {
-      console.log("Order not found in orders collection, checking user orders");
+      // Order not found in orders collection
     }
 
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   } catch (error) {
-    console.error("Error updating order:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -110,16 +110,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canDeleteOrders")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -149,7 +149,7 @@ export async function DELETE(
         deletedFrom.push("orders_collection");
       }
     } catch (orderError) {
-      console.log("Order not found in orders collection, checking user orders");
+      // Order not found in orders collection
     }
 
     if (!deleted) {
@@ -163,7 +163,6 @@ export async function DELETE(
       deletedFrom,
     });
   } catch (error) {
-    console.error("Error deleting order:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -176,16 +175,16 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canViewOrders")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -218,7 +217,6 @@ export async function GET(
 
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   } catch (error) {
-    console.error("Error fetching order:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

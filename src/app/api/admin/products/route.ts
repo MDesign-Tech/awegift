@@ -15,13 +15,6 @@ export async function GET() {
     const session = await getServerSession(authOptions);
     const headersInstance = await headers();
 
-    console.log("Products API - Session check:", {
-      hasSession: !!session,
-      sessionUser: session?.user,
-      cookies: headersInstance.get("cookie"),
-      nodeEnv: process.env.NODE_ENV,
-    });
-
     if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
@@ -81,19 +74,6 @@ export async function GET() {
       const { id: _removed, ...data } = doc.data() as any;
       return { id: doc.id, ...data };
     });
-
-    console.log(
-      "Fetched products:",
-      products.length,
-      "offset:",
-      offsetParam,
-      "limit:",
-      limitParam,
-      "search:",
-      searchQuery,
-      "categories:",
-      categoryFilters
-    );
 
     return NextResponse.json({
       products,

@@ -2,22 +2,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { ProductType } from "../../../../../../type";
-import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth"; import { authOptions } from "@/lib/auth";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { createNewProductLaunchNotification } from "@/lib/notification/helpers";
 
 export async function POST(request: NextRequest) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canCreateProducts")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
             }
           }
         } catch (err) {
-          console.error("Imagga color extraction failed for image:", imageUrl, err);
+          // Imagga color extraction failed
         }
       }
 
@@ -106,7 +106,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(productWithMeta);
 
   } catch (error) {
-    console.error("Error creating product:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

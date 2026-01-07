@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth"; import { authOptions } from "@/lib/auth";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function GET(request: NextRequest) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canManageQuotes")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -31,7 +31,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ quotes });
   } catch (error) {
-    console.error("Error fetching quotes:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
