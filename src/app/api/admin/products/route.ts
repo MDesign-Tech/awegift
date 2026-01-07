@@ -2,45 +2,34 @@
 export const runtime = "nodejs"; // ✅ Force Node runtime
 
 import { NextResponse } from "next/server";
-import { headers, cookies } from "next/headers";
-import { getToken } from "next-auth/jwt";
+import { headers } from "next/headers";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { adminDb } from "@/lib/firebase/admin";
 import { ProductType } from "../../../../../type";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function GET() {
   try {
-    const h = await headers();
-        const c = await cookies();
-        // Build a Node-style "req" object for getToken
-    const reqForToken = {
-      headers: Object.fromEntries(h),
-      cookies: Object.fromEntries(
-        c.getAll().map(c => [c.name, c.value])
-      ),
-    } as any;
+    // Get session using getServerSession (production-safe)
+    const session = await getServerSession(authOptions);
+    const headersInstance = await headers();
 
-    const token = await getToken({
-      req: reqForToken,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    console.log("Products API - Token check:", {
-      secret: process.env.NEXTAUTH_SECRET,
-      hasToken: !!token,
-      tokenKeys: token ? Object.keys(token) : null,
-      cookies: c.getAll().map(c => c.name),
+    console.log("Products API - Session check:", {
+      hasSession: !!session,
+      sessionUser: session?.user,
+      cookies: headersInstance.get("cookie"),
       nodeEnv: process.env.NODE_ENV,
     });
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canViewProducts")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -48,8 +37,8 @@ export async function GET() {
       );
     }
 
-    // Fetch query params
-    const url = new URL(h.get("referer") || "http://localhost");
+    // Parse query params from referer or fallback to localhost
+    const url = new URL(headersInstance.get("referer") || "http://localhost");
     const limitParam = parseInt(url.searchParams.get("limit") || "20");
     const offsetParam = parseInt(url.searchParams.get("offset") || "0");
     const searchQuery = url.searchParams.get("q")?.trim();
@@ -58,7 +47,7 @@ export async function GET() {
       .map(c => c.trim())
       .filter(Boolean);
 
-    // Fetch products from Firestore
+    // Fetch all products from Firestore (up to 5000)
     const snapshot = await adminDb.collection("products").limit(5000).get();
     let docs = snapshot.docs;
 
@@ -89,12 +78,8 @@ export async function GET() {
 
     // Map products safely (avoid duplicate 'id')
     const products = paginatedDocs.map(doc => {
-      const data = doc.data() as ProductType;
-      const { id: _removed, ...rest } = data as any; // remove Firestore id if exists
-      return {
-        id: doc.id, // use Firestore doc id
-        ...rest,
-      };
+      const { id: _removed, ...data } = doc.data() as any;
+      return { id: doc.id, ...data };
     });
 
     console.log(
