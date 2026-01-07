@@ -102,7 +102,20 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({
         // 2. Fetch new data
         console.log("Fetching new exchange rates from API...");
         try {
-            const response = await fetch(API_ENDPOINT);
+            let response = await fetch(API_ENDPOINT);
+            let retries = 0;
+            const maxRetries = 3;
+            const baseDelay = 1000; // 1 second
+
+            while (response.status === 429 && retries < maxRetries) {
+                retries++;
+                if (retries < maxRetries) {
+                    const delay = baseDelay * Math.pow(2, retries - 1);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    response = await fetch(API_ENDPOINT);
+                }
+            }
+
             if (!response.ok) {
                 throw new Error(`API call failed with status: ${response.status}`);
             }

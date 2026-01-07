@@ -14,7 +14,7 @@ const GiftButton = ({ href, children }: GiftButtonProps) => {
     return (
         <motion.a
             href={href}
-            className="relative inline-flex items-center justify-center gap-3 bg-theme-color text-theme-white px-4 py-2 md:px-8 md:py-4 font-bold text-lg overflow-hidden group shadow-lg rounded-lg"
+            className="relative inline-flex items-center justify-center gap-3 bg-theme-color text-theme-white px-4 py-2 md:px-8 md:py-4 font-bold text-lg overflow-hidden group shadow-lg rounded-full"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             whileHover={{ scale: 1.02 }}
@@ -36,7 +36,7 @@ const GiftButton = ({ href, children }: GiftButtonProps) => {
             />
 
             {/* Content */}
-            <span className="relative z-10 flex items-center gap-3">
+            <span className="relative z-1 flex items-center gap-3">
                 {/* Gift Icon with Unboxing Effect */}
                 <motion.span
                     className="relative"

@@ -7,6 +7,7 @@ import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import GiftButton from '@/components/GiftButton';
 import GiftCharacter from '@/components/GiftCharacter';
 import Container from '@/components/Container';
+import { bannerImages } from '@/assets';
 
 const Banner = () => {
   const heroRef = useRef<HTMLElement>(null);
@@ -20,12 +21,7 @@ const Banner = () => {
   const rightControls = useAnimation();
 
   // Sample images for floating cards
-  const leftImages = [
-    'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=500&fit=crop',
-    'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=200&h=150&fit=crop',
-    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=150&fit=crop',
-    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=150&fit=crop',
-  ];
+  const leftImages = bannerImages.map(img => img.src).slice(0, 4); // First 4 images for left side
 
   // Entrance animation on load
   useEffect(() => {
@@ -117,6 +113,7 @@ const Banner = () => {
     });
   };
 
+
   // Update animation when image index changes
   useEffect(() => {
     if (extendedImages.length > 0) {
@@ -127,55 +124,101 @@ const Banner = () => {
   }, [currentImageIndex, extendedImages.length, rightControls]);
 
   // Calculate transforms based on scroll progress
-  const leftTranslateX = -120 + (isLoaded ? 120 : 0) - (scrollProgress * 800);
-  const rightTranslateX = 120 - (isLoaded ? 120 : 0) + (scrollProgress * 800);
-  const videoScale = isLargeScreen ? 1 + (scrollProgress * 1.5) : 1;
+  const leftTranslateX = -120 + (isLoaded ? 120 : 0) - (scrollProgress * 1300);
+  const rightTranslateX = 120 - (isLoaded ? 120 : 0) + (scrollProgress * 1000);
+  const videoScale = isLargeScreen ? 1 + (scrollProgress * 5) : 1;
 
   return (
-    <Container className='mx-auto'>
+    <div className='w-full bg-dark-bg'>
+    <Container className='container py-4 w-full mx-auto overflow-hidden'>
     <section
       ref={heroRef}
-      className={`relative flex w-full bg-light-bg overflow-hidden ${isLargeScreen ? 'min-h-screen' : 'h-[60vh]'} items-center justify-center px-4 lg:px-8 py-12`}
+      className="relative gap-2 flex w-full overflow-hidden h-full items-center justify-center lg:justify-between"
       style={{ willChange: 'transform' }}
     >
+      
+      {/* Left Floating Cards */}
+      <motion.div
+        className="hidden lg:flex translate-x-18 -translate-y-24 flex-col gap-4 flex-shrink-0"
+        initial={{ x: '-120%' }}
+        animate={{
+          x: `${leftTranslateX}%`,
+        }}
+        transition={{
+          type: 'spring',
+          stiffness: 100,
+          damping: 20,
+          mass: 1,
+        }}
+        style={{ willChange: 'transform' }}
+      >
+        {/* Main large card */}
+        <div className="relative bg-light-bg md:w-70 md:h-max rounded-2xl overflow-hidden bg-card">
+          <img
+            src={leftImages[0]}
+            alt="Featured product"
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Smaller cards row */}
+        <div className="flex gap-2">
+          {leftImages.slice(1).map((img, idx) => (
+            <div
+              key={idx}
+              className="w-12 bg-light-bg h-12 md:w-16 md:h-16 rounded-lg overflow-hidden shadow-lg shadow-black/30 bg-card"
+            >
+              <img
+                src={img}
+                alt={`Product ${idx + 1}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
       {/* Central Video Container */}
       <motion.div
-        className="absolute inset-0 flex flex-col items-center justify-center"
+        className="flex flex-col items-center justify-center flex-1"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        
+      >
+        <motion.div
+          className="relative"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          
+        >
+          {/* Text Content */}
+          <div className="flex flex-col items-center justify-center gap-4 mb-4">
+            <motion.h1
+              className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-[1.1] text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              Welcome to AweGift
+            </motion.h1>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+            >
+              <GiftButton href="/products">Shop Now</GiftButton>
+            </motion.div>
+          </div>
+        </motion.div>
+        <div className="relative w-full h-max rounded-2xl overflow-hidden z-2" 
         style={{
           scale: videoScale,
           transition: 'scale 0.1s ease-out',
         }}
-      >
-        <motion.div
-          className="relative"
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          {/* Clean Content Area (No Browser Frame) */}
-          <div className="h-full">
-            {/* Text Content */}
-            <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
-              <motion.h1
-                className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-dark-text leading-[1.1]"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-              >
-                Welcome to AweGift
-              </motion.h1>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-              >
-                <GiftButton href="/products">Shop Now</GiftButton>
-              </motion.div>
-            </div>
-          </div>
-        </motion.div>
-        <div className="relative w-[90%] lg:w-[60%] h-max rounded-2xl overflow-hidden shadow-2xl shadow-black/50 z-1">
           <video
             autoPlay
             loop
@@ -196,50 +239,9 @@ const Banner = () => {
         </div>
       </motion.div>
 
-      {/* Left Floating Cards */}
-      <motion.div
-        className="absolute hidden left-0 top-1/4 -translate-y-1/2 lg:flex flex-col gap-4 p-4 z-0"
-        initial={{ x: '-120%' }}
-        animate={{
-          x: `${leftTranslateX}%`,
-        }}
-        transition={{
-          type: 'spring',
-          stiffness: 100,
-          damping: 20,
-          mass: 1,
-        }}
-        style={{ willChange: 'transform' }}
-      >
-        {/* Main large card */}
-        <div className="relative w-48 h-60 md:w-70 md:h-40 rounded-2xl overflow-hidden shadow-xl shadow-black/40 bg-card">
-          <img
-            src={leftImages[0]}
-            alt="Featured product"
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        {/* Smaller cards row */}
-        <div className="flex gap-2 absolute bottom-0 left-1/2 -translate-x-1/2">
-          {leftImages.slice(1).map((img, idx) => (
-            <div
-              key={idx}
-              className="w-12 h-12 md:w-16 md:h-16 rounded-lg overflow-hidden shadow-lg shadow-black/30 bg-card"
-            >
-              <img
-                src={img}
-                alt={`Product ${idx + 1}`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
       {/* Right Floating Cards */}
       <motion.div
-        className="absolute right-0 top-1/3 -translate-y-1/2 hidden lg:flex flex-col items-end p-4 z-2"
+        className="hidden lg:flex flex-col items-end flex-shrink-0"
         initial={{ x: '120%' }}
         animate={{
           x: `${rightTranslateX}%`,
@@ -253,7 +255,7 @@ const Banner = () => {
         style={{ willChange: 'transform' }}
       >
         {/* Card with navigation */}
-        <div className="relative bg-light-bg  md:w-80 md:h-96 rounded-2xl overflow-hidden shadow-xl shadow-black/40 bg-card group">
+        <div className="relative bg-light-bg md:w-60 md:h-80 rounded-2xl overflow-hidden bg-card group">
           <motion.div
             className="flex w-full h-full"
             animate={rightControls}
@@ -265,7 +267,7 @@ const Banner = () => {
                 key={index}
                 src={image}
                 alt={`Product ${index + 1}`}
-                className="md:w-80 md:h-96 object-cover flex-shrink-0"
+                className="md:w-60 md:h-80 object-cover flex-shrink-0"
               />
             ))}
           </motion.div>
@@ -299,11 +301,11 @@ const Banner = () => {
           </div>
         </div>
       </motion.div>
-
-
     </section>
     </Container>
+    </div>
   );
 };
 
 export default Banner;
+
