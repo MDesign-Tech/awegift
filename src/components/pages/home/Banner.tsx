@@ -6,6 +6,7 @@ import { useScrollProgress } from '@/hooks/useScrollProgress';
 import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import GiftButton from '@/components/GiftButton';
 import GiftCharacter from '@/components/GiftCharacter';
+import Container from '@/components/Container';
 
 const Banner = () => {
   const heroRef = useRef<HTMLElement>(null);
@@ -131,6 +132,7 @@ const Banner = () => {
   const videoScale = isLargeScreen ? 1 + (scrollProgress * 1.5) : 1;
 
   return (
+    <Container className='mx-auto'>
     <section
       ref={heroRef}
       className={`relative flex w-full bg-light-bg overflow-hidden ${isLargeScreen ? 'min-h-screen' : 'h-[60vh]'} items-center justify-center px-4 lg:px-8 py-12`}
@@ -300,6 +302,7 @@ const Banner = () => {
 
 
     </section>
+    </Container>
   );
 };
 
