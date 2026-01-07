@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
 
     // Debug logging for production issues
     console.log("Products API - Token check:", {
+      secret: process.env.NEXTAUTH_SECRET,
       hasToken: !!token,
       tokenKeys: token ? Object.keys(token) : null,
       userAgent: request.headers.get('user-agent'),
