@@ -1,31 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth"; import { authOptions } from "@/lib/auth";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function GET(request: NextRequest) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    // Debug logging for production issues
-    console.log("Analytics API - Token check:", {
-      hasToken: !!token,
-      tokenKeys: token ? Object.keys(token) : null,
-      userAgent: request.headers.get('user-agent'),
-      cookies: request.cookies.getAll().map(c => c.name),
-      nextAuthSessionToken: request.cookies.get('next-auth.session-token')?.value ? 'present' : 'missing',
-      nextAuthUrl: process.env.NEXTAUTH_URL,
-      nodeEnv: process.env.NODE_ENV
-    });
-
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canViewAnalytics")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -229,7 +218,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Analytics API Error:", error);
     return NextResponse.json(
       { error: "Failed to fetch analytics data" },
       { status: 500 }

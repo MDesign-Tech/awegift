@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import admin from "firebase-admin";
-import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 import { createQuotationSentNotification } from "@/lib/notification/helpers";
 import { QUOTE_STATUSES } from "@/lib/quoteStatuses";
@@ -11,16 +12,16 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canManageQuotes")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -41,7 +42,6 @@ export async function GET(
 
     return NextResponse.json(quote);
   } catch (error) {
-    console.error("Error fetching quote:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -54,16 +54,16 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canManageQuotes")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -113,13 +113,12 @@ export async function PUT(
           ).catch((err) => console.error("Failed to create notification:", err));
         }
       } catch (err) {
-        console.error("Error sending quotation notification:", err);
+        // Error sending notification
       }
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error updating quote:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -132,16 +131,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canManageQuotes")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -162,7 +161,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting quote:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

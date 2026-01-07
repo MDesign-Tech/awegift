@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { CategoryType } from "../../../../../../type";
-import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function GET(
@@ -9,16 +10,16 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canViewProducts")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -44,7 +45,6 @@ export async function GET(
 
     return NextResponse.json(category);
   } catch (error) {
-    console.error("Error fetching category:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -57,16 +57,16 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canUpdateProducts")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -94,7 +94,6 @@ export async function PATCH(
       ...updatedData,
     });
   } catch (error) {
-    console.error("Error updating category:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -107,16 +106,16 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canUpdateProducts")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -152,7 +151,6 @@ export async function PUT(
       ...updatedData,
     });
   } catch (error) {
-    console.error("Error updating category:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -165,16 +163,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = await getToken({ req: request });
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - No session found" },
         { status: 401 }
       );
     }
 
-    const userRole = token.role as UserRole;
+    const userRole = session.user.role as UserRole;
     if (!userRole || !hasPermission(userRole, "canDeleteProducts")) {
       return NextResponse.json(
         { error: "Forbidden - Insufficient permissions" },
@@ -189,7 +187,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting category:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
