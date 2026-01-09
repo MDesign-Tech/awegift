@@ -1,6 +1,5 @@
-"use client";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useId } from "react";
 
 interface GiftCharacterProps {
     className?: string;
@@ -9,6 +8,9 @@ interface GiftCharacterProps {
 const GiftCharacter = ({ className }: GiftCharacterProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [isHovered, setIsHovered] = useState(false);
+    const uniqueId = useId();
+    const giftGradientId = `${uniqueId}-giftGradient`;
+    const ribbonGradientId = `${uniqueId}-ribbonGradient`;
 
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
@@ -59,7 +61,7 @@ const GiftCharacter = ({ className }: GiftCharacterProps) => {
                     width="140"
                     height="100"
                     rx="8"
-                    fill="url(#giftGradient)"
+                    fill={`url(#${giftGradientId})`}
                 />
 
                 {/* Gift Box Shadow */}
@@ -71,7 +73,7 @@ const GiftCharacter = ({ className }: GiftCharacterProps) => {
                     y="90"
                     width="24"
                     height="100"
-                    fill="url(#ribbonGradient)"
+                    fill={`url(#${ribbonGradientId})`}
                 />
 
                 {/* Gift Box Lid */}
@@ -81,7 +83,7 @@ const GiftCharacter = ({ className }: GiftCharacterProps) => {
                     width="160"
                     height="35"
                     rx="6"
-                    fill="url(#giftGradient)"
+                    fill={`url(#${giftGradientId})`}
                     style={{ transformOrigin: "center" }}
                 />
 
@@ -91,22 +93,22 @@ const GiftCharacter = ({ className }: GiftCharacterProps) => {
                     y="60"
                     width="30"
                     height="35"
-                    fill="url(#ribbonGradient)"
+                    fill={`url(#${ribbonGradientId})`}
                     style={{ transformOrigin: "center" }}
                 />
 
                 {/* Bow */}
                 <motion.g style={{ transformOrigin: "100px 45px" }}>
                     {/* Bow Left Loop */}
-                    <ellipse cx="70" cy="45" rx="25" ry="18" fill="url(#ribbonGradient)" />
+                    <ellipse cx="70" cy="45" rx="25" ry="18" fill={`url(#${ribbonGradientId})`} />
                     <ellipse cx="70" cy="45" rx="15" ry="10" fill="hsl(var(--hero-primary))" />
 
                     {/* Bow Right Loop */}
-                    <ellipse cx="130" cy="45" rx="25" ry="18" fill="url(#ribbonGradient)" />
+                    <ellipse cx="130" cy="45" rx="25" ry="18" fill={`url(#${ribbonGradientId})`} />
                     <ellipse cx="130" cy="45" rx="15" ry="10" fill="hsl(var(--hero-primary))" />
 
                     {/* Bow Center */}
-                    <circle cx="100" cy="52" r="14" fill="url(#ribbonGradient)" />
+                    <circle cx="100" cy="52" r="14" fill={`url(#${ribbonGradientId})`} />
                 </motion.g>
 
                 {/* Eyes Container */}
@@ -158,11 +160,11 @@ const GiftCharacter = ({ className }: GiftCharacterProps) => {
 
                 {/* Gradients */}
                 <defs>
-                    <linearGradient id="giftGradient" x1="30" y1="60" x2="170" y2="190" gradientUnits="userSpaceOnUse">
+                    <linearGradient id={giftGradientId} x1="30" y1="60" x2="170" y2="190" gradientUnits="userSpaceOnUse">
                         <stop stopColor="hsl(var(--hero-primary))" />
                         <stop offset="1" stopColor="hsl(var(--hero-accent))" />
                     </linearGradient>
-                    <linearGradient id="ribbonGradient" x1="85" y1="30" x2="115" y2="190" gradientUnits="userSpaceOnUse">
+                    <linearGradient id={ribbonGradientId} x1="85" y1="30" x2="115" y2="190" gradientUnits="userSpaceOnUse">
                         <stop stopColor="hsl(45 100% 65%)" />
                         <stop offset="1" stopColor="hsl(38 90% 50%)" />
                     </linearGradient>

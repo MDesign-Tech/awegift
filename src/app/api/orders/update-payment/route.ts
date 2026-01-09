@@ -6,13 +6,14 @@ import { OrderData, OrderStatusHistory } from "../../../../../type";
 import { OrderStatus } from "@/lib/orderStatus";
 import { UserRole } from "@/lib/rbac/roles";
 import { PaymentStatus, PaymentMethod, canUpdatePaymentStatus } from "@/lib/orderStatus";
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
 import { createOrderPaidNotification } from "@/lib/notification/helpers";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

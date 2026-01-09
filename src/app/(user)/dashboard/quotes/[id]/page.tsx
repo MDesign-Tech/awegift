@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import Container from "@/components/Container";
 import Title from "@/components/Title";
 import PriceFormat from "@/components/PriceFormat";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 import {
   FiMessageSquare,
   FiSave,
@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { QuotationType, QuotationMessage, QuotationProductType } from "../../../../../../type";
 import { toast } from "react-hot-toast";
+import { formatNotificationDate } from "@/lib/date";
 
 export default function AdminQuoteDetailPage() {
   const { id } = useParams();
@@ -220,40 +221,43 @@ export default function AdminQuoteDetailPage() {
     }
   };
 
-  const formatDate = (date: Date | string) => {
-    try {
-      const dateObj = typeof date === 'string' ? new Date(date) : date;
-      if (isNaN(dateObj.getTime())) {
-        return "Invalid Date";
-      }
-      return dateObj.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch (error) {
-      return "Invalid Date";
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "responded":
+        return "bg-blue-100 text-blue-800";
+      case "waiting_customer":
+        return "bg-orange-100 text-orange-800";
+      case "negotiation":
+        return "bg-purple-100 text-purple-800";
+      case "accepted":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      case "expired":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   if (loading) {
     return (
-      <ProtectedRoute loadingMessage="Loading quote details...">
+      <RoleProtectedRoute allowedRoles={["admin"]} loadingMessage="Loading quote details...">
         <Container className="py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded w-1/4"></div>
             <div className="h-64 bg-gray-200 rounded"></div>
           </div>
         </Container>
-      </ProtectedRoute>
+      </RoleProtectedRoute>
     );
   }
 
   if (!quote || !editableQuote) {
     return (
-      <ProtectedRoute loadingMessage="Loading quote details...">
+      <RoleProtectedRoute allowedRoles={["admin"]} loadingMessage="Loading quote details...">
         <Container className="py-8">
           <div className="text-center">
             <div className="text-red-600 mb-2">⚠️</div>
@@ -269,12 +273,12 @@ export default function AdminQuoteDetailPage() {
             </Link>
           </div>
         </Container>
-      </ProtectedRoute>
+      </RoleProtectedRoute>
     );
   }
 
   return (
-    <ProtectedRoute loadingMessage="Loading quote details...">
+    <RoleProtectedRoute allowedRoles={["admin"]} loadingMessage="Loading quote details...">
       <Container className="py-8">
         {/* Header */}
         <div className="mb-6">
@@ -296,22 +300,16 @@ export default function AdminQuoteDetailPage() {
             </div>
             <div className="flex items-center space-x-4">
               <span
-                className={`px-3 py-1 text-sm font-medium rounded-full capitalize ${
-                  quote.status === "pending"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : quote.status === "responded"
-                    ? "bg-blue-100 text-blue-800"
-                    : quote.status === "accepted"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-gray-100 text-gray-800"
-                }`}
+                className={`px-3 py-1 text-sm font-medium rounded-full capitalize ${getStatusColor(
+                  quote.status
+                )}`}
               >
-                {quote.status}
+                {quote.status.replace(/_/g, " ")}
               </span>
               <button
                 onClick={handleSaveQuote}
                 disabled={saving}
-                className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                className="flex items-center px-4 py-2 bg-theme-color text-white rounded-lg hover:bg-accent-color transition-colors disabled:opacity-50"
               >
                 {saving ? (
                   <>
@@ -411,7 +409,7 @@ export default function AdminQuoteDetailPage() {
                                   min="1"
                                   value={product.quantity}
                                   onChange={(e) => updateProduct(index, 'quantity', parseInt(e.target.value) || 1)}
-                                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-theme-color focus:border-theme-color"
                                 />
                               </td>
                               <td className="px-4 py-3">
@@ -421,7 +419,7 @@ export default function AdminQuoteDetailPage() {
                                   step="0.01"
                                   value={product.unitPrice || ''}
                                   onChange={(e) => updateProduct(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                                  className="w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                  className="w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-theme-color focus:border-theme-color"
                                   placeholder="0.00"
                                 />
                               </td>
@@ -433,7 +431,7 @@ export default function AdminQuoteDetailPage() {
                                   type="text"
                                   value={product.notes || ''}
                                   onChange={(e) => updateProduct(index, 'notes', e.target.value)}
-                                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-theme-color focus:border-theme-color"
                                   placeholder="Notes..."
                                 />
                               </td>
@@ -467,7 +465,7 @@ export default function AdminQuoteDetailPage() {
                         step="0.01"
                         value={editableQuote.discount || ''}
                         onChange={(e) => updateQuoteField('discount', parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-theme-color focus:border-theme-color"
                         placeholder="0.00"
                       />
                     </div>
@@ -481,7 +479,7 @@ export default function AdminQuoteDetailPage() {
                         step="0.01"
                         value={editableQuote.deliveryFee || ''}
                         onChange={(e) => updateQuoteField('deliveryFee', parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-theme-color focus:border-theme-color"
                         placeholder="0.00"
                       />
                     </div>
@@ -503,7 +501,7 @@ export default function AdminQuoteDetailPage() {
                     value={editableQuote.adminNote || ''}
                     onChange={(e) => updateQuoteField('adminNote', e.target.value)}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-theme-color focus:border-theme-color"
                     placeholder="Private notes for admin..."
                   />
                 </div>
@@ -529,7 +527,7 @@ export default function AdminQuoteDetailPage() {
                             {message.sender === "admin" ? "You (Admin)" : "Customer"}
                           </span>
                           <span className="text-xs text-gray-500">
-                            {formatDate(message.timestamp)}
+                            {formatNotificationDate(message.timestamp)}
                           </span>
                         </div>
                         <p className="text-sm text-gray-900">{message.message}</p>
@@ -556,7 +554,7 @@ export default function AdminQuoteDetailPage() {
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-theme-color focus:border-theme-color"
                       placeholder="Type your message..."
                     />
                     <div className="flex items-center space-x-4">
@@ -607,25 +605,19 @@ export default function AdminQuoteDetailPage() {
               <div className="space-y-3 text-sm">
                 <div>
                   <span className="font-medium">Status:</span>{" "}
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${
-                    quote.status === "pending"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : quote.status === "responded"
-                      ? "bg-blue-100 text-blue-800"
-                      : quote.status === "accepted"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}>
-                    {quote.status}
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${getStatusColor(
+                    quote.status
+                  )}`}>
+                    {quote.status.replace(/_/g, " ")}
                   </span>
                 </div>
                 <div>
                   <span className="font-medium">Submitted:</span>{" "}
-                  {formatDate(quote.createdAt)}
+                  {formatNotificationDate(quote.createdAt)}
                 </div>
                 <div>
                   <span className="font-medium">Valid Until:</span>{" "}
-                  {formatDate(quote.validUntil)}
+                  {formatNotificationDate(quote.validUntil)}
                 </div>
                 <div>
                   <span className="font-medium">Customer:</span>{" "}
@@ -671,6 +663,6 @@ export default function AdminQuoteDetailPage() {
           </div>
         </div>
       </Container>
-    </ProtectedRoute>
+    </RoleProtectedRoute>
   );
 }

@@ -1,12 +1,12 @@
 import QuotesList from "@/components/account/QuotesList";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 
 export default function QuotesPage() {
   return (
-    <ProtectedRoute loadingMessage="Loading your quotes...">
+    <RoleProtectedRoute allowedRoles={["user", "admin"]} loadingMessage="Loading your quotes...">
       <div>
         <QuotesList showHeader={true} />
       </div>
-    </ProtectedRoute>
+    </RoleProtectedRoute>
   );
 }

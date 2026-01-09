@@ -1,10 +1,10 @@
 import SettingsClient from "@/components/account/SettingsClient";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 
 export default function SettingsPage() {
   return (
-    <ProtectedRoute loadingMessage="Loading settings...">
+    <RoleProtectedRoute allowedRoles={["user", "admin"]} loadingMessage="Loading settings...">
       <SettingsClient />
-    </ProtectedRoute>
+    </RoleProtectedRoute>
   );
 }

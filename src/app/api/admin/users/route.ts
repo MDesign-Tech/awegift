@@ -1,12 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { UserRole } from "@/lib/rbac/roles";
-import { requireRole } from "@/lib/server/auth-utils";
+import { getServerSession } from "next-auth"; import { authOptions } from "@/lib/auth";
+import { hasPermission } from "@/lib/rbac/roles";
 
 // GET → fetch all users
 export async function GET(request: NextRequest) {
-  const check = await requireRole(request, "canViewUsers");
-  if (check instanceof NextResponse) return check; // permission denied
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    return NextResponse.json(
+      { error: "Unauthorized - No session found" },
+      { status: 401 }
+    );
+  }
+
+  const userRole = session.user.role as UserRole;
+  if (!userRole || !hasPermission(userRole, "canViewUsers")) {
+    return NextResponse.json(
+      { error: "Forbidden - Insufficient permissions" },
+      { status: 403 }
+    );
+  }
 
   // ✅ Now safe to fetch users
   const usersSnapshot = await adminDb.collection("users").get();
@@ -29,8 +44,22 @@ export async function GET(request: NextRequest) {
 
 // PUT → update a user
 export async function PUT(request: NextRequest) {
-  const check = await requireRole(request, "canUpdateUsers");
-  if (check instanceof NextResponse) return check;
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    return NextResponse.json(
+      { error: "Unauthorized - No session found" },
+      { status: 401 }
+    );
+  }
+
+  const userRole = session.user.role as UserRole;
+  if (!userRole || !hasPermission(userRole, "canUpdateUsers")) {
+    return NextResponse.json(
+      { error: "Forbidden - Insufficient permissions" },
+      { status: 403 }
+    );
+  }
 
   const { userId, name, email, role } = await request.json();
 
@@ -48,8 +77,22 @@ export async function PUT(request: NextRequest) {
 
 // DELETE → remove a user
 export async function DELETE(request: NextRequest) {
-  const check = await requireRole(request, "canDeleteUsers");
-  if (check instanceof NextResponse) return check;
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    return NextResponse.json(
+      { error: "Unauthorized - No session found" },
+      { status: 401 }
+    );
+  }
+
+  const userRole = session.user.role as UserRole;
+  if (!userRole || !hasPermission(userRole, "canDeleteUsers")) {
+    return NextResponse.json(
+      { error: "Forbidden - Insufficient permissions" },
+      { status: 403 }
+    );
+  }
 
   const { userId } = await request.json();
   if (!userId) return NextResponse.json({ error: "User ID required" }, { status: 400 });

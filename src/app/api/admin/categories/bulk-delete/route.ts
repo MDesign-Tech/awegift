@@ -1,11 +1,26 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { requireRole } from "@/lib/server/auth-utils";
+import { getServerSession } from "next-auth"; import { authOptions } from "@/lib/auth";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   try {
-    const check = await requireRole(request as any, "canDeleteProducts");
-    if (check instanceof NextResponse) return check;
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = session.user.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canDeleteProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
     let categoryIds: string[] | undefined;
 
     // Check if request has a body
@@ -50,7 +65,6 @@ export async function DELETE(request: Request) {
       });
     }
   } catch (error) {
-    console.error("Error deleting categories:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

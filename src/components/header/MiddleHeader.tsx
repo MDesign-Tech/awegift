@@ -4,13 +4,15 @@ import Container from "../Container";
 import { LiaUser } from "react-icons/lia";
 import Link from "next/link";
 import SearchInput from "./SearchInput";
-import { useAuth } from "@/lib/auth/AuthContext";
 import HeaderIcons from "./HeaderIcons";
 import Logo from "../Logo";
 import UserProfileDropdown from "./UserProfileDropdown";
+import { Session } from "next-auth";
 
-const MiddleHeader = () => {
-  const { user } = useAuth();
+const MiddleHeader = ({ session }: { session: Session | null }) => {
+
+  // If session exists but user data is missing or invalid, treat as unauthenticated
+  const isAuthenticated = session?.user && session.user.email ? true : false;
 
   return (
     <div className="border-b border-b-gray-400 relative z-50">
@@ -23,12 +25,10 @@ const MiddleHeader = () => {
         </div>
 
         <div className="flex items-center gap-5">
-          {/* Search Icon Trigger */}
-          {/* <SearchInput /> */}
 
           {/* User */}
-          {user ? (
-            <UserProfileDropdown user={user} />
+          {isAuthenticated && session?.user ? (
+            <UserProfileDropdown user={session.user} />
           ) : (
             <div className="flex items-center gap-2 cursor-pointer">
               <div className="border-2 border-gray-700 p-1.5 rounded-full text-xl">
@@ -37,7 +37,7 @@ const MiddleHeader = () => {
               <div className="hidden md:block">
                 <Link href={"/auth/signin"}>
                   <p className="text-xs hover:text-sky-color ease-in-out duration-300 cursor-pointer">
-                    Hello, Guests
+                    Guests
                   </p>
                 </Link>
 

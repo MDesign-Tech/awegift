@@ -1,7 +1,8 @@
 
-import { Banner } from "@/components/pages/home/Banner";
-import BestSellersSection from "@/components/pages/home/BestSellersSection";
+import Banner from "@/components/pages/home/Banner";
+import Products from "@/components/pages/home/Products";
 import DynamicFeaturedCategories from "@/components/pages/home/DynamicFeaturedCategories";
+import DynamicServicesSection from "@/components/pages/home/DynamicServicesSection";
 import SectionDivider from "@/components/ui/SectionDivider";
 
 export default function Home() {
@@ -14,24 +15,12 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* Best Sellers Section */}
-      <BestSellersSection />
+      <DynamicServicesSection />
 
-      {/* New Arrivals Section - Commented out as in original
-      <ProductSection
-        title="New Arrivals"
-        subtitle="Latest products just added to our collection"
-        products={newArrivals}
-        viewMoreLink="/products?category=new"
-      /> */}
+      <SectionDivider />
 
-      {/* Special Offers Section - Commented out as in original
-      <ProductSection
-        title="Special Offers"
-        subtitle="Don't miss out on these amazing deals"
-        products={offers}
-        viewMoreLink="/offers"
-      /> */}
+      {/* Products Section */}
+      <Products />
     </main>
   );
 }

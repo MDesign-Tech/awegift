@@ -22,7 +22,7 @@ export default function RoleProtectedRoute({
   allowedRoles,
   redirectTo,
   fallbackPath = "/auth/signin",
-  loadingMessage = "Checking authentication and permissions...",
+  loadingMessage,
 }: RoleProtectedRouteProps) {
   const { data: session, status } = useSession();
   const userRole = session?.user?.role;
@@ -88,32 +88,6 @@ export default function RoleProtectedRoute({
               ? "You need to be signed in to access this page."
               : "You don't have permission to access this page."}
           </p>
-
-          {/* Debug information */}
-          <div className="bg-gray-100 p-4 rounded mb-4 text-sm text-left max-w-md mx-auto">
-            <div>
-              <strong>Status:</strong> {status}
-            </div>
-            <div>
-              <strong>Has Session:</strong> {session ? "Yes" : "No"}
-            </div>
-            <div>
-              <strong>Has User:</strong> {session?.user ? "Yes" : "No"}
-            </div>
-            {session?.user && (
-              <>
-                <div>
-                  <strong>User Email:</strong> {session.user.email}
-                </div>
-                <div>
-                  <strong>User Role:</strong> {userRole}
-                </div>
-                <div>
-                  <strong>Allowed Roles:</strong> {allowedRoles.join(", ")}
-                </div>
-              </>
-            )}
-          </div>
 
           <div className="flex items-center justify-center space-x-4 mb-6">
             <FiLoader className="animate-spin text-xl text-theme-color" />

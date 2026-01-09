@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import Container from "@/components/Container";
 import PriceFormat from "@/components/PriceFormat";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 import Link from "next/link";
 import { OrderData } from "../../../../../../type";
 import { getStatusDisplayInfo } from "@/lib/orderStatus";
@@ -110,7 +110,7 @@ const OrderTrackingPage = () => {
 
   if (loading) {
     return (
-      <ProtectedRoute loadingMessage="Loading order details...">
+      <RoleProtectedRoute allowedRoles={["user", "admin"]} loadingMessage="Loading order details...">
         <Container className="py-8">
           <div className="animate-pulse">
             <div className="bg-gray-200 rounded h-8 w-64 mb-8"></div>
@@ -123,13 +123,13 @@ const OrderTrackingPage = () => {
             </div>
           </div>
         </Container>
-      </ProtectedRoute>
+      </RoleProtectedRoute>
     );
   }
 
   if (error || !order) {
     return (
-      <ProtectedRoute loadingMessage="Loading order details...">
+      <RoleProtectedRoute allowedRoles={["user", "admin"]} loadingMessage="Loading order details...">
         <Container className="py-8">
           <div className="text-center">
             <div className="text-6xl mb-4">📦</div>
@@ -149,7 +149,7 @@ const OrderTrackingPage = () => {
             </Link>
           </div>
         </Container>
-      </ProtectedRoute>
+      </RoleProtectedRoute>
     );
   }
 
@@ -162,7 +162,7 @@ const OrderTrackingPage = () => {
   ];
 
   return (
-    <ProtectedRoute loadingMessage="Loading order details...">
+    <RoleProtectedRoute allowedRoles={["user", "admin"]} loadingMessage="Loading order details...">
       <Container className="py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -432,7 +432,7 @@ const OrderTrackingPage = () => {
           </div>
         </div>
       </Container>
-    </ProtectedRoute>
+    </RoleProtectedRoute>
   );
 };
 

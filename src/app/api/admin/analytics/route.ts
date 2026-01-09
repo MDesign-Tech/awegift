@@ -1,11 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { requireRole } from "@/lib/server/auth-utils";
+import { getServerSession } from "next-auth"; import { authOptions } from "@/lib/auth";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function GET(request: NextRequest) {
   try {
-    const check = await requireRole(request, "canViewAnalytics");
-    if (check instanceof NextResponse) return check;
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = session.user.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canViewAnalytics")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
 
     // Fetch all orders from orders collection (primary source)
     const ordersRef = adminDb.collection("orders");
@@ -203,7 +218,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Analytics API Error:", error);
     return NextResponse.json(
       { error: "Failed to fetch analytics data" },
       { status: 500 }

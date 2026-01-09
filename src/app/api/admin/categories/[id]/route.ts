@@ -1,13 +1,32 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { CategoryType } from "../../../../../../type";
-import { requireRole } from "@/lib/server/auth-utils";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = session.user.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canViewProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const docRef = adminDb.collection("categories").doc(id);
     const docSnap = await docRef.get();
@@ -26,7 +45,6 @@ export async function GET(
 
     return NextResponse.json(category);
   } catch (error) {
-    console.error("Error fetching category:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -35,13 +53,28 @@ export async function GET(
 }
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = session.user.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canUpdateProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
-    const check = await requireRole(request as any, "canUpdateProducts");
-    if (check instanceof NextResponse) return check;
 
     const partialData: Partial<CategoryType> = await request.json();
 
@@ -61,7 +94,6 @@ export async function PATCH(
       ...updatedData,
     });
   } catch (error) {
-    console.error("Error updating category:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -70,13 +102,28 @@ export async function PATCH(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = session.user.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canUpdateProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
-    const check = await requireRole(request as any, "canUpdateProducts");
-    if (check instanceof NextResponse) return check;
 
     const categoryData: Partial<Omit<CategoryType, 'id' | 'meta'>> = await request.json();
 
@@ -104,7 +151,6 @@ export async function PUT(
       ...updatedData,
     });
   } catch (error) {
-    console.error("Error updating category:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -113,20 +159,34 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = session.user.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canDeleteProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
-    const check = await requireRole(request as any, "canDeleteProducts");
-    if (check instanceof NextResponse) return check;
 
     const docRef = adminDb.collection("categories").doc(id);
     await docRef.delete();
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting category:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

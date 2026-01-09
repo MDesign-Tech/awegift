@@ -7,6 +7,7 @@ import { TableSkeleton } from "./Skeletons";
 import { toast } from "react-hot-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { hasPermission, UserRole } from "@/lib/rbac/roles";
+import { formatNotificationDate } from "@/lib/date";
 import {
   FiPackage,
   FiX,
@@ -116,7 +117,16 @@ export default function DashboardQuotesClient() {
     // Date filter
     if (startDate || endDate) {
       filtered = filtered.filter((quote) => {
-        const quoteDate = new Date(quote.createdAt);
+        // Handle both Date and Timestamp objects
+        let quoteDate: Date;
+        if (quote.createdAt && typeof quote.createdAt === 'object' && 'toDate' in quote.createdAt) {
+          // It's a Timestamp
+          quoteDate = quote.createdAt.toDate();
+        } else {
+          // It's a Date or string
+          quoteDate = new Date(quote.createdAt as any);
+        }
+
         const start = startDate ? new Date(startDate) : null;
         const end = endDate ? new Date(endDate) : null;
 
@@ -187,8 +197,19 @@ export default function DashboardQuotesClient() {
   const handleDeleteAllQuotes = async () => {
     setIsDeleting(true);
     try {
-      // Note: This would need a bulk delete API endpoint
-      toast.error("Bulk delete not implemented yet");
+      const response = await fetch("/api/admin/quotes/bulk-delete", {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message || "All quotes deleted successfully");
+        await fetchQuotes();
+        setDeleteAllModal(false);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to delete all quotes");
+      }
     } catch (error) {
       console.error("Error deleting all quotes:", error);
       toast.error("Error deleting all quotes");
@@ -228,8 +249,23 @@ export default function DashboardQuotesClient() {
 
     setIsDeleting(true);
     try {
-      // Note: This would need a bulk delete API endpoint
-      toast.error("Bulk delete selected not implemented yet");
+      const response = await fetch("/api/admin/quotes/bulk-delete-selected", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quoteIds: selectedQuotes }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message || `${selectedQuotes.length} quotes deleted successfully`);
+        await fetchQuotes();
+        setDeleteSelectedModal(false);
+        setSelectedQuotes([]);
+        setSelectAll(false);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to delete selected quotes");
+      }
     } catch (error) {
       console.error("Error deleting selected quotes:", error);
       toast.error("Error deleting selected quotes");
@@ -412,9 +448,7 @@ export default function DashboardQuotesClient() {
                   <PriceFormat amount={quote.finalAmount || 0} />
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {quote.createdAt
-                    ? new Date(quote.createdAt).toLocaleDateString()
-                    : "N/A"}
+                  {quote.createdAt ? formatNotificationDate(quote.createdAt) : "N/A"}
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex items-center space-x-1">

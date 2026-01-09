@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { adminDb } from "@/lib/firebase/admin";
 import { emailService } from "@/lib/email/service";
 import { createAdminNewUserNotification } from "@/lib/notification/helpers";
-import { notificationService } from "@/lib/notification/service";
+import { generateEmailVerificationInfo, saveEmailVerification, sendDualVerificationEmail } from "@/lib/auth/utils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,6 +42,9 @@ export async function POST(request: NextRequest) {
       hashedPassword = await bcrypt.hash(password, 12);
     }
 
+    // Generate email verification credentials
+    const { token, otp, expires } = generateEmailVerificationInfo();
+
     // Create user in Firestore
     const userDoc = await usersRef.add({
       name,
@@ -50,14 +53,14 @@ export async function POST(request: NextRequest) {
       image: image || "",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      emailVerified: oauth ? true : false, // OAuth emails are pre-verified
+      emailVerified: false, // Always require verification
       role: "user",
       provider: oauth ? "oauth" : "credentials",
       profile: {
         firstName: name.split(" ")[0] || "",
         lastName: name.split(" ").slice(1).join(" ") || "",
         phone: "",
-        addresses: [], // Use addresses array instead of single address
+        addresses: [],
       },
       preferences: {
         newsletter: false,
@@ -68,44 +71,27 @@ export async function POST(request: NextRequest) {
       orders: [],
     });
 
-    // Send welcome email asynchronously (don't block the response)
-    console.log('Sending welcome email to new user:', email);
-    emailService.sendWelcomeEmail(email, name)
-      .then(() => {
-        console.log('Welcome email sent successfully to:', email);
-      })
-      .catch((error: any) => {
-        console.error('Error sending welcome email:', error);
-      });
+    // Save verification record to separate collection
+    await saveEmailVerification(userDoc.id, email, token, otp, expires);
 
-    // send Email to admin asynchronously (don't block the response)
-    console.log('Sending new user registration email to admin for new user registered:', email);
-    emailService.sendAdminNewUserEmail('<EMAIL>', name)
-      .then(() => {
-        console.log('Admin notification email sent successfully for new user:', email);
-      })
-      .catch((error: any) => {
-        console.error('Error sending admin notification email:', error);
-      });
+    // Send dual verification email (OTP + Link) asynchronously
+    sendDualVerificationEmail(email, name, token, otp)
+      .then(() => console.log('Verification email sent successfully to:', email))
+      .catch((error: any) => console.error('Error sending verification email:', error));
 
-    // Send admin notification for new user registration asynchronously (don't block the response)
-    console.log('Creating admin notification for new user:', userDoc.id, email, name);
+    // Send email to admin asynchronously
+    emailService.sendAdminNewUserEmail('axyz37914@gmail.com', name)
+      .catch((error: any) => console.error('Error sending admin notification email:', error));
+
+    // Send admin notification for new user registration asynchronously
     createAdminNewUserNotification('admin', name, email)
-      .then((result: any) => {
-        if (!result.success) {
-          console.error('Failed to create admin notification:', result.error);
-        } else {
-          console.log('Successfully created admin notification:', result.notificationId);
-        }
-      })
-      .catch((error: any) => {
-        console.error('Error creating admin notification:', error);
-      });
+      .catch((error: any) => console.error('Error creating admin notification:', error));
 
     return NextResponse.json(
       {
-        message: "User created successfully",
+        message: "User created successfully. Please verify your email.",
         userId: userDoc.id,
+        email: email, // Include email for the verification page redirect
       },
       { status: 201 }
     );

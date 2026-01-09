@@ -1,12 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { CategoryType } from "../../../../../../type";
-import { requireRole } from "@/lib/server/auth-utils";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function POST(request: NextRequest) {
   try {
-    const check = await requireRole(request, "canCreateProducts");
-    if (check instanceof NextResponse) return check;
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = session.user.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canCreateProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
 
     const categoryData: Omit<CategoryType, 'id' | 'meta'> = await request.json();
 
@@ -35,7 +51,6 @@ export async function POST(request: NextRequest) {
       id: docRef.id,
     });
   } catch (error) {
-    console.error("Error creating category:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

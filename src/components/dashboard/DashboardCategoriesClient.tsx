@@ -44,6 +44,7 @@ export default function DashboardCategoriesClient() {
     filteredCategories,
     suggestedCategories,
     isLoading: searchLoading,
+    isInitialLoading,
     hasSearched,
     clearSearch,
     refetchCategories,
@@ -80,10 +81,10 @@ export default function DashboardCategoriesClient() {
 
   // Set initial loading to false when categories are loaded
   useEffect(() => {
-    if (categories.length > 0 || !searchLoading) {
+    if (categories.length > 0 || !isInitialLoading) {
       setLoading(false);
     }
-  }, [categories, searchLoading]);
+  }, [categories, isInitialLoading]);
 
   // FIX: Determine which categories to display
   const displayCategories = hasSearched || searchTerm ? filteredCategories : categories;
@@ -393,8 +394,8 @@ const handleToggleFeatured = async (category: CategoryWithId) => {
         </table>
       </div>
 
-      {/* Empty State */}
-      {displayCategories.length === 0 && !searchLoading && !isRefreshing && (
+      {/* Empty State - only show when not loading and truly no categories after fetch */}
+      {displayCategories.length === 0 && !isInitialLoading && !searchLoading && !isRefreshing && (
         <div className="px-6 py-12 text-center">
           {hasSearched || searchTerm ? (
             <>

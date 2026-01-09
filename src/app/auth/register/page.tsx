@@ -3,13 +3,21 @@ import Logo from "@/components/Logo";
 import Link from "next/link";
 import { Metadata } from "next";
 import { FaHome } from "react-icons/fa";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Register | AweGift",
   description: "Create your AweGift account",
 };
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  const session = await getServerSession(authOptions);
+
+  if (session) {
+    redirect("/");
+  }
   return (
     <div className="flex min-h-screen md:overflow-hidden">
       {/* Left Side - Full image */}
@@ -55,7 +63,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Form */}
-          <div className="bg-white">
+          <div className="bg-white py-4">
             <RegisterForm />
           </div>
         </div>

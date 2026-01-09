@@ -1,12 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { CategoryType } from "../../../../../../type";
-import { requireRole } from "@/lib/server/auth-utils";
+import { getServerSession } from "next-auth"; import { authOptions } from "@/lib/auth";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function GET(request: NextRequest) {
   try {
-    const check = await requireRole(request, "canViewProducts");
-    if (check instanceof NextResponse) return check;
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = session.user.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canViewProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
 
     const { searchParams } = new URL(request.url);
     const searchQuery = searchParams.get('q') || '';
@@ -34,7 +49,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ categories: filteredCategories });
   } catch (error) {
-    console.error("Error searching categories:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

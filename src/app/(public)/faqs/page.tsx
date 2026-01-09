@@ -10,7 +10,6 @@ import {
   FiSearch,
 } from "react-icons/fi";
 
-/* 🔹 MOVE ALL DATA HERE */
 const faqCategories = [
   {
     id: "orders",
@@ -83,11 +82,10 @@ export default function FAQClient() {
                 <button
                   key={category.id}
                   onClick={() => setActiveCategory(category.id)}
-                  className={`w-full text-left p-3 rounded-lg transition-colors duration-200 flex items-center gap-3 ${
-                    activeCategory === category.id
+                  className={`w-full text-left p-3 rounded-lg transition-colors duration-200 flex items-center gap-3 ${activeCategory === category.id
                       ? "bg-theme-color text-theme-white"
                       : "bg-light-bg text-gray-700 hover:bg-theme-color/10"
-                  }`}
+                    }`}
                 >
                   <span className="text-lg">{category.icon}</span>
                   <span className="font-medium">{category.title}</span>

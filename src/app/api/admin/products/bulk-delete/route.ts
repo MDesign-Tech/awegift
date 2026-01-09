@@ -1,11 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { requireRole } from "@/lib/server/auth-utils";
+import { getServerSession } from "next-auth"; import { authOptions } from "@/lib/auth";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function DELETE(request: NextRequest) {
   try {
-    const check = await requireRole(request, "canDeleteProducts");
-    if (check instanceof NextResponse) return check;
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = session.user.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canDeleteProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
 
     const snapshot = await adminDb.collection("products").limit(5000).get();
 
@@ -22,7 +37,6 @@ export async function DELETE(request: NextRequest) {
       deletedCount: snapshot.docs.length
     });
   } catch (error) {
-    console.error("Error deleting all products:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

@@ -1,12 +1,14 @@
 import { useEffect } from "react";
-import { useAuth } from "@/lib/auth/AuthContext";
+import { useSession } from "next-auth/react";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser, removeUser } from "@/redux/aweGiftSlice";
 import { fetchUserFromFirestore } from "@/lib/firebase/clientUser";
 import type { RootState } from "@/redux/store";
 
 export function useUserSync() {
-  const { user, loading } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const loading = status === "loading";
   const dispatch = useDispatch();
   const userInfo = useSelector((state: RootState) => state.aweGift.userInfo);
 

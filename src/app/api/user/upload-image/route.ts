@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { adminStorage } from "@/lib/firebase/admin";
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("image") as File;
-    const email = formData.get("email") as string;
 
-    if (!file || !email) {
+    if (!file) {
       return NextResponse.json(
-        { error: "Image file and email are required" },
+        { error: "Image file is required" },
         { status: 400 }
       );
     }
@@ -32,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     // Create a unique filename
     const timestamp = Date.now();
-    const fileName = `profile-images/${email}-${timestamp}`;
+    const fileName = `profile-images/${session.user.email}-${timestamp}`;
 
     // Get bucket
     const bucket = adminStorage.bucket();

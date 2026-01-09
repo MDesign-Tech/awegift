@@ -17,6 +17,7 @@ interface UseCategorySearchReturn {
   filteredCategories: CategoryWithId[];
   suggestedCategories: CategoryWithId[];
   isLoading: boolean;
+  isInitialLoading: boolean;
   hasSearched: boolean;
   clearSearch: () => void;
   refetchCategories: () => Promise<void>;
@@ -30,6 +31,7 @@ export const useCategorySearch = ({
   const [filteredCategories, setFilteredCategories] = useState<CategoryWithId[]>([]);
   const [suggestedCategories, setSuggestedCategories] = useState<CategoryWithId[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [hasSearched, setHasSearched] = useState(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -38,6 +40,7 @@ export const useCategorySearch = ({
   // Function to fetch categories
   const fetchCategories = async () => {
     const endpoint = API_BASE_URL;
+    setIsInitialLoading(true);
     try {
       const data = await getData(endpoint);
       setCategories(data || []);
@@ -47,6 +50,8 @@ export const useCategorySearch = ({
       console.error("Error fetching categories", error);
       setCategories([]);
       setSuggestedCategories([]);
+    } finally {
+      setIsInitialLoading(false);
     }
   };
 
@@ -132,6 +137,7 @@ export const useCategorySearch = ({
     filteredCategories,
     suggestedCategories,
     isLoading,
+    isInitialLoading,
     hasSearched,
     clearSearch,
     refetchCategories: fetchCategories,

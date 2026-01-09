@@ -74,9 +74,16 @@ export interface UserData {
   email: string;
   image?: string;
   role: UserRole;
-  
+
   emailVerified: boolean;
   provider?: string;
+
+  passwordResetToken?: string;
+  passwordResetExpires?: string;
+
+  lastLogin?: string;
+  loginAttempts?: number;
+  lockUntil?: string;
 
   profile: {
     firstName: string;
@@ -94,6 +101,19 @@ export interface UserData {
   wishlist: ProductType[];
   createdAt: string;
   updatedAt: string;
+}
+
+// Email verification record for dual verification (OTP + Token)
+export interface EmailVerification {
+  id: string;
+  userId: string;
+  email: string;
+  otp: string; // Hashed OTP
+  token: string;
+  expiresAt: Date;
+  attempts: number; // For rate limiting
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // ---------------------- ORDER -----------------------
@@ -215,8 +235,8 @@ export interface QuotationType {
 
   attachments?: string[];           // user uploads: design, pictures
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date ;
+  updatedAt: Date ;
 }
 
 
@@ -261,6 +281,9 @@ export interface EmailPayload {
   quotation?: QuotationEmailData;
   productLaunchInfo?: ProductLounchEmailData;
   orderStatus?: string;
+  verificationUrl?: string;
+  resetUrl?: string;
+  otp?: string;
 }
 
 export interface EmailData {
@@ -399,4 +422,12 @@ export interface NotificationResponse {
     error?: string;
   };
   error?: string;
+}
+
+export interface ServiceType {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  icon?: string;
 }

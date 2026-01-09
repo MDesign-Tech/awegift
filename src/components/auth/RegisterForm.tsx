@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
@@ -15,19 +15,19 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [agreeTerms, setAgreeTerms] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+    if (session) {
+      toast.error("You are already logged in.");
       return;
     }
 
-    if (!agreeTerms) {
-      toast.error("Please agree to the terms and conditions");
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -49,17 +49,16 @@ export default function RegisterForm() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("Account created successfully!");
+        toast.success("Registration successful! Please check your email for the verification code.");
+        // Clear form
+        setName("");
+        const registeredEmail = email; // Store email before clearing
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
 
-        // Auto sign in after registration
-        await signIn("credentials", {
-          email,
-          password,
-          callbackUrl: "/",
-        });
-
-        // Force full page reload to ensure session data is applied
-        window.location.href = "/";
+        // Redirect to verify email page
+        router.push(`/auth/verify-email?email=${encodeURIComponent(registeredEmail)}`);
       } else {
         toast.error(data.error || "Registration failed");
       }
@@ -70,7 +69,12 @@ export default function RegisterForm() {
     }
   };
 
-  const handleOAuthSignIn = async (provider: "google" | "github") => {
+  const handleOAuthSignIn = async (provider: "google") => {
+    if (session) {
+      toast.error("You are already logged in.");
+      return;
+    }
+
     try {
       await signIn(provider, { callbackUrl: "/" });
     } catch (error) {
@@ -195,37 +199,6 @@ export default function RegisterForm() {
           </div>
         </div>
 
-        <div className="flex items-center">
-          <input
-            id="agree-terms"
-            name="agree-terms"
-            type="checkbox"
-            required
-            checked={agreeTerms}
-            onChange={(e) => setAgreeTerms(e.target.checked)}
-            className="h-4 w-4 text-theme-color focus:ring-theme-color border-gray-300 rounded accent-theme-color"
-          />
-          <label
-            htmlFor="agree-terms"
-            className="ml-2 block text-sm text-gray-900"
-          >
-            I agree to the{" "}
-            <Link
-              href="/terms"
-              className="text-theme-color hover:text-accent-color"
-            >
-              Terms and Conditions
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/privacy"
-              className="text-theme-color hover:text-accent-color"
-            >
-              Privacy Policy
-            </Link>
-          </label>
-        </div>
-
         <div>
           <button
             type="submit"
@@ -258,18 +231,6 @@ export default function RegisterForm() {
             <span className="ml-2">Google</span>
           </button>
         </div>
-      </div>
-
-      <div className="text-center">
-        <span className="text-sm text-gray-600">
-          Already have an account?{" "}
-          <Link
-            href="/auth/signin"
-            className="font-medium text-theme-color hover:text-accent-color"
-          >
-            Sign in
-          </Link>
-        </span>
       </div>
     </div>
   );

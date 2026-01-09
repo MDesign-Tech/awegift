@@ -1,13 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { requireRole } from "@/lib/server/auth-utils";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function DELETE(request: NextRequest) {
   try {
-    // ✅ Check authentication & permission
-    const check = await requireRole(request, "canDeleteUsers");
-    if (check instanceof NextResponse) return check;
+    const session = await getServerSession(authOptions);
 
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = session.user.role as UserRole;
+      if (!userRole || !hasPermission(userRole, "canViewAnalytics")) {
+        return NextResponse.json(
+          { error: "Forbidden - Insufficient permissions" },
+          { status: 403 }
+        );
+      }
     // Get request body
     const { userIds } = await request.json();
     if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
@@ -46,7 +60,6 @@ export async function DELETE(request: NextRequest) {
       message: `Successfully deleted ${userIds.length - adminUserIds.length} users`,
     });
   } catch (error) {
-    console.error("Error deleting users:", error);
     return NextResponse.json(
       { error: "Failed to delete users" },
       { status: 500 }

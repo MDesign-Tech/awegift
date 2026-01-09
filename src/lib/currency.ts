@@ -33,7 +33,7 @@ const currencyData: Record<CurrencyCode, { symbol: string; name: string; flag: s
 
 // --- 2. API Configuration and Caching ---
 
-const API_ENDPOINT = "https://v6.exchangerate-api.com/v6/42e9df5d934bb941cbe19c9e/latest/USD";
+const API_ENDPOINT = "https://open.er-api.com/v6/latest/USD";
 
 // Interface for the fetched data structure (only what we need)
 interface ExchangeRateData {
@@ -60,17 +60,16 @@ const fetchRatesFromAPI = async (): Promise<Record<CurrencyCode, number>> => {
     console.log("Fetching new exchange rates from API...");
     try {
         const response = await fetch(API_ENDPOINT);
+        console.log(`Server API response status: ${response.status}`);
         if (!response.ok) {
-            throw new Error(`API call failed with status: ${response.status}`);
+            console.error(`Server API response not ok. Status: ${response.status}, StatusText: ${response.statusText}`);
+            throw new Error(`API call failed with status: ${response.status}, ${response.statusText}`);
         }
 
         const data = await response.json();
+        console.log("Server API response data:", data);
 
-        if (data.result !== 'success') {
-            throw new Error(`Exchange Rate API error: ${data['error-type'] || 'Unknown Error'}`);
-        }
-
-        const rates = data.conversion_rates as Record<string, number>;
+        const rates = data.rates as Record<string, number>;
 
         // Filter rates to include only the ones defined in CurrencyCode
         const filteredRates: Partial<Record<CurrencyCode, number>> = {};
@@ -83,12 +82,13 @@ const fetchRatesFromAPI = async (): Promise<Record<CurrencyCode, number>> => {
         // Update cache with the new data
         cachedExchangeData = {
             conversion_rates: filteredRates as Record<CurrencyCode, number>,
-            time_next_update_unix: data.time_next_update_unix,
+            time_next_update_unix: (data.time_last_update_unix || Math.floor(Date.now() / 1000)) + 3600, // 1 hour from last update
         };
 
         return cachedExchangeData.conversion_rates;
     } catch (error) {
         console.error("Error fetching real-time exchange rates:", error);
+        console.error("Error details:", (error as Error).message, (error as Error).stack);
         // CRITICAL: In a production app, you would fall back to a stored safe/mock rate or fail gracefully.
         throw new Error("Could not fetch real-time exchange rates. Please check API key and network.");
     }

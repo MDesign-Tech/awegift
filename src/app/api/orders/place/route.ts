@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { OrderData } from "../../../../../type";
 import { emailService } from "@/lib/email/service";
 import {
@@ -11,7 +12,7 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
       'RWF',
       {
         orderId: orderData.id,
-        items: orderData.items.map(item => ({
+        items: orderData.items.map((item: any) => ({
           name: item.title,
           quantity: item.quantity,
           price: item.price,

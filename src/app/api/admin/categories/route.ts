@@ -1,12 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { CategoryType } from "../../../../../type";
-import { requireRole } from "@/lib/server/auth-utils";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { hasPermission, UserRole } from "@/lib/rbac/roles";
 
 export async function GET(request: NextRequest) {
   try {
-    const check = await requireRole(request, "canViewProducts"); // Categories are related to products
-    if (check instanceof NextResponse) return check;
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = session.user.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canViewProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
 
     const snapshot = await adminDb.collection("categories").orderBy("name").get();
 
@@ -28,7 +44,6 @@ export async function GET(request: NextRequest) {
             productCount,
           };
         } catch (error) {
-          console.error(`Error counting products for category ${category.slug}:`, error);
           return {
             ...category,
             productCount: 0,
@@ -39,7 +54,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(categoriesWithCounts);
   } catch (error) {
-    console.error("Error fetching categories:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -49,8 +63,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const check = await requireRole(request, "canCreateProducts"); // Categories are related to products
-    if (check instanceof NextResponse) return check;
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized - No session found" },
+        { status: 401 }
+      );
+    }
+
+    const userRole = session.user.role as UserRole;
+    if (!userRole || !hasPermission(userRole, "canCreateProducts")) {
+      return NextResponse.json(
+        { error: "Forbidden - Insufficient permissions" },
+        { status: 403 }
+      );
+    }
 
     const categoryData: Omit<CategoryType, 'id' | 'meta'> = await request.json();
 
@@ -79,7 +107,6 @@ export async function POST(request: NextRequest) {
       ...categoryWithMeta,
     });
   } catch (error) {
-    console.error("Error creating category:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

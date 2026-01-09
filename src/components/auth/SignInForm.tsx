@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
-import { signIn } from "next-auth/react";
-import { useAuth } from "@/lib/auth/AuthContext";
+import { signIn, useSession } from "next-auth/react";
 
 export default function SignInForm() {
   const [email, setEmail] = useState("");
@@ -14,8 +13,7 @@ export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { signInWithEmailAndPassword, signInWithGoogle, signInWithGithub } =
-    useAuth();
+  const { data: session } = useSession();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -25,6 +23,12 @@ export default function SignInForm() {
 
     if (!error) return;
 
+    if (error === "Please verify your email before signing in.") {
+      toast.error("Please verify your email.");
+      router.push("/auth/verify-email");
+      return;
+    }
+
     const errorMessages: Record<string, string> = {
       CredentialsSignin: "Invalid email or password",
       OAuthSignin: "OAuth sign-in failed",
@@ -33,26 +37,41 @@ export default function SignInForm() {
       SessionRequired: "Please sign in to continue",
     };
 
-    toast.error(errorMessages[error] || "Authentication failed");
+    toast.error(errorMessages[error] || error || "Authentication failed");
 
     params.delete("error");
-    const newUrl = `${window.location.pathname}${
-      params.toString() ? `?${params.toString()}` : ""
+    const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""
     }`;
 
     window.history.replaceState({}, "", newUrl);
-  }, []);
+  }, [router]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (session) {
+      toast.error("You are already logged in.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const { error } = await signInWithEmailAndPassword(email, password);
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-      if (error) {
-        toast.error(error.message || "Sign in failed");
+      if (result?.error) {
+        if (result.error === "Please verify your email before signing in.") {
+          toast.error("Please verify your email address.");
+          router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
       } else {
+          toast.error(result.error || "Invalid email or password");
+        }
+      } else if (result?.ok) {
         toast.success("Sign in successful!");
         // Force full page reload to ensure session data is applied
         window.location.href = "/";
@@ -64,12 +83,14 @@ export default function SignInForm() {
     }
   };
 
-  const handleOAuthSignIn = async (provider: "google" | "github") => {
+  const handleOAuthSignIn = async (provider: "google") => {
+    if (session) {
+      toast.error("You are already logged in.");
+      return;
+    }
+
     try {
       await signIn(provider, { callbackUrl: "/" });
-      toast.success("Sign in successful!");
-      // Force full page reload to ensure session data is applied
-      window.location.href = "/";
     } catch (error) {
       toast.error("OAuth sign in failed");
     }
@@ -77,7 +98,7 @@ export default function SignInForm() {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label
             htmlFor="email"
@@ -176,18 +197,6 @@ export default function SignInForm() {
             <span className="ml-2">Google</span>
           </button>
         </div>
-      </div>
-
-      <div className="text-center">
-        <span className="text-sm text-gray-600">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/auth/register"
-            className="font-medium text-theme-color hover:text-accent-color"
-          >
-            Sign up
-          </Link>
-        </span>
       </div>
     </div>
   );

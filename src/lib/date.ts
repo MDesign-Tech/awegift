@@ -14,6 +14,11 @@ export function formatNotificationDate(date: Date | Timestamp | string): string 
   } else {
     dateObj = new Date(date);
   }
+
+  if (isNaN(dateObj.getTime())) {
+    return "Invalid Date";
+  }
+
   const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
   const day = dateObj.getDate().toString().padStart(2, '0');
   const year = dateObj.getFullYear();

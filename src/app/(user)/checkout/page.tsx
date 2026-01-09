@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Container from "@/components/Container";
 import PriceFormat from "@/components/PriceFormat";
 import { loadStripe } from "@stripe/stripe-js";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 import { OrderData } from "../../../../type";
 import {
   FiPackage,
@@ -169,7 +169,7 @@ const CheckoutPage = () => {
         throw new Error("No session ID returned from checkout");
       }
 
-      const result: any = await stripe?.redirectToCheckout({
+      const result: any = await (stripe as any)?.redirectToCheckout({
         sessionId: checkoutSession.id,
       });
 
@@ -242,7 +242,7 @@ const CheckoutPage = () => {
   }
 
   return (
-    <ProtectedRoute loadingMessage="Loading checkout...">
+    <RoleProtectedRoute allowedRoles={["user", "admin"]} loadingMessage="Loading checkout...">
       <Container className="py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -587,7 +587,7 @@ const CheckoutPage = () => {
           </div>
         </div>
       </Container>
-    </ProtectedRoute>
+    </RoleProtectedRoute>
   );
 };
 
