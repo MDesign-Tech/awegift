@@ -22,13 +22,15 @@ const MiddleHeader = ({ session }: { session: Session | null }) => {
     <div className="border-b border-b-gray-400 relative z-50">
       {/* Mobile Layout */}
       <div className="md:hidden">
-        <Container className="py-5 flex items-center justify-center gap-4">
+        <Container className="py-5 flex items-center justify-between gap-4">
           <Logo />
-          <SearchInput />
+          <div className="gap-2 flex ">
+            <SearchInput />
           <RiMenu3Fill
             className="text-2xl text-gray-500 hover:text-theme-color duration-200 cursor-pointer"
             onClick={() => setIsMobileMenuOpen(true)}
           />
+          </div>
         </Container>
       </div>
 
