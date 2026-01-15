@@ -1,0 +1,1111 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { TableSkeleton } from "./Skeletons";
+import { toast } from "react-hot-toast";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { UserRole, hasPermission } from "@/lib/rbac/roles";
+import { useInfiniteProducts, useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import {
+  FiPlus,
+  FiSearch,
+  FiFilter,
+  FiEdit2,
+  FiTrash2,
+  FiEye,
+  FiRefreshCw,
+  FiSave,
+  FiX,
+  FiLoader,
+} from "react-icons/fi";
+import ProductForm from './ProductForm';
+import PriceFormat from "@/components/PriceFormat";
+import { ProductType } from '../../../type';
+import DashboardSidebar from "./DashboardSidebar";
+import { apiFetch } from "@/lib/fetcher";
+
+export default function DashboardProductsClient() {
+  const router = useRouter();
+  const { user, isAdmin, userRole } = useCurrentUser();
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Search state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
+
+  // Use the infinite products hook
+  const {
+    products: allProducts,
+    loading: initialLoading,
+    loadingMore,
+    hasMore,
+    loadMore,
+    reset: resetProducts,
+    refetch: refetchProducts,
+  } = useInfiniteProducts("/api/admin/products", 20, hasSearched ? searchTerm : undefined, selectedCategory || undefined);
+
+  // Handle search
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setHasSearched(term.trim().length > 0);
+  };
+
+  // Clear search
+  const clearSearch = () => {
+    setSearchTerm("");
+    setHasSearched(false);
+  };
+
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ProductType | null>(null);
+
+  // Modal states
+  const [viewProductModal, setViewProductModal] = useState<ProductType | null>(null);
+  const [deleteProductModal, setDeleteProductModal] = useState<ProductType | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<ProductType | null>(null);
+  const [deleteAllModal, setDeleteAllModal] = useState(false);
+  const [deleteSelectedModal, setDeleteSelectedModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Selected products state
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  // All categories state
+  const [allCategories, setAllCategories] = useState<string[]>([]);
+
+  // Updating states for product toggles
+  const [updatingActive, setUpdatingActive] = useState<Set<string>>(new Set());
+  const [updatingFeatured, setUpdatingFeatured] = useState<Set<string>>(new Set());
+
+  // Ref for scrollable container
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Handle refresh with loading state
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refetchProducts();
+      toast.success("Products refreshed successfully");
+    } catch (error) {
+      if (error instanceof TypeError || (error as Error).message.includes('Failed to fetch')) {
+        toast.error('Network connection error');
+      } else {
+        toast.error("Failed to refresh products");
+      }
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Fetch all categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await apiFetch("/api/admin/categories");
+        if (data && !data.error) {
+          const categoryNames = data.map((cat: any) => cat.name);
+          setAllCategories(categoryNames);
+        } else {
+          toast.error(data?.error || "Failed to fetch categories");
+        }
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+        toast.error("Error fetching categories");
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Set initial loading to false when products are loaded
+  useEffect(() => {
+    if (allProducts.length > 0 || !initialLoading) {
+      setLoading(false);
+    }
+  }, [allProducts, initialLoading]);
+
+  // Products are already filtered by the API
+  const categoryFilteredProducts = allProducts;
+
+  // Reset selection when filters change
+  useEffect(() => {
+    setSelectedProducts([]);
+    setSelectAll(false);
+  }, [selectedCategory, searchTerm, hasSearched]);
+
+  // Update selectAll state based on selected products
+  useEffect(() => {
+    if (allProducts.length > 0) {
+      // Check if all visible products are selected
+      const allVisibleSelected = allProducts.every(product =>
+        selectedProducts.includes(product.id)
+      );
+      setSelectAll(allVisibleSelected);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedProducts, allProducts]);
+
+  const handleDeleteProduct = async (product: ProductType) => {
+    setDeleteProductModal(product);
+  };
+
+  const confirmDeleteProduct = async () => {
+    if (!deleteProductModal) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/admin/products/${String(deleteProductModal.id)}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Product deleted successfully");
+        await refetchProducts();
+        setDeleteProductModal(null);
+      } else {
+        const errorData = await response.json();
+if (response.status === 401 && errorData.code === 'USER_DELETED') {
+  toast.error('Account deleted');
+}
+ toast.error(errorData.error || "Failed to delete product");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      if (error instanceof TypeError || (error as Error).message.includes('Failed to fetch')) {
+        toast.error('Network connection error');
+      } else {
+        toast.error("Error deleting product");
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteAllProducts = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch("/api/admin/products/bulk-delete", {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("All products deleted successfully");
+        await refetchProducts();
+        setDeleteAllModal(false);
+      } else {
+        const errorData = await response.json();
+if (response.status === 401 && errorData.code === 'USER_DELETED') {
+  toast.error('Account deleted');
+}
+ toast.error(errorData.error || "Failed to delete all products");
+      }
+    } catch (error) {
+      console.error("Error deleting all products:", error);
+      if (error instanceof TypeError || (error as Error).message.includes('Failed to fetch')) {
+        toast.error('Network connection error');
+      } else {
+        toast.error("Error deleting all products");
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Selection handlers
+  const handleSelectProduct = (productId: string) => {
+    setSelectedProducts((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  // Handle select all visible products
+  const handleSelectAll = () => {
+    if (selectAll) {
+      // Deselect all visible products
+      const visibleIds = allProducts.map(product => product.id);
+      setSelectedProducts(prev => prev.filter(id => !visibleIds.includes(id)));
+    } else {
+      // Select all visible products
+      const visibleIds = allProducts.map(product => product.id);
+      const newSelected = [...new Set([...selectedProducts, ...visibleIds])];
+      setSelectedProducts(newSelected);
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedProducts.length === 0) {
+      toast.error("Please select products to delete");
+      return;
+    }
+    setDeleteSelectedModal(true);
+  };
+
+  const confirmDeleteSelected = async () => {
+    if (selectedProducts.length === 0) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch("/api/admin/products/bulk-delete-selected", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productIds: selectedProducts }),
+      });
+
+      if (response.ok) {
+        toast.success(`Successfully deleted ${selectedProducts.length} products`);
+        setSelectedProducts([]);
+        setSelectAll(false);
+        await refetchProducts();
+        setDeleteSelectedModal(false);
+      } else {
+        const errorData = await response.json();
+if (response.status === 401 && errorData.code === 'USER_DELETED') {
+  toast.error('Account deleted');
+}
+ toast.error(errorData.error || "Failed to delete selected products");
+      }
+    } catch (error) {
+      console.error("Error deleting selected products:", error);
+      if (error instanceof TypeError || (error as Error).message.includes('Failed to fetch')) {
+        toast.error('Network connection error');
+      } else {
+        toast.error("Error deleting selected products");
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const toggleProductActive = async (product: ProductType) => {
+    setUpdatingActive(prev => new Set(prev).add(product.id));
+    try {
+      const response = await fetch(`/api/admin/products/${String(product.id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !product.isActive }),
+      });
+
+      if (response.ok) {
+        toast.success(`Product ${!product.isActive ? 'activated' : 'deactivated'} successfully`);
+        await refetchProducts();
+      } else {
+        let errorMessage = "Failed to update product status";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // Response might not be JSON
+        }
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error("Error updating product status:", error);
+      if (error instanceof TypeError || (error as Error).message.includes('Failed to fetch')) {
+        toast.error('Network connection error');
+      } else {
+        toast.error("Error updating product status");
+      }
+    } finally {
+      setUpdatingActive(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(product.id);
+        return newSet;
+      });
+    }
+  };
+
+  const toggleProductFeatured = async (product: ProductType) => {
+    setUpdatingFeatured(prev => new Set(prev).add(product.id));
+    try {
+      const response = await fetch(`/api/admin/products/${String(product.id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isFeatured: !product.isFeatured }),
+      });
+
+      if (response.ok) {
+
+        toast.success(`Product ${!product.isFeatured ? 'marked as featured' : 'unmarked as featured'} successfully`);
+        await refetchProducts();
+      } else {
+        let errorMessage = "Failed to update product featured status";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // Response might not be JSON
+        }
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error("Error updating product featured status:", error);
+      if (error instanceof TypeError || (error as Error).message.includes('Failed to fetch')) {
+        toast.error('Network connection error');
+      } else {
+        toast.error("Error updating product featured status");
+      }
+    } finally {
+      setUpdatingFeatured(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(product.id);
+        return newSet;
+      });
+    }
+  };
+
+  // Infinite scroll setup
+  useInfiniteScroll(loadMore, hasMore, loadingMore || initialLoading, scrollContainerRef);
+
+  const categories = allCategories;
+
+  // Show loading skeleton for initial load and refresh
+  if (loading || isRefreshing) {
+    return (
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-900">
+              {isRefreshing ? "Refreshing Products..." : "Loading Products..."}
+            </h2>
+          </div>
+        </div>
+        <TableSkeleton rows={10} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow overflow-hidden relative">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center mb-4 sm:mb-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+              Products Management ({allProducts.length}{hasMore ? '+' : ''})
+            </h2>
+            {selectedProducts.length > 0 && (
+              <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                {selectedProducts.length} selected
+              </span>
+            )}
+          </div>
+          <div className="flex items-center flex-wrap space-x-2">
+            {hasPermission(userRole as UserRole, "canDeleteProducts") && (
+              <>
+                {selectedProducts.length > 0 && (
+                  <button
+                    onClick={handleDeleteSelected}
+                    className="flex items-center px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm disabled:opacity-50"
+                    disabled={isRefreshing}
+                  >
+                    <FiTrash2 className="mr-2 h-4 w-4" />
+                    Delete {selectedProducts.length} Selected
+                  </button>
+                )}
+                <button
+                  onClick={() => setDeleteAllModal(true)}
+                  className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm disabled:opacity-50"
+                  disabled={allProducts.length === 0 || isRefreshing}
+                >
+                  <FiTrash2 className="mr-2 h-4 w-4" />
+                  Delete All
+                </button>
+              </>
+            )}
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+              title="Refresh products"
+            >
+              <FiRefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
+
+            {hasPermission(userRole as UserRole, "canCreateProducts") && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center px-3 py-2 bg-theme-color text-white rounded-lg hover:bg-theme-color/80 transition-colors text-sm disabled:opacity-50"
+                disabled={isRefreshing}
+              >
+                <FiPlus className="mr-2 h-4 w-4" />
+                Add New Product
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-transparent disabled:opacity-50"
+                disabled={isRefreshing}
+              />
+              {searchTerm && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                  disabled={isRefreshing}
+                >
+                  <FiX className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="sm:w-48">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-theme-color focus:border-transparent disabled:opacity-50"
+              disabled={isRefreshing}
+            >
+              <option value="">All Categories</option>
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Products Table */}
+      <div ref={scrollContainerRef} className="overflow-x-auto relative max-h-[600px] overflow-y-auto">
+        <table className="w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                <input
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAll}
+                  className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color disabled:opacity-50"
+                  disabled={isRefreshing || allProducts.length === 0}
+                />
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                Product
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                Categories
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                Price
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                Stock
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                Statuses
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {categoryFilteredProducts.map((product, index) => (
+              <tr key={`${product.id}-${index}`} className="hover:bg-gray-50">
+                <td className="px-3 py-4 whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={selectedProducts.includes(product.id)}
+                    onChange={() => handleSelectProduct(product.id)}
+                    className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color disabled:opacity-50"
+                    disabled={isRefreshing}
+                  />
+                </td>
+                <td className="px-3 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 h-12 w-12">
+                      {product.thumbnail ? (
+                        <img
+                          className="h-12 w-12 rounded-lg object-cover"
+                          src={product.thumbnail}
+                          alt={product.title}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            if (e.currentTarget.nextElementSibling) {
+                              (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className={`h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center ${
+                          product.thumbnail ? 'hidden' : 'flex'
+                        }`}
+                      >
+                        <svg
+                          className="h-6 w-6 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="ml-4 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">
+                        {product.title}
+                      </div>
+                      <div className="text-sm text-gray-500">{product.brand}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-3 py-4 whitespace-nowrap">
+                  <div className="flex flex-wrap gap-1">
+                    {product.categories && product.categories.length > 0 ? (
+                      product.categories.map((cat, index) => (
+                        <span key={index} className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-light-bg text-light-text">
+                          {cat}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-gray-500">No categories</span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <PriceFormat amount={product.price} />
+                  {product.discount > 0 && (
+                    <span className="text-green-600 ml-1">
+                      (-<PriceFormat amount={product.discount} />)
+                    </span>
+                  )}
+                </td>
+                <td className="px-3 py-4 whitespace-nowrap">
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    product.stock > 10
+                      ? 'bg-green-100 text-green-800'
+                      : product.stock > 0
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {product.stock}
+                  </span>
+                </td>
+                <td className="px-3 py-4 whitespace-nowrap">
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      {updatingActive.has(product.id) ? (
+                        <>
+                          <FiLoader className="animate-spin w-4 h-4 text-theme-color" />
+                          <span className="ml-2 text-xs font-medium text-gray-700">updating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <input
+                            type="checkbox"
+                            checked={product.isActive}
+                            onChange={() => toggleProductActive(product)}
+                            className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color disabled:opacity-50"
+                            title="Toggle Active Status"
+                            disabled={isRefreshing || updatingFeatured.has(product.id)}
+                          />
+                          <span className="ml-2 text-xs font-medium text-gray-700">Active</span>
+                        </>
+                      )}
+                    </label>
+                    <label className="flex items-center">
+                      {updatingFeatured.has(product.id) ? (
+                        <>
+                          <FiLoader className="animate-spin w-4 h-4 text-theme-color" />
+                          <span className="ml-2 text-xs font-medium text-gray-700">updating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <input
+                            type="checkbox"
+                            checked={product.isFeatured}
+                            onChange={() => toggleProductFeatured(product)}
+                            className="w-4 h-4 text-theme-color bg-gray-100 border-gray-300 focus:ring-theme-color focus:ring-2 accent-theme-color disabled:opacity-50"
+                            title="Toggle Featured Status"
+                            disabled={isRefreshing || updatingActive.has(product.id)}
+                          />
+                          <span className="ml-2 text-xs font-medium text-gray-700">Featured</span>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                </td>
+                <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => setViewProductModal(product)}
+                      className="p-1 text-theme-color hover:text-theme-color/80 transition-colors disabled:opacity-50"
+                      title="View"
+                      disabled={isRefreshing}
+                    >
+                      <FiEye className="h-4 w-4" />
+                    </button>
+                    {hasPermission(userRole as UserRole, "canUpdateProducts") && (
+                      <button
+                        onClick={() => setEditingProduct(product)}
+                        className="p-1 text-theme-color hover:text-accent-color transition-colors disabled:opacity-50"
+                        title="Edit"
+                        disabled={isRefreshing}
+                      >
+                        <FiEdit2 className="h-4 w-4" />
+                      </button>
+                    )}
+                    {hasPermission(userRole as UserRole, "canDeleteProducts") && (
+                      <button
+                        onClick={() => handleDeleteProduct(product)}
+                        className="p-1 text-red-600 hover:text-red-900 transition-colors disabled:opacity-50"
+                        title="Delete"
+                        disabled={isRefreshing}
+                      >
+                        <FiTrash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Loading State for initial load */}
+      {initialLoading && (
+        <div className="px-6 py-12 text-center">
+          <FiLoader className="mx-auto h-8 w-8 text-gray-400 animate-spin" />
+          <p className="mt-2 text-sm text-gray-500">Loading products...</p>
+        </div>
+      )}
+
+      {/* Empty State - only show when not loading and truly no products */}
+      {allProducts.length === 0 && !initialLoading && !loadingMore && !isRefreshing && (
+        <div className="px-6 py-12 text-center">
+          <FiSearch className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900">No products found</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            {searchTerm || selectedCategory
+              ? "Try adjusting your search or filter criteria."
+              : "Get started by adding your first product."}
+          </p>
+        </div>
+      )}
+
+      {/* Loading More Indicator */}
+      {loadingMore && (
+        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-center">
+            <FiLoader className="animate-spin h-5 w-5 text-gray-500 mr-2" />
+            <span className="text-sm text-gray-600">Loading more products...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Products Count */}
+      <div className="px-6 py-3 border-t border-gray-200 bg-gray-50">
+        <div className="text-sm text-gray-700">
+          Showing {allProducts.length} products
+          {selectedProducts.length > 0 && (
+            <span className="ml-2 text-orange-600 font-medium">
+              • {selectedProducts.length} selected
+            </span>
+          )}
+          {!hasMore && categoryFilteredProducts.length > 0 && (
+            <span className="ml-2 text-green-600 font-medium">
+              • All products loaded
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Add Product DashboardSidebar */}
+      <DashboardSidebar
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Add New Product"
+      >
+        <ProductForm
+          onCancel={() => setShowCreateModal(false)}
+          onSuccess={() => {
+            setShowCreateModal(false);
+          }}
+          refetchProducts={refetchProducts}
+        />
+      </DashboardSidebar>
+
+      {/* Edit Product DashboardSidebar */}
+      <DashboardSidebar
+        isOpen={!!editingProduct}
+        onClose={() => setEditingProduct(null)}
+        title="Edit Product"
+      >
+        {editingProduct && (
+          <ProductForm
+            product={editingProduct}
+            onCancel={() => setEditingProduct(null)}
+            onSuccess={() => {
+              setEditingProduct(null);
+              refetchProducts();
+            }}
+            refetchProducts={refetchProducts}
+          />
+        )}
+      </DashboardSidebar>
+
+      {/* View Product Modal */}
+      {viewProductModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-11/12 overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Product Details
+                </h3>
+                <button
+                  onClick={() => setViewProductModal(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <FiX size={24} />
+                </button>
+              </div>
+            </div>
+            <div className=" flex px-6 py-4 space-y-4">
+            <div className="flex flex-wrap gap-3">
+              <div className="text-center">
+                <div className="flex-shrink-0 h-64 w-92 mx-auto">
+                  {viewProductModal.thumbnail ? (
+                    <img
+                      className="h-64 w-92 rounded-lg object-cover"
+                      src={viewProductModal.thumbnail}
+                      alt={viewProductModal.title}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            if (e.currentTarget.nextElementSibling) {
+                              (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                            }
+                          }}
+                    />
+                  ) : null}
+                  <div
+                    className={`h-64 w-92 rounded-lg bg-gray-100 flex items-center justify-center ${
+                      viewProductModal.thumbnail ? 'hidden' : 'flex'
+                    }`}
+                  >
+                    <svg
+                      className="h-16 w-16 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                    </svg>
+                  </div>
+                </div>
+                <h4 className="text-xl font-semibold text-gray-900 mt-4">{viewProductModal.title}</h4>
+                <p className="text-gray-600">{viewProductModal.brand}</p>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900">Product Information</h4>
+                <div>
+                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-900">{(viewProductModal as any).description}</p>
+                </div>
+              </div>
+                <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Product ID
+                    </dt>
+                    <dd className="text-sm text-gray-900">
+                      #{String(viewProductModal.id).slice(-8)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Categories
+                    </dt>
+                    <dd className="text-sm text-gray-900">
+                      {viewProductModal.categories && viewProductModal.categories.length > 0
+                        ? viewProductModal.categories.join(", ")
+                        : "No categories"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Price
+                    </dt>
+                    <dd className="text-sm text-gray-900">
+                      <PriceFormat amount={viewProductModal.price} />
+                      {viewProductModal.discount > 0 && (
+                        <span className="text-green-600 ml-1">
+                          (-<PriceFormat amount={viewProductModal.discount} />)
+                        </span>
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Stock</dt>
+                    <dd className="text-sm text-gray-900">
+                      {viewProductModal.stock}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">
+                      SKU
+                    </dt>
+                    <dd className="text-sm text-gray-900">
+                      {viewProductModal.sku}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Brand</dt>
+                    <dd className="text-sm text-gray-900">
+                      {viewProductModal.brand}
+                    </dd>
+                  </div>
+                  {viewProductModal.meta && (
+                    <>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Created At
+                        </dt>
+                        <dd className="text-sm text-gray-900">
+                          {new Date(viewProductModal.meta.createdAt).toLocaleString()}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Updated At
+                        </dt>
+                        <dd className="text-sm text-gray-900">
+                          {new Date(viewProductModal.meta.updatedAt).toLocaleString()}
+                        </dd>
+                      </div>
+                    </>
+                  )}
+                </dl>
+              </div>
+              </div>
+              {viewProductModal.images && viewProductModal.images.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-gray-900">Gallery Images</h4>
+                  <div className="mt-2 flex overflow-x-auto space-x-4">
+                    {viewProductModal.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt={`${viewProductModal.title} ${index + 1}`}
+                        className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200">
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setViewProductModal(null)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Product Modal */}
+      {deleteProductModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="px-6 py-4">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                <FiTrash2 className="mr-2 h-5 w-5 text-red-600" />
+                Delete Product
+              </h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Are you sure you want to delete product{" "}
+                <strong>
+                  #{String(deleteProductModal.id).slice(-8)}
+                </strong>
+                ?
+              </p>
+              <div className="mt-3 bg-gray-50 rounded-lg p-3">
+                <div className="text-sm text-gray-700">
+                  <div>
+                    <strong>Title:</strong> {deleteProductModal.title}
+                  </div>
+                  <div>
+                    <strong>Brand:</strong> {deleteProductModal.brand}
+                  </div>
+                  <div>
+                    <strong>Price:</strong>{" "}
+                    <PriceFormat amount={deleteProductModal.price} />
+                    {deleteProductModal.discount > 0 && (
+                      <span className="text-green-600 ml-1">
+                        (-<PriceFormat amount={deleteProductModal.discount} />)
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <strong>Stock:</strong> {deleteProductModal.stock}
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-sm text-red-800">
+                  <strong>Warning:</strong> This action cannot be undone. The
+                  product will be permanently removed from the database.
+                </p>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteProductModal(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteProduct}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <FiLoader className="animate-spin mr-2 h-4 w-4" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <FiTrash2 className="mr-2 h-4 w-4" />
+                    Delete Product
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete All Products Modal */}
+      {deleteAllModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="px-6 py-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                Delete All Products
+              </h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Are you sure you want to delete ALL products? This action will
+                remove all products from the products collection. This action cannot be undone.
+              </p>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteAllModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAllProducts}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <FiLoader className="animate-spin mr-2 h-4 w-4" />
+                    Deleting...
+                  </>
+                ) : "Delete All"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Selected Products Modal */}
+      {deleteSelectedModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="px-6 py-4">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                <FiTrash2 className="mr-2 h-5 w-5 text-red-600" />
+                Delete Selected Products
+              </h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Are you sure you want to delete{" "}
+                <strong>{selectedProducts.length}</strong> selected products? This
+                action will permanently remove these products from the database
+                and cannot be undone.
+              </p>
+              <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  <strong>Warning:</strong> This will delete the products from
+                  the products collection in the database.
+                </p>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteSelectedModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteSelected}
+                className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors disabled:opacity-50 flex items-center"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <FiLoader className="animate-spin mr-2 h-4 w-4" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <FiTrash2 className="mr-2 h-4 w-4" />
+                    Delete {selectedProducts.length} Products
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+

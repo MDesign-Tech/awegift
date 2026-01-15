@@ -1,0 +1,11 @@
+/.next/
+/node_modules
+/build
+service-account.json
+.env
+.env.local
+.env.production
+.env.staging
+
+
+

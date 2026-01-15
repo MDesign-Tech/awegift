@@ -1,0 +1,10 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /dashboard/*
+
+# Host
+Host: https://awegift.vercel.app
+
+# Sitemaps
+Sitemap: https://awegift.vercel.app/sitemap.xml

@@ -1,0 +1,85 @@
+import React from "react";
+import { ProductType } from "../../../type";
+import Link from "next/link";
+import PriceFormat from "../PriceFormat";
+import AddToCartButton from "../AddToCartButton";
+import { IoClose } from "react-icons/io5";
+import { useDispatch } from "react-redux";
+import { removeFromCart } from "@/redux/aweGiftSlice";
+import toast from "react-hot-toast";
+import { FaCheck } from "react-icons/fa";
+
+const CartProduct = ({ product }: { product: ProductType }) => {
+  const dispatch = useDispatch();
+  const handleRemoveProduct = () => {
+    dispatch(removeFromCart(product?.id));
+    toast.success(`${product?.title.substring(0, 20)} deleted successfully!`);
+  };
+  return (
+    <div className="flex py-6 sm:py-10 overflow-hidden">
+      <Link
+        href={`/products/${product?.id}`}
+        className="h-24 w-24 sm:h-48 sm:w-48 border border-sky-color/30 hover:border-sky-color overflow-hidden flex items-center justify-center rounded-md"
+      >
+        {product?.images?.[0] ? (
+          <img
+            src={product.images[0]}
+            alt="productImage"
+            className="h-full w-full p-2 rounded-md object-contain bg-[#f7f7f7] hover:scale-110 duration-200"
+          />
+        ) : (
+          <div className="h-full w-full p-2 rounded-md bg-[#f7f7f7] flex items-center justify-center">
+            <svg
+              className="h-8 w-8 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+        )}
+      </Link>
+      {/* Details */}
+      <div className="ml-4 sm:ml-6 flex flex-1 flex-col justify-between min-w-0">
+        <div className="relative pr-9 sm:grid sm:grid-cols-4 sm:gap-x-6 sm:pr-0">
+          <div className="flex flex-col gap-1 col-span-3">
+            <h3 className="text-base font-semibold w-full truncate">
+              {product?.title.substring(0, 80)}
+            </h3>
+            <p className="text-xs">
+              Brand: <span className="font-medium">{product?.brand}</span>
+            </p>
+            <p className="text-xs">
+              Category: <span className="font-medium">{product?.categories && product.categories.length > 0 ? product.categories.join(", ") : "No category"}</span>
+            </p>
+            <div className="flex flex-wrap items-center gap-4 mt-2">
+              <PriceFormat
+                amount={product?.price * product?.quantity!}
+                className="text-base font-semibold"
+              />
+              <AddToCartButton product={product} className="gap-5" />
+            </div>
+          </div>
+          <div className="mt-4 sm:mt-0 sm:pr-9">
+            <div className="absolute right-0 top-0">
+              <button
+                onClick={handleRemoveProduct}
+                className=" p-2 text-gray-600 hover:text-red-600"
+              >
+                <IoClose />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CartProduct;

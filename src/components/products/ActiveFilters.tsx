@@ -1,0 +1,161 @@
+"use client";
+import { useSearchParams, useRouter } from "next/navigation";
+import { FaTimes, FaUndo } from "react-icons/fa";
+import { useCurrency } from "@/contexts/CurrencyContext";
+
+const ActiveFilters = () => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { convertPrice, selectedCurrency } = useCurrency();
+
+  const formatPrice = (amount: number | string) => {
+    if (!amount || amount === "∞") return amount === "∞" ? "∞" : "0";
+    const num = typeof amount === "string" ? parseFloat(amount) : amount;
+    const converted = convertPrice(num, "RWF");
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: selectedCurrency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(converted);
+  };
+
+  const activeFilters = [];
+
+  // Check for active filters
+  const categories = searchParams.getAll("category");
+  const brand = searchParams.get("brand");
+  const color = searchParams.get("color");
+  const minPrice = searchParams.get("min_price");
+  const maxPrice = searchParams.get("max_price");
+  const search = searchParams.get("search");
+
+  if (categories.length > 0) {
+    categories.forEach(category => {
+      activeFilters.push({
+        type: "category",
+        label: "Category",
+        value: category,
+        displayValue:
+          category === "bestsellers"
+            ? "Best Sellers"
+            : category === "new"
+            ? "New Arrivals"
+            : category === "offers"
+            ? "Special Offers"
+            : category.charAt(0).toUpperCase() + category.slice(1),
+      });
+    });
+  }
+
+  if (brand) {
+    activeFilters.push({
+      type: "brand",
+      label: "Brand",
+      value: brand,
+      displayValue: brand,
+    });
+  }
+
+  if (color) {
+    activeFilters.push({
+      type: "color",
+      label: "Color",
+      value: color,
+      displayValue: color,
+    });
+  }
+
+  if (minPrice || maxPrice) {
+    activeFilters.push({
+      type: "price",
+      label: "Price",
+      value: `${minPrice || 0}-${maxPrice || "∞"}`,
+      displayValue: `${formatPrice(minPrice || 0)} - ${formatPrice(maxPrice || "∞")}`,
+    });
+  }
+
+  if (search) {
+    activeFilters.push({
+      type: "search",
+      label: "Search",
+      value: search,
+      displayValue: `"${search}"`,
+    });
+  }
+
+  const removeFilter = (filterType: string, value?: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    switch (filterType) {
+      case "category":
+        if (value) {
+          // Remove specific category value
+          const currentCategories = params.getAll("category");
+          params.delete("category");
+          currentCategories.filter(cat => cat !== value).forEach(cat => params.append("category", cat));
+        } else {
+          params.delete("category");
+        }
+        break;
+      case "brand":
+        params.delete("brand");
+        break;
+      case "color":
+        params.delete("color");
+        break;
+      case "price":
+        params.delete("min_price");
+        params.delete("max_price");
+        break;
+      case "search":
+        params.delete("search");
+        break;
+    }
+
+    router.push(`/products?${params.toString()}`);
+  };
+
+  const clearAllFilters = () => {
+    router.push("/products");
+  };
+
+  if (activeFilters.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium text-gray-900">Active Filters</h3>
+        <button
+          onClick={clearAllFilters}
+          className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 transition-colors"
+        >
+          <FaUndo className="w-3 h-3" />
+          Clear All
+        </button>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {activeFilters.map((filter, index) => (
+          <div
+            key={index}
+            className="inline-flex items-center gap-2 bg-light-bg text-light-text text-sm px-3 py-1 rounded-full border border-border-color"
+          >
+            <span className="font-medium">{filter.label}:</span>
+            <span>{filter.displayValue}</span>
+            <button
+              onClick={() => removeFilter(filter.type, filter.value)}
+              className="flex items-center justify-center w-4 h-4 bg-light-bg hover:bg-accent-color rounded-full transition-colors ml-1"
+            >
+              <FaTimes className="w-2 h-2" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default ActiveFilters;
