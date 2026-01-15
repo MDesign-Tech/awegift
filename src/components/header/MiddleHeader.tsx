@@ -24,8 +24,11 @@ const MiddleHeader = ({ session }: { session: Session | null }) => {
       <div className="md:hidden">
         <Container className="py-5 flex items-center justify-between gap-4">
           <Logo />
-          <div className="gap-2 flex ">
-            <SearchInput />
+          <div className="gap-3 flex ">
+          <SearchInput />
+          {isAuthenticated && session?.user ? (
+            <UserProfileDropdown user={session.user} />
+          ) : null}
           <RiMenu3Fill
             className="text-2xl text-gray-500 hover:text-theme-color duration-200 cursor-pointer"
             onClick={() => setIsMobileMenuOpen(true)}

@@ -35,7 +35,7 @@ const MobileMenuPopup = ({ isOpen, onClose, session }: MobileMenuPopupProps) => 
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
 
       {/* Centered popup */}
-      <div className="fixed inset-0 flex items-center justify-center p-4">
+      <div className="fixed inset-0 flex items-start justify-center p-4">
         <DialogPanel className="w-full max-w-sm bg-white rounded-lg shadow-xl p-6 space-y-6">
           {/* Close button */}
           <div className="flex justify-end">
@@ -49,13 +49,6 @@ const MobileMenuPopup = ({ isOpen, onClose, session }: MobileMenuPopupProps) => 
 
           {/* Icons section */}
           <div className="flex justify-center gap-6">
-            {/* Search */}
-            <Link href="/" onClick={onClose} className="flex flex-col items-center gap-2">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-xl">
-                <RiSearchLine />
-              </div>
-              <span className="text-xs text-black">Search</span>
-            </Link>
 
             {/* Cart */}
             <Link href="/cart" onClick={onClose} className="flex flex-col items-center gap-2 relative">

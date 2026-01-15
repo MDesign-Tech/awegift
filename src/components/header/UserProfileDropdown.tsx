@@ -151,7 +151,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
         className="flex items-center gap-2 cursor-pointer group"
       >
         <Link href="/account" className="flex items-center">
-          <div className="border  border-gray-500 w-8 h-8 md:w-10 md:h-10 rounded-full text-xl overflow-hidden">
+          <div className="border  border-gray-500 w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full text-xl overflow-hidden">
             {user?.image ? (
               <img
                 src={user.image}
@@ -160,7 +160,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
               />
             ) : (
               <div className="w-full h-full  rounded-full bg-gray-300 flex items-center justify-center">
-                <span className="text-lg font-semibold text-gray-600">
+                <span className="text-sm font-semibold text-gray-600">
                   {user?.name?.charAt(0)?.toUpperCase() || "U"}
                 </span>
               </div>
@@ -181,7 +181,7 @@ const UserProfileDropdown = ({ user }: UserProfileDropdownProps) => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full right-0 pt-1 w-48">
+        <div className="absolute top-full right-0 pt-1 w-40 md:w-48">
           <div className="bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-2 animate-in fade-in-0 zoom-in-95 duration-200">
             {/* User Info Header */}
             <div className="px-4 py-2 border-b border-gray-100">
