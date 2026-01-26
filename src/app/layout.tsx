@@ -6,6 +6,9 @@ import WhatsAppButton from "../components/WhatsAppButton";
 export const metadata: Metadata = {
   title: "AweGift - Multipurpose eCommerce website",
   description: "Test application for education purpose",
+  verification: {
+    google: "google8d5870e68a4b085f.html",
+  },
 };
 
 export const viewport: Viewport = {
