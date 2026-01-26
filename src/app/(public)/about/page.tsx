@@ -1,13 +1,14 @@
 import Container from "@/components/Container";
 import Title from "@/components/Title";
 import Link from "next/link";
-import { Metadata } from "next";
+import { generateSEO } from "@/lib/seo";
+import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "About Us - AweGift",
-  description:
-    "Learn more about AweGift - Your trusted multipurpose eCommerce platform",
-};
+export const metadata: Metadata = generateSEO({
+  title: "About Us",
+  description: "Learn more about AweGift - Your trusted multipurpose eCommerce platform for quality products and exceptional shopping experiences.",
+  url: "/about",
+});
 
 export default function AboutPage() {
   return (

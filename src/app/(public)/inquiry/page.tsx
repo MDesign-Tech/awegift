@@ -1,6 +1,7 @@
 import Container from "@/components/Container";
 import Title from "@/components/Title";
-import { Metadata } from "next";
+import { generateSEO } from "@/lib/seo";
+import type { Metadata } from "next";
 import {
   FiPackage,
   FiShoppingCart,
@@ -10,11 +11,11 @@ import {
   FiMessageSquare,
 } from "react-icons/fi";
 
-export const metadata: Metadata = {
-  title: "Business Inquiry - AweGift",
-  description:
-    "Partner with AweGift - Explore wholesale, bulk orders, and business opportunities",
-};
+export const metadata: Metadata = generateSEO({
+  title: "Business Inquiry",
+  description: "Partner with AweGift - Explore wholesale, bulk orders, and business opportunities for your company.",
+  url: "/inquiry",
+});
 
 export default function InquiryPage() {
   return (

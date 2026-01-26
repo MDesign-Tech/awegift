@@ -1,15 +1,16 @@
 import Container from "@/components/Container";
 import Title from "@/components/Title";
-import { Metadata } from "next";
+import { generateSEO } from "@/lib/seo";
+import type { Metadata } from "next";
 import { BsEnvelopeAt, BsTelephone } from "react-icons/bs";
 import { GrLocation } from "react-icons/gr";
 import { FiClock, FiMail, FiMapPin, FiPhone } from "react-icons/fi";
 
-export const metadata: Metadata = {
-  title: "Contact Us - AweGift",
-  description:
-    "Get in touch with AweGift - We're here to help with any questions or concerns",
-};
+export const metadata: Metadata = generateSEO({
+  title: "Contact Us",
+  description: "Get in touch with AweGift - We're here to help with any questions or concerns about your orders and products.",
+  url: "/contact",
+});
 
 export default function ContactPage() {
   return (

@@ -6,6 +6,8 @@ import {
   searchProducts,
 } from "../helpers/productHelpers";
 import Link from "next/link";
+import { generateSEO } from "@/lib/seo";
+import type { Metadata } from "next";
 
 interface Props {
   searchParams: Promise<{
@@ -20,6 +22,42 @@ interface Props {
     sort?: string;
     page?: string;
   }>;
+}
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const params = await searchParams;
+  const getPageTitle = () => {
+    if (params.category) {
+      const categories = Array.isArray(params.category) ? params.category : [params.category];
+      const regularCategories = categories
+
+      // If multiple categories or regular categories
+      if (regularCategories.length > 0) {
+        if (regularCategories.length === 1) {
+          const singleRegularCategory = regularCategories[0] as string;
+          return `${singleRegularCategory.charAt(0).toUpperCase() + singleRegularCategory.slice(1)} Products`;
+        } else {
+          return "Filtered Products";
+        }
+      }
+
+      // Multiple special categories
+      return "Special Products";
+    }
+    if (params.search) {
+      return `Search Results for "${params.search}"`;
+    }
+    return "All Products";
+  };
+
+  const title = getPageTitle();
+  const description = `Browse ${title.toLowerCase()} at AweGift. Find the best deals on personalized gifts, luxury presents, custom items, and more.`;
+
+  return generateSEO({
+    title,
+    description,
+    url: "/products",
+  });
 }
 
 

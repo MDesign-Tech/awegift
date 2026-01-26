@@ -2,6 +2,9 @@
 User-agent: *
 Allow: /
 Disallow: /dashboard/*
+Disallow: /account/*
+Disallow: /cart
+Disallow: /checkout
 
 # Host
 Host: https://awegift.vercel.app

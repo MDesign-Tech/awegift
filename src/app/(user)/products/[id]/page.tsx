@@ -12,11 +12,35 @@ import ProductSpecifications from "@/components/ProductSpecifications";
 import RelatedProducts from "@/components/RelatedProducts";
 import ProductActionsClient from "@/components/ProductActionsClient";
 import { notFound } from "next/navigation";
+import { generateSEO } from "@/lib/seo";
+import type { Metadata } from "next";
 
 interface Props {
   params: {
     id: string;
   };
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const product: ProductType = await getData(`/api/products/${id}`);
+    const title = `${product.title} | ${product.brand}`;
+    const description = product.description || product.title;
+    const image = product.images?.[0] || undefined;
+    return generateSEO({
+      title,
+      description,
+      image,
+      url: `/products/${id}`,
+    });
+  } catch (error) {
+    return generateSEO({
+      title: "Product Not Found",
+      description: "The product you are looking for could not be found.",
+      url: `/products/${id}`,
+    });
+  }
 }
 
 const SingleProductPage = async ({ params }: Props) => {

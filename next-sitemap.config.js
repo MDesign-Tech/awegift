@@ -10,7 +10,7 @@ const config = {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/dashboard/*"], // Disallow private or admin routes
+        disallow: ["/dashboard/*", "/account/*", "/cart", "/checkout"], // Disallow private or admin routes
       },
     ],
   },

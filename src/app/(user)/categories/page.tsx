@@ -3,39 +3,30 @@ import Container from "@/components/Container";
 import InfiniteCategoryGrid from "@/components/pages/categories/InfiniteCategoryGrid";
 import { getData } from "../helpers";
 import { getCategoriesWithCounts } from "../helpers/productHelpers";
-import { Metadata } from "next";
+import { generateSEO } from "@/lib/seo";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { CategoryType } from "../../../../type";
 
 type CategoryWithCount = CategoryType & { productCount: number };
 type EnrichedCategory = CategoryWithCount & { count: number };
 
-export const metadata: Metadata = {
-  title: "Product Categories | AweGift - Shop by Category",
+export const metadata: Metadata = generateSEO({
+  title: "Gift Categories | AweGift - Shop by Category",
   description:
-    "Explore our wide range of product categories including electronics, fashion, home decor, beauty, and more. Find exactly what you're looking for with our organized collections.",
+    "Explore our wide range of gift categories including personalized gifts, luxury items, custom presents, and more. Find the perfect gift with our organized collections.",
   keywords: [
-    "product categories",
-    "electronics",
-    "fashion",
-    "home decor",
-    "beauty products",
-    "clothing",
-    "accessories",
+    "gift categories",
+    "personalized gifts",
+    "luxury gifts",
+    "custom presents",
+    "birthday gifts",
+    "anniversary gifts",
+    "wedding gifts",
     "shop by category",
   ],
-  openGraph: {
-    title: "Product Categories | AweGift",
-    description:
-      "Discover our wide range of product categories. Find exactly what you're looking for with our carefully curated collections.",
-    url: "/categories",
-    siteName: "AweGift",
-    type: "website",
-  },
-  alternates: {
-    canonical: "/categories",
-  },
-};
+  url: "/categories",
+});
 
 export default async function CategoriesPage() {
   // Fetch categories with product counts from API
