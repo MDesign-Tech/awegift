@@ -6,6 +6,11 @@ import WhatsAppButton from "../components/WhatsAppButton";
 export const metadata: Metadata = {
   title: "AweGift - Multipurpose eCommerce website",
   description: "Test application for education purpose",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
   verification: {
     google: "google8d5870e68a4b085f.html",
   },
