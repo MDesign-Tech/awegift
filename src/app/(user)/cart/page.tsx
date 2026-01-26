@@ -3,7 +3,7 @@ import Container from "@/components/Container";
 
 const CartPage = async () => {
   return (
-    <Container className="py-10">
+    <Container className="py-4 md:py-8">
       <CartProducts />
     </Container>
   );

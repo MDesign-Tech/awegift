@@ -13,6 +13,7 @@ import { FiAlertCircle, FiLoader } from "react-icons/fi";
 import { FaSignInAlt } from "react-icons/fa";
 import Link from "next/link";
 import { resetCart } from "@/redux/aweGiftSlice";
+import toast from "react-hot-toast";
 
 interface Props {
   cart: ProductType[];
@@ -50,12 +51,12 @@ const CartSummary = ({ cart }: Props) => {
     }
 
     if (!canPlaceOrder) {
-      alert("You don't have permission to place orders.");
+      toast.error("You don't have permission to place orders.");
       return;
     }
 
     if (!selectedAddress) {
-      alert("Please select a delivery address before placing your order.");
+      toast.error("Please select a delivery address before placing your order.");
       return;
     }
 
@@ -122,7 +123,7 @@ const CartSummary = ({ cart }: Props) => {
       }
     } catch (error) {
       console.error("Error placing order:", error);
-      alert("Failed to place order. Please try again.");
+      toast.error("Failed to place order. Please try again.");
     } finally {
       setPlacing(false);
     }

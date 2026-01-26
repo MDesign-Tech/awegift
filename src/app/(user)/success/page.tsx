@@ -90,7 +90,7 @@ const SuccessPage = () => {
   if (!orderProcessed) {
     return (
       <RoleProtectedRoute allowedRoles={["user", "admin"]} loadingMessage="Processing your order...">
-        <Container className="py-10">
+        <Container className="py-4 md:py-8">
           <OrderSummarySkeleton />
         </Container>
       </RoleProtectedRoute>
@@ -99,7 +99,7 @@ const SuccessPage = () => {
 
   return (
     <RoleProtectedRoute allowedRoles={["user", "admin"]} loadingMessage="Processing your order...">
-      <Container className="py-10">
+      <Container className="py-4 md:py-8">
         <div className="min-h-[500px] flex flex-col items-center justify-center">
           {/* Success Icon */}
           <div className="mb-8">

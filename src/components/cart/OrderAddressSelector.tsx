@@ -6,6 +6,7 @@ import Button from "../ui/Button";
 import AddressForm from "../account/AddressForm";
 import { Address } from "../../../type";
 import { FiPlus, FiMapPin, FiEdit2, FiCheck } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 interface OrderAddressSelectorProps {
   selectedAddress: Address | null;
@@ -87,6 +88,7 @@ export default function OrderAddressSelector({
       const newAddress = {
         ...addressWithoutId,
         id: Date.now().toString(),
+        isDefault: addresses.length === 0 ? true : addressData.isDefault,
       };
 
       const response = await fetch("/api/user/profile", {
@@ -106,11 +108,11 @@ export default function OrderAddressSelector({
       } else {
         const errorData = await response.json();
         console.error("Failed to add address:", errorData);
-        alert(`Failed to add address: ${errorData.error || "Unknown error"}`);
+        toast.error(`Failed to add address: ${errorData.error || "Unknown error"}`);
       }
     } catch (error) {
       console.error("Error adding address:", error);
-      alert("Failed to add address. Please try again.");
+      toast.error("Failed to add address. Please try again.");
     } finally {
       setAddingLoading(false);
     }

@@ -112,20 +112,38 @@ export const authOptions: NextAuthOptions = {
           else if (/edge/i.test(userAgent)) browser = "Edge";
           else if (/opera/i.test(userAgent)) browser = "Opera";
 
-          const sessionId = crypto.randomUUID();
-          const loginSession = {
-            id: sessionId,
-            ip,
-            userAgent,
-            device,
-            browser,
-            timestamp: new Date().toISOString(),
-            revoked: false,
-          };
-
-          // Get existing sessions and add new one
+          // Get existing sessions
           const existingSessions = user.loginSessions || [];
-          const updatedSessions = [loginSession, ...existingSessions].slice(0, 50); // Keep last 50
+
+          // Check if there's an existing non-revoked session for the same device and browser
+          const existingSessionIndex = existingSessions.findIndex((s: any) =>
+            !s.revoked && s.device === device && s.browser === browser
+          );
+
+          let sessionId: string;
+          let updatedSessions: any[];
+
+          if (existingSessionIndex !== -1) {
+            // Update existing session
+            existingSessions[existingSessionIndex].timestamp = new Date().toISOString();
+            existingSessions[existingSessionIndex].ip = ip;
+            existingSessions[existingSessionIndex].userAgent = userAgent;
+            sessionId = existingSessions[existingSessionIndex].id;
+            updatedSessions = existingSessions;
+          } else {
+            // Create new session
+            sessionId = crypto.randomUUID();
+            const loginSession = {
+              id: sessionId,
+              ip,
+              userAgent,
+              device,
+              browser,
+              timestamp: new Date().toISOString(),
+              revoked: false,
+            };
+            updatedSessions = [loginSession, ...existingSessions].slice(0, 50); // Keep last 50
+          }
 
           await userDoc.ref.update({
             loginAttempts: 0,
@@ -297,11 +315,28 @@ export const authOptions: NextAuthOptions = {
   events: {
     async signIn({ user, account, isNewUser }) {
       // Log sign in events if needed
-      console.log(`User ${user.email} signed in via ${account?.provider}`);
     },
     async signOut({ token }) {
-      // Log sign out events if needed
-      console.log(`User ${token?.email} signed out`);
+      // Mark the session as revoked
+      if (token?.id && (token as any).sessionId) {
+        try {
+          const userDoc = await adminDb.collection("users").doc(token.id).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            const sessions = userData?.loginSessions || [];
+            const sessionIndex = sessions.findIndex((s: any) => s.id === (token as any).sessionId);
+            if (sessionIndex !== -1) {
+              sessions[sessionIndex].revoked = true;
+              sessions[sessionIndex].revokedAt = new Date().toISOString();
+              await userDoc.ref.update({
+                loginSessions: sessions,
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error revoking session on sign out:", error);
+        }
+      }
     },
   },
 };

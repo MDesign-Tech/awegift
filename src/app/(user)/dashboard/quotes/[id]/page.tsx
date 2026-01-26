@@ -243,7 +243,7 @@ export default function AdminQuoteDetailPage() {
   if (loading) {
     return (
       <RoleProtectedRoute allowedRoles={["admin"]} loadingMessage="Loading quote details...">
-        <Container className="py-8">
+        <Container className="py-4 md:py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded w-1/4"></div>
             <div className="h-64 bg-gray-200 rounded"></div>
@@ -256,7 +256,7 @@ export default function AdminQuoteDetailPage() {
   if (!quote || !editableQuote) {
     return (
       <RoleProtectedRoute allowedRoles={["admin"]} loadingMessage="Loading quote details...">
-        <Container className="py-8">
+        <Container className="py-4 md:py-8">
           <div className="text-center">
             <div className="text-red-600 mb-2">⚠️</div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -277,7 +277,7 @@ export default function AdminQuoteDetailPage() {
 
   return (
     <RoleProtectedRoute allowedRoles={["admin"]} loadingMessage="Loading quote details...">
-      <Container className="py-8">
+      <Container className="py-4 md:py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">

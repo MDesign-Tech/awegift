@@ -40,7 +40,7 @@ const FavoritePage = () => {
   // Redirect if not logged in
   if (!session?.user) {
     return (
-      <Container className="py-10">
+      <Container className="py-4 md:py-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-20">
             <MdFavoriteBorder className="mx-auto h-20 w-20 text-gray-300 mb-6" />
@@ -63,7 +63,7 @@ const FavoritePage = () => {
   }
 
   return (
-    <Container className="py-10">
+    <Container className="py-4 md:py-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

@@ -23,6 +23,7 @@ import {
   FiCheckCircle,
   FiLoader,
 } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 const OrderTrackingPage = () => {
   const params = useParams();
@@ -108,30 +109,12 @@ const OrderTrackingPage = () => {
       }
     } catch (error) {
       console.error("Error updating order status:", error);
-      alert("Failed to mark order as completed. Please try again.");
+      toast.error("Failed to mark order as completed. Please try again.");
     } finally {
       setUpdatingStatus(false);
     }
   };
 
-  // No changes needed to the Tracking Page structure,
-  // just ensure the handleGenerateReceipt passes the promise:
-
-  const handleGenerateReceipt = async () => {
-    if (!order) return;
-    const response = await fetch("/api/orders/generate-receipt", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId: order.id }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to generate receipt");
-    }
-
-    await fetchOrderDetails(); // Refresh UI
-  };
 
   if (loading) {
     return (
@@ -139,7 +122,7 @@ const OrderTrackingPage = () => {
         allowedRoles={["user", "admin"]}
         loadingMessage="Loading order details..."
       >
-        <Container className="py-8">
+        <Container className="py-4 md:py-8">
           <div className="animate-pulse">
             <div className="bg-gray-200 rounded h-8 w-64 mb-8"></div>
             <div className="bg-white rounded-lg shadow p-6">
@@ -161,7 +144,7 @@ const OrderTrackingPage = () => {
         allowedRoles={["user", "admin"]}
         loadingMessage="Loading order details..."
       >
-        <Container className="py-8">
+        <Container className="py-4 md:py-8">
           <div className="text-center">
             <div className="text-6xl mb-4">📦</div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
@@ -221,7 +204,6 @@ const OrderTrackingPage = () => {
       allowedRoles={["user", "admin"]}
       loadingMessage="Loading order details..."
     >
-      <Container className="lg:py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
@@ -233,7 +215,7 @@ const OrderTrackingPage = () => {
                 <FiArrowLeft className="w-5 h-5" />
               </Link>
               <div>
-                <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+                <h1 className="text-md sm:text-lg md:text-xl lg:text-2xl font-bold text-gray-900">
                   Order #{order.id}
                 </h1>
                 <p className="text-gray-600 text-sm md:text-base">
@@ -245,11 +227,9 @@ const OrderTrackingPage = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
               <Receipt
                 orderId={order.id}
-                receiptPath={order.receiptPath}
-                onGenerateReceipt={handleGenerateReceipt}
               />
               <div
-                className={`px-4 py-2 text-sm font-medium rounded-lg border capitalize cursor-default w-full sm:w-auto ${
+                className={`px-4 py-2 text-sm font-medium rounded-lg border capitalize cursor-default sm:w-auto ${
                   getStatusDisplayInfo(order.status).color
                 }`}
               >
@@ -498,7 +478,6 @@ const OrderTrackingPage = () => {
             </div>
           </div>
         </div>
-      </Container>
     </RoleProtectedRoute>
   );
 };

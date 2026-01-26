@@ -67,7 +67,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, image, profile, currentPassword, newPassword } = body;
+    const { name, image, profile, currentPassword, newPassword, addAddress, address } = body;
 
     const usersRef = adminDb.collection("users");
     const snapshot = await usersRef.where("email", "==", session.user.email).get();
@@ -96,6 +96,17 @@ export async function PUT(request: NextRequest) {
       updateData["profile.phone"] = profile.phone;
     }
 
+    // Handle address operations
+    if (addAddress) {
+      // Add new address
+      const currentAddresses = userData.profile?.addresses || [];
+      const updatedAddresses = [...currentAddresses, addAddress];
+      updateData["profile.addresses"] = updatedAddresses;
+    } else if (address) {
+      // Update entire address array (for editing or setting default)
+      updateData["profile.addresses"] = address;
+    }
+
     // Handle password update if provided
     if (newPassword) {
       if (!currentPassword) {
@@ -120,14 +131,22 @@ export async function PUT(request: NextRequest) {
     const updatedUser = await adminDb.collection("users").doc(userDoc.id).get();
     const updatedData = updatedUser.data();
 
-    // Return updated profile data
-    return NextResponse.json({
+    // Prepare response
+    const response: any = {
       profile: updatedData?.profile || {},
       name: updatedData?.name,
       email: updatedData?.email,
       image: updatedData?.image,
       id: userDoc.id
-    });
+    };
+
+    // Include addresses in response if they were updated
+    if (addAddress || address) {
+      response.addresses = updatedData?.profile?.addresses || [];
+      response.success = true;
+    }
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Profile update error:", error);
     return NextResponse.json(

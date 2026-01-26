@@ -62,7 +62,7 @@ const ProductSpecifications = ({ product }: ProductSpecificationsProps) => {
           {additionalSpecs.map((spec, index) => (
             <div
               key={index}
-              className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0"
+              className="flex flex-wrap overflow-hidden justify-between items-center py-2 border-b border-gray-200 last:border-b-0"
             >
               <span className="font-medium text-gray-700">{spec.label}:</span>
               <span className="text-gray-600">{spec.value}</span>

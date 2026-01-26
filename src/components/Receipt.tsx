@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { FiDownload, FiLoader } from "react-icons/fi";
 import Button from "./ui/Button";
+import toast from "react-hot-toast";
 
 interface ReceiptProps {
   orderId: string;
@@ -28,10 +29,10 @@ const Receipt = ({ orderId }: ReceiptProps) => {
         document.body.removeChild(a);
       } else {
         const error = await response.json();
-        alert("Error: " + (error.error || "Failed to download receipt"));
+        toast.error("Error: " + (error.error || "Failed to download receipt"));
       }
     } catch (error) {
-      alert("Error: Failed to download receipt");
+      toast.error("Error: Failed to download receipt");
     } finally {
       setLoading(false);
     }

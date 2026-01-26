@@ -86,7 +86,7 @@ export const canUpdatePaymentStatus = (
           methodToCheck === PAYMENT_METHODS.AIRTEL ||
           methodToCheck === PAYMENT_METHODS.ONLINE) &&
         currentPaymentStatus === PAYMENT_STATUSES.PENDING &&
-        newPaymentStatus === PAYMENT_STATUSES.PAID
+        (newPaymentStatus === PAYMENT_STATUSES.PENDING || newPaymentStatus === PAYMENT_STATUSES.PAID)
       );
 
     default:

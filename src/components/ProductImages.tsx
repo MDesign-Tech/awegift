@@ -6,11 +6,13 @@ interface Props {
   thumbsail?: string;
 }
 
-const ProductImages = ({ images , thumbsail }: Props) => {
-  const thumbnailImages = thumbsail ? [thumbsail, ...images.filter(img => img !== thumbsail)] : images;
+const ProductImages = ({ images, thumbsail }: Props) => {
+  const thumbnailImages = thumbsail
+    ? [thumbsail, ...images.filter((img) => img !== thumbsail)]
+    : images;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [opacity, setOpacity] = useState(1);
-  const currentImage = thumbnailImages[currentIndex] || '';
+  const currentImage = thumbnailImages[currentIndex] || "";
 
   const changeImage = (index: number) => {
     setOpacity(0);
@@ -23,12 +25,12 @@ const ProductImages = ({ images , thumbsail }: Props) => {
   return (
     <div className="flex flex-col gap-4">
       {/* Main Image */}
-      <div className="order-1 bg-gray-100 rounded-md w-full max-h-[400px] md:max-h-[550px]">
+      <div className="order-1 bg-light-bg rounded-md">
         {currentImage && (
           <img
             src={currentImage}
             alt="mainImage"
-            className={`w-full h-full rounded-md object-contain transition-opacity duration-500 ${opacity === 0 ? 'opacity-0' : 'opacity-100'}`}
+            className={`w-full h-full rounded-md object-contain transition-opacity duration-500 ${opacity === 0 ? "opacity-0" : "opacity-100"}`}
           />
         )}
       </div>

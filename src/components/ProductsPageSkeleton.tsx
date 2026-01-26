@@ -7,10 +7,23 @@ const ProductsPageSkeleton = () => {
   const [isGridView, setIsGridView] = useState(true);
 
   return (
-    <Container className="py-5">
-      <div className="w-full h-full flex pb-20 gap-10">
+    <Container className="py-4 sm:py-8">
+      {/* Page Header Skeleton */}
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-pulse">
+        <div className="h-8 bg-gray-200 rounded w-48"></div>
+        <div className="flex items-center space-x-2">
+          <div className="h-4 bg-gray-200 rounded w-12"></div>
+          <div className="h-4 bg-gray-200 rounded w-1"></div>
+          <div className="h-4 bg-gray-200 rounded w-16"></div>
+          <div className="h-4 bg-gray-200 rounded w-1"></div>
+          <div className="h-4 bg-gray-200 rounded w-20"></div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
         {/* Sidebar Skeleton */}
-        <div className="w-full lg:w-2/12 hidden lg:inline-flex h-full">
+        <div className="w-full lg:w-1/5 order-1 lg:order-1">
           <div className="w-full h-fit bg-white border border-gray-200 rounded-lg p-4 space-y-6 animate-pulse">
             {/* Categories Section */}
             <div>
@@ -56,59 +69,61 @@ const ProductsPageSkeleton = () => {
           </div>
         </div>
 
-        {/* Main Content Skeleton */}
-        <div className="w-full lg:w-10/12 h-full flex flex-col gap-10">
-          {/* Header Controls */}
-          <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4 animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-48"></div>
-            <div className="flex items-center gap-4">
-              <div className="h-10 bg-gray-200 rounded w-32"></div>
-              <div className="h-10 bg-gray-200 rounded w-24"></div>
+        {/* Products Section Skeleton */}
+        <div className="flex-1 min-w-0 order-2 lg:order-2">
+          <div className="w-full h-full flex flex-col gap-10 animate-pulse">
+            {/* Header Controls */}
+            <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="h-8 bg-gray-200 rounded w-48"></div>
+              <div className="flex items-center gap-4">
+                <div className="h-10 bg-gray-200 rounded w-32"></div>
+                <div className="h-10 bg-gray-200 rounded w-24"></div>
+              </div>
             </div>
-          </div>
 
-          {/* Grid/List Toggle */}
-          <div className="flex items-center justify-between animate-pulse">
-            <div className="h-6 bg-gray-200 rounded w-32"></div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setIsGridView(true)}
-                className={`w-8 h-8 rounded ${
-                  isGridView ? "bg-theme-color" : "bg-gray-200"
-                }`}
-              ></button>
-              <button
-                onClick={() => setIsGridView(false)}
-                className={`w-8 h-8 rounded ${
-                  !isGridView ? "bg-theme-color" : "bg-gray-200"
-                }`}
-              ></button>
+            {/* Grid/List Toggle */}
+            <div className="flex items-center justify-between">
+              <div className="h-6 bg-gray-200 rounded w-32"></div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setIsGridView(true)}
+                  className={`w-8 h-8 rounded ${
+                    isGridView ? "bg-theme-color" : "bg-gray-200"
+                  }`}
+                ></button>
+                <button
+                  onClick={() => setIsGridView(false)}
+                  className={`w-8 h-8 rounded ${
+                    !isGridView ? "bg-theme-color" : "bg-gray-200"
+                  }`}
+                ></button>
+              </div>
             </div>
-          </div>
 
-          {/* Products Grid Skeleton */}
-          {isGridView && (
-            <div className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5">
-              {[...Array(12)].map((_, index) => (
-                <ProductCardSkeleton key={index} />
+            {/* Products Grid Skeleton */}
+            {isGridView && (
+              <div className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5">
+                {[...Array(12)].map((_, index) => (
+                  <ProductCardSkeleton key={index} />
+                ))}
+              </div>
+            )}
+
+            {/* Products List Skeleton */}
+            {!isGridView && (
+              <div className="w-full space-y-4">
+                {[...Array(6)].map((_, index) => (
+                  <ProductListItemSkeleton key={index} />
+                ))}
+              </div>
+            )}
+
+            {/* Pagination Skeleton */}
+            <div className="flex items-center justify-center gap-2 mt-8">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="w-10 h-10 bg-gray-200 rounded"></div>
               ))}
             </div>
-          )}
-
-          {/* Products List Skeleton */}
-          {!isGridView && (
-            <div className="w-full space-y-4">
-              {[...Array(6)].map((_, index) => (
-                <ProductListItemSkeleton key={index} />
-              ))}
-            </div>
-          )}
-
-          {/* Pagination Skeleton */}
-          <div className="flex items-center justify-center gap-2 mt-8 animate-pulse">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="w-10 h-10 bg-gray-200 rounded"></div>
-            ))}
           </div>
         </div>
       </div>

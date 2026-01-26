@@ -2,9 +2,9 @@
 export const navigation = [
   { title: "Home", href: "/" },
   { title: "Products", href: "/products" },
-  { title: "Our Services", href: "/services" },
+  { title: "Our Services", href: "/services", hideOnMobile: true },
   { title: "Categories", href: "/categories" },
-  { title: "About", href: "/about" },
+  { title: "About", href: "/about", hideOnMobile: true },
 ];
 export const InfoNavigation = [
   { title: "About", href: "/about" },

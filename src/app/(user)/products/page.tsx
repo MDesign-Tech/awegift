@@ -124,7 +124,7 @@ const ProductsPage = async ({ searchParams }: Props) => {
   };
 
   return (
-    <Container className="py-4 sm:py-8 px-4 sm:px-6">
+    <Container className="py-4 sm:py-8">
       {/* Page Header */}
       <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">

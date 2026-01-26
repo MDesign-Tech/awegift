@@ -4,6 +4,8 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { LoginSession } from "../../../type";
+import { FaCopy } from 'react-icons/fa';
+import { FiLoader } from 'react-icons/fi';
 
 export default function SettingsClient() {
   const { data: session } = useSession();
@@ -13,6 +15,10 @@ export default function SettingsClient() {
   const [show2FASetup, setShow2FASetup] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [showRevokeConfirm, setShowRevokeConfirm] = useState(false);
+  const [revokeSessionId, setRevokeSessionId] = useState<string | null>(null);
+  const [showDisable2FAConfirm, setShowDisable2FAConfirm] = useState(false);
+  const [disableToken, setDisableToken] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [twoFactorSecret, setTwoFactorSecret] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
@@ -23,6 +29,7 @@ export default function SettingsClient() {
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [verifying2FA, setVerifying2FA] = useState(false);
   const [revokingSession, setRevokingSession] = useState<string | null>(null);
+  const [copyingSecret, setCopyingSecret] = useState(false);
 
   useEffect(() => {
     fetchUserData();
@@ -98,9 +105,15 @@ export default function SettingsClient() {
     }
   };
 
-  const handleDisable2FA = async () => {
-    const token = prompt("Enter your 2FA token to disable:");
-    if (!token) return;
+  const handleDisable2FA = () => {
+    setShowDisable2FAConfirm(true);
+  };
+
+  const confirmDisable2FA = async () => {
+    if (!disableToken.trim()) {
+      toast.error("Please enter your 2FA token");
+      return;
+    }
 
     setLoading2FA(true);
     try {
@@ -109,7 +122,7 @@ export default function SettingsClient() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token: disableToken }),
       });
 
       if (response.ok) {
@@ -123,6 +136,8 @@ export default function SettingsClient() {
       toast.error("Failed to disable 2FA");
     } finally {
       setLoading2FA(false);
+      setShowDisable2FAConfirm(false);
+      setDisableToken("");
     }
   };
 
@@ -144,17 +159,22 @@ export default function SettingsClient() {
     }
   };
 
-  const handleRevokeSession = async (sessionId: string) => {
-    if (!confirm("Are you sure you want to log out this session?")) return;
+  const handleRevokeSession = (sessionId: string) => {
+    setRevokeSessionId(sessionId);
+    setShowRevokeConfirm(true);
+  };
 
-    setRevokingSession(sessionId);
+  const confirmRevokeSession = async () => {
+    if (!revokeSessionId) return;
+
+    setRevokingSession(revokeSessionId);
     try {
       const response = await fetch("/api/auth/revoke-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ sessionId }),
+        body: JSON.stringify({ sessionId: revokeSessionId }),
       });
 
       if (response.ok) {
@@ -173,6 +193,8 @@ export default function SettingsClient() {
       toast.error("Failed to revoke session");
     } finally {
       setRevokingSession(null);
+      setShowRevokeConfirm(false);
+      setRevokeSessionId(null);
     }
   };
 
@@ -203,6 +225,18 @@ export default function SettingsClient() {
 
   const handleDeleteAccount = () => {
     setShowDeleteConfirm(true);
+  };
+
+  const handleCopySecret = async () => {
+    setCopyingSecret(true);
+    try {
+      await navigator.clipboard.writeText(twoFactorSecret);
+      toast.success("Secret copied to clipboard");
+    } catch (error) {
+      toast.error("Failed to copy secret");
+    } finally {
+      setCopyingSecret(false);
+    }
   };
 
   const confirmDeleteAccount = async () => {
@@ -291,10 +325,7 @@ export default function SettingsClient() {
               >
                 {loading2FA ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <FiLoader className="animate-spin text-primary -ml-1 mr-2 h-4 w-4" />
                     Processing...
                   </>
                 ) : twoFactorEnabled ? "Disable" : "Enable"}
@@ -323,10 +354,7 @@ export default function SettingsClient() {
               >
                 {loadingActivity ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <FiLoader className="animate-spin h-4 w-4 text-primary" />
                     Loading...
                   </>
                 ) : "View Activity"}
@@ -355,10 +383,7 @@ export default function SettingsClient() {
               >
                 {loadingExport ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <FiLoader className="animate-spin h-4 w-4 text-primary" />
                     Exporting...
                   </>
                 ) : "Export Data"}
@@ -540,6 +565,11 @@ export default function SettingsClient() {
                             </div>
                             <div className="text-sm text-gray-600">
                               IP: {session.ip}
+                              {isRevoked && (session as any).revokedAt && (
+                                <span className="ml-2">
+                                  • Logged out: {new Date((session as any).revokedAt).toLocaleString()}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -644,9 +674,23 @@ export default function SettingsClient() {
                   <p className="text-sm text-gray-600 mb-2">
                     Can't scan the code? Enter this secret manually:
                   </p>
-                  <code className="block p-2 bg-gray-100 rounded text-xs font-mono break-all">
-                    {twoFactorSecret}
-                  </code>
+                  <div className="flex items-center space-x-2">
+                    <code className="flex-1 p-2 bg-gray-100 rounded text-xs font-mono break-all">
+                      {twoFactorSecret}
+                    </code>
+                    <button
+                      onClick={handleCopySecret}
+                      disabled={copyingSecret}
+                      className="p-2 bg-gray-200 hover:bg-gray-300 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Copy secret"
+                    >
+                      {copyingSecret ? (
+                        <FiLoader className="animate-spin h-4 w-4 text-primary" />
+                      ) : (
+                        <FaCopy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mb-6">
@@ -678,10 +722,7 @@ export default function SettingsClient() {
                   >
                     {verifying2FA ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                        <FiLoader className="animate-spin text-primary -ml-1 mr-2 h-4 w-4" />
                         Verifying...
                       </>
                     ) : "Verify & Enable"}
@@ -776,6 +817,169 @@ export default function SettingsClient() {
                         Deleting...
                       </>
                     ) : "Delete Account"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Revoke Session Confirmation Modal */}
+      {showRevokeConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Background overlay */}
+          <div
+            className="absolute inset-0 bg-black/50 transition-opacity"
+            onClick={() => setShowRevokeConfirm(false)}
+          ></div>
+
+          {/* Modal */}
+          <div className="relative w-full max-w-md bg-white shadow-xl rounded-lg overflow-hidden z-10">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-red-50">
+              <div className="flex items-center space-x-3 min-w-0 flex-1">
+                <div className="p-2 bg-red-100 rounded-lg flex-shrink-0">
+                  <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-lg font-semibold text-red-900">
+                    Log Out Session
+                  </h3>
+                  <p className="text-sm text-red-700">
+                    Confirm to log out this session
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRevokeConfirm(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="px-6 py-6">
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="text-4xl mb-4">⚠️</div>
+                  <p className="text-gray-700 mb-4">
+                    Are you sure you want to log out this session?
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={() => setShowRevokeConfirm(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmRevokeSession}
+                    disabled={revokingSession !== null}
+                    className="flex-1 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {revokingSession ? (
+                      <>
+                        <FiLoader className="animate-spin -ml-1 mr-2 h-4 w-4" />
+                        Logging Out...
+                      </>
+                    ) : "Log Out"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Disable 2FA Confirmation Modal */}
+      {showDisable2FAConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Background overlay */}
+          <div
+            className="absolute inset-0 bg-black/50 transition-opacity"
+            onClick={() => setShowDisable2FAConfirm(false)}
+          ></div>
+
+          {/* Modal */}
+          <div className="relative w-full max-w-md bg-white shadow-xl rounded-lg overflow-hidden z-10">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-red-50">
+              <div className="flex items-center space-x-3 min-w-0 flex-1">
+                <div className="p-2 bg-red-100 rounded-lg flex-shrink-0">
+                  <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-lg font-semibold text-red-900">
+                    Disable Two-Factor Authentication
+                  </h3>
+                  <p className="text-sm text-red-700">
+                    Enter your 2FA token to confirm
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDisable2FAConfirm(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="px-6 py-6">
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="text-4xl mb-4">🔒</div>
+                  <p className="text-gray-700 mb-4">
+                    To disable 2FA, please enter the current 6-digit code from your authenticator app.
+                  </p>
+                </div>
+
+                <div>
+                  <label htmlFor="disable-2fa-token" className="block text-sm font-medium text-gray-700 mb-2">
+                    2FA Token
+                  </label>
+                  <input
+                    type="text"
+                    id="disable-2fa-token"
+                    value={disableToken}
+                    onChange={(e) => setDisableToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-center text-lg tracking-widest"
+                    placeholder="000000"
+                    maxLength={6}
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={() => setShowDisable2FAConfirm(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDisable2FA}
+                    disabled={loading2FA || disableToken.length !== 6}
+                    className="flex-1 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading2FA ? (
+                      <>
+                        <FiLoader className="animate-spin text-primary -ml-1 mr-2 h-4 w-4" />
+                        Disabling...
+                      </>
+                    ) : "Disable 2FA"}
                   </button>
                 </div>
               </div>

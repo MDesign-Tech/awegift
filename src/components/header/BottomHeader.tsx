@@ -23,7 +23,7 @@ const BottomHeader = () => {
                   isActive
                     ? "text-theme-color font-bold"
                     : "text-gray-700 hover:text-theme-color"
-                }`}
+                } ${item.hideOnMobile ? "hidden md:block" : ""}`}
               >
                 {item?.title}
               </Link>

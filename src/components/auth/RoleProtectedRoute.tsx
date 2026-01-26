@@ -63,7 +63,7 @@ export default function RoleProtectedRoute({
   // Show loading state while checking authentication
   if (status === "loading") {
     return (
-      <Container className="py-8">
+      <Container className="py-4 md:py-8">
         <div className="flex flex-col items-center justify-center min-h-96">
           <FiLoader className="animate-spin text-4xl text-theme-color mb-4" />
           <p className="text-gray-600">{loadingMessage}</p>
@@ -77,7 +77,7 @@ export default function RoleProtectedRoute({
     const isUnauthenticated = redirectReason === "unauthenticated";
     
     return (
-      <Container className="py-8">
+      <Container className="py-4 md:py-8">
         <div className="text-center">
           <div className="text-6xl mb-4">{isUnauthenticated ? "🔒" : "🚫"}</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">

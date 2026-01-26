@@ -50,7 +50,7 @@ const HeroBanner = ({
                 }}
             />
 
-            <Container className="py-5 sm:py-6 md:py-7 lg:py-8">
+            <Container className="py-4 md:py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-stretch">
 
                     {/* Left Section: Hero Content */}

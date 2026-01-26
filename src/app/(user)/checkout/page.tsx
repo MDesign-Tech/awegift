@@ -19,6 +19,7 @@ import {
 import { FaWhatsapp } from "react-icons/fa";
 import Link from "next/link";
 import { PAYMENT_METHODS, PAYMENT_STATUSES } from "@/lib/orderStatus";
+import toast from "react-hot-toast";
 
 const CheckoutPage = () => {
   const { data: session } = useSession();
@@ -27,9 +28,9 @@ const CheckoutPage = () => {
 
   const [loading, setLoading] = useState(true);
   const [existingOrder, setExistingOrder] = useState<OrderData | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"online" | "MTN" | "AIRTEL" | null>(
-    null
-  );
+  const [paymentMethod, setPaymentMethod] = useState<
+    "online" | "MTN" | "AIRTEL" | null
+  >(null);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [paymentScreenshot, setPaymentScreenshot] = useState<File | null>(null);
   const [paymentError, setPaymentError] = useState<{
@@ -77,7 +78,6 @@ const CheckoutPage = () => {
 
       const data = await response.json();
       setExistingOrder(data.order);
-
     } catch (error) {
       console.error("Error fetching order:", error);
       // On error, redirect to orders page
@@ -94,21 +94,24 @@ const CheckoutPage = () => {
       if (!existingOrder || !paymentMethod || !paymentScreenshot) return;
 
       // Upload screenshot to Cloudinary
-        const formData = new FormData();
-        formData.append('file', paymentScreenshot);
-        formData.append('upload_preset', 'default_unsigned');
-        formData.append('folder', 'payment_screenshots');
+      const formData = new FormData();
+      formData.append("file", paymentScreenshot);
+      formData.append("upload_preset", "default_unsigned");
+      formData.append("folder", "payment_screenshots");
 
-        const cloudinaryResponse = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
-          method: 'POST',
+      const cloudinaryResponse = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
           body: formData,
-        });
+        },
+      );
 
-        if (!cloudinaryResponse.ok) {
-          throw new Error('Failed to upload screenshot');
-        }
+      if (!cloudinaryResponse.ok) {
+        throw new Error("Failed to upload screenshot");
+      }
 
-        const cloudinaryData = await cloudinaryResponse.json();
+      const cloudinaryData = await cloudinaryResponse.json();
       const screenshotUrl = cloudinaryData.secure_url;
 
       // Update order with payment method and screenshot
@@ -133,7 +136,7 @@ const CheckoutPage = () => {
       }
     } catch (error) {
       console.error("Error processing mobile payment:", error);
-      alert("Failed to process payment. Please try again.");
+      toast.error("Failed to process payment. Please try again.");
     } finally {
       setPaymentProcessing(false);
     }
@@ -147,7 +150,7 @@ const CheckoutPage = () => {
       setPaymentError(null);
 
       const stripe = await loadStripe(
-        process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+        process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
       );
 
       const response = await fetch("/api/checkout", {
@@ -201,7 +204,10 @@ const CheckoutPage = () => {
     } catch (error) {
       console.error("Error processing payment:", error);
       setPaymentError({
-        message: error instanceof Error ? error.message : "Payment processing failed. Please try again.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Payment processing failed. Please try again.",
         canRetry: true,
       });
     } finally {
@@ -211,7 +217,7 @@ const CheckoutPage = () => {
 
   if (loading) {
     return (
-      <Container className="py-8">
+      <Container className="py-4 md:py-8">
         <div className="flex items-center justify-center min-h-96">
           <FiLoader className="animate-spin text-4xl text-theme-color" />
           <span className="ml-4 text-lg">Loading order details...</span>
@@ -222,7 +228,7 @@ const CheckoutPage = () => {
 
   if (!session?.user) {
     return (
-      <Container className="py-8">
+      <Container className="py-4 md:py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             Please Sign In
@@ -243,7 +249,7 @@ const CheckoutPage = () => {
 
   if (!existingOrder) {
     return (
-      <Container className="py-8">
+      <Container className="py-4 md:py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             Order not found
@@ -263,10 +269,13 @@ const CheckoutPage = () => {
   }
 
   return (
-    <RoleProtectedRoute allowedRoles={["user", "admin"]} loadingMessage="Loading checkout...">
-      <Container className="py-8">
+    <RoleProtectedRoute
+      allowedRoles={["user", "admin"]}
+      loadingMessage="Loading checkout..."
+    >
+      <Container className="py-4 md:py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center w-full justify-between mb-8">
           <div className="flex items-center space-x-4">
             <Link
               href="/account/orders"
@@ -274,13 +283,11 @@ const CheckoutPage = () => {
             >
               <FiArrowLeft className="w-5 h-5" />
             </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+            <div className="w-full">
+              <h1 className="text-md sm:text-lg md:text-xl lg:text-2xl font-bold text-gray-900">
                 Order #{existingOrder?.id}
               </h1>
-              <p className="text-gray-600">
-                Choose your payment method
-              </p>
+              <p className="text-gray-600">Choose your payment method</p>
             </div>
           </div>
         </div>
@@ -395,7 +402,7 @@ const CheckoutPage = () => {
                 {existingOrder?.items?.map((item: any, index: number) => (
                   <div
                     key={`order-${item.id}-${index}`}
-                    className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg"
+                    className="flex flex-wrap overflow-hidden items-center space-x-4 p-4 border border-gray-200 gap-2 rounded-lg"
                   >
                     <div className="flex-shrink-0">
                       {item.thumbnail ? (
@@ -418,7 +425,7 @@ const CheckoutPage = () => {
                         {item.title}
                       </h4>
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span>Qty: {item.quantity}</span>
+                        <span>Quantity: {item.quantity}</span>
                         <span>
                           <PriceFormat amount={item.price} />
                         </span>
@@ -482,10 +489,11 @@ const CheckoutPage = () => {
               <div className="space-y-3">
                 {/* Online Payment */}
                 <div
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${paymentMethod === "online"
+                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+                    paymentMethod === "online"
                       ? "border-theme-color bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
-                    }`}
+                  }`}
                   onClick={() => setPaymentMethod("online")}
                 >
                   <div className="flex items-center">
@@ -499,10 +507,11 @@ const CheckoutPage = () => {
                       </p>
                     </div>
                     <div
-                      className={`w-4 h-4 rounded-full border-2 ${paymentMethod === "online"
+                      className={`w-4 h-4 rounded-full border-2 ${
+                        paymentMethod === "online"
                           ? "border-theme-color bg-theme-color"
                           : "border-gray-300"
-                        }`}
+                      }`}
                     >
                       {paymentMethod === "online" && (
                         <div className="w-full h-full rounded-full bg-white scale-50"></div>
@@ -513,10 +522,11 @@ const CheckoutPage = () => {
 
                 {/* MTN Momo */}
                 <div
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${paymentMethod === "MTN"
+                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+                    paymentMethod === "MTN"
                       ? "border-theme-color bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
-                    }`}
+                  }`}
                   onClick={() => setPaymentMethod("MTN")}
                 >
                   <div className="flex items-center">
@@ -524,18 +534,17 @@ const CheckoutPage = () => {
                       M
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">
-                        MTN
-                      </h4>
+                      <h4 className="font-medium text-gray-900">MTN</h4>
                       <p className="text-sm text-gray-600">
                         Pay via MTN Mobile Money / MoMo pay
                       </p>
                     </div>
                     <div
-                      className={`w-4 h-4 rounded-full border-2 ${paymentMethod === "MTN"
+                      className={`w-4 h-4 rounded-full border-2 ${
+                        paymentMethod === "MTN"
                           ? "border-theme-color bg-theme-color"
                           : "border-gray-300"
-                        }`}
+                      }`}
                     >
                       {paymentMethod === "MTN" && (
                         <div className="w-full h-full rounded-full bg-white scale-50"></div>
@@ -546,10 +555,11 @@ const CheckoutPage = () => {
 
                 {/* AIRTEL */}
                 <div
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${paymentMethod === "AIRTEL"
+                  className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+                    paymentMethod === "AIRTEL"
                       ? "border-theme-color bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
-                    }`}
+                  }`}
                   onClick={() => setPaymentMethod("AIRTEL")}
                 >
                   <div className="flex items-center">
@@ -557,18 +567,17 @@ const CheckoutPage = () => {
                       A
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">
-                        Airtel
-                      </h4>
+                      <h4 className="font-medium text-gray-900">Airtel</h4>
                       <p className="text-sm text-gray-600">
                         Pay via Airtel Money
                       </p>
                     </div>
                     <div
-                      className={`w-4 h-4 rounded-full border-2 ${paymentMethod === "AIRTEL"
+                      className={`w-4 h-4 rounded-full border-2 ${
+                        paymentMethod === "AIRTEL"
                           ? "border-theme-color bg-theme-color"
                           : "border-gray-300"
-                        }`}
+                      }`}
                     >
                       {paymentMethod === "AIRTEL" && (
                         <div className="w-full h-full rounded-full bg-white scale-50"></div>
@@ -595,7 +604,7 @@ const CheckoutPage = () => {
                       "Pay Online"
                     )}
                   </button>
-                ) : (paymentMethod === "MTN" || paymentMethod === "AIRTEL") ? (
+                ) : paymentMethod === "MTN" || paymentMethod === "AIRTEL" ? (
                   <div className="space-y-4">
                     <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <h4 className="font-medium text-blue-900 mb-2">
@@ -604,20 +613,24 @@ const CheckoutPage = () => {
                       <div className="text-sm text-blue-800 space-y-1">
                         {paymentMethod === "MTN" ? (
                           <>
-                          <p>
-                          Pay via Mobile Money (*182*1*1*0790651889*{existingOrder?.totalAmount || 0}#)
-                        </p>
-                        <p>
-                          Pay via MoMo pay (*182*8*1*757537*{existingOrder?.totalAmount || 0}#)
-                        </p>
+                            <p>
+                              Pay via Mobile Money (*182*1*1*0790651889*
+                              {existingOrder?.totalAmount || 0}#)
+                            </p>
+                            <p>
+                              Pay via MoMo pay (*182*8*1*757537*
+                              {existingOrder?.totalAmount || 0}#)
+                            </p>
                           </>
                         ) : (
                           <p>
-                            Pay via AIRTEL Money (*180*1*1*0790651889*{existingOrder?.totalAmount || 0}#)
+                            Pay via AIRTEL Money (*180*1*1*0790651889*
+                            {existingOrder?.totalAmount || 0}#)
                           </p>
                         )}
                         <p className="mt-2">
-                          Please share screenshot of payment message to WhatsApp or upload it below.
+                          Please share screenshot of payment message to WhatsApp
+                          or upload it below.
                         </p>
                         <div className="mt-3 flex items-center space-x-2">
                           <FaWhatsapp className="text-green-600 w-5 h-5" />
@@ -637,12 +650,53 @@ const CheckoutPage = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Upload Payment Screenshot *
                       </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setPaymentScreenshot(e.target.files?.[0] || null)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-color"
-                      />
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) =>
+                            setPaymentScreenshot(e.target.files?.[0] || null)
+                          }
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          id="payment-screenshot"
+                        />
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-2 text-center hover:border-theme-color transition-colors cursor-pointer min-h-[120px] flex items-center justify-center">
+                          {paymentScreenshot ? (
+                            <div className="flex flex-col  items-center">
+                              <img
+                                src={URL.createObjectURL(paymentScreenshot)}
+                                alt="Payment Screenshot"
+                                className="w-full h-full object-cover rounded-md mb-2"
+                              />
+                              <p className="text-xs text-theme-color mt-1 cursor-pointer hover:underline">
+                                Click to change
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center">
+                              <svg
+                                className="w-12 h-12 text-gray-400 mb-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                />
+                              </svg>
+                              <p className="text-sm text-gray-600">
+                                Click to upload payment screenshot
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                PNG, JPG, JPEG up to 10MB
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
                     <button
@@ -650,7 +704,7 @@ const CheckoutPage = () => {
                       disabled={paymentProcessing || !paymentScreenshot}
                       className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
-                      {paymentProcessing  ? (
+                      {paymentProcessing ? (
                         <>
                           <FiLoader className="animate-spin mr-2" />
                           Processing...
@@ -678,4 +732,3 @@ const CheckoutPage = () => {
 };
 
 export default CheckoutPage;
-

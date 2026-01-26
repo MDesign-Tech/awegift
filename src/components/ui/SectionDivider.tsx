@@ -6,7 +6,7 @@ interface Props {
 
 const SectionDivider = ({ className = "" }: Props) => {
   return (
-    <Container className={`py-8 ${className}`}>
+    <Container className={`py-4 md:py-8 ${className}`}>
       <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
     </Container>
   );

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function GlobalNotFound() {
   return (
-    <Container className="py-20">
+    <Container className="py-4 md:py-8">
       <div className="max-w-4xl mx-auto">
         {/* Hero Section */}
         <div className="text-center mb-12">

@@ -30,7 +30,7 @@ const CartProducts = () => {
   }
 
   return (
-    <Container>
+  <>
       {cart?.length > 0 ? (
         <>
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
@@ -56,14 +56,14 @@ const CartProducts = () => {
             Your cart is empty. Browse our products and add items to your cart to get started!
           </p>
           <Link
-            className="bg-sky-color/90 text-gray-100 px-8 py-4 rounded-md hover:bg-sky-color duration-200 uppercase text-sm font-semibold tracking-wide"
+            className="bg-theme-color text-gray-100 px-8 py-4 rounded-md hover:bg-accent-color duration-200 uppercase text-sm font-semibold tracking-wide"
             href="/"
           >
             go to shopping
           </Link>
         </div>
       )}
-    </Container>
+      </>
   );
 };
 

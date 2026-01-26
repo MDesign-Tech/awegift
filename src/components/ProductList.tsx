@@ -12,7 +12,7 @@ const ProductList = ({ product }: Props) => {
   const productsArray = product?.products;
 
   return (
-    <Container className="py-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-5">
+    <Container className="py-4 md:py-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-5">
       {productsArray?.map((item: ProductType) => (
         <ProductCard key={item?.id} product={item} />
       ))}

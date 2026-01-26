@@ -107,6 +107,8 @@ export async function POST(request: NextRequest) {
       try {
         await createOrderPaidNotification(
           user.id,
+          currentOrder.customerEmail,
+          currentOrder.customerName,
           orderId,
           currentOrder.totalAmount,
           'RWF'
