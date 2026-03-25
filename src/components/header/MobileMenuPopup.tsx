@@ -16,13 +16,19 @@ interface MobileMenuPopupProps {
   session: Session | null;
 }
 
-const MobileMenuPopup = ({ isOpen, onClose, session }: MobileMenuPopupProps) => {
+const MobileMenuPopup = ({
+  isOpen,
+  onClose,
+  session,
+}: MobileMenuPopupProps) => {
   const { cart, favorite } = useSelector((state: StateType) => state?.aweGift);
   const isAuthenticated = session?.user && session.user.email ? true : false;
 
   const menuItems = [
     { title: "Our Services", href: "/services", icon: null },
     { title: "About Us", href: "/about", icon: null },
+    { title: "MDesign", href: "/mdesign", icon: null },
+    { title: "Contact Us", href: "/contact", icon: null },
   ];
 
   return (
@@ -49,9 +55,12 @@ const MobileMenuPopup = ({ isOpen, onClose, session }: MobileMenuPopupProps) => 
 
           {/* Icons section */}
           <div className="flex justify-center gap-6">
-
             {/* Cart */}
-            <Link href="/cart" onClick={onClose} className="flex flex-col items-center gap-2 relative">
+            <Link
+              href="/cart"
+              onClick={onClose}
+              className="flex flex-col items-center gap-2 relative"
+            >
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-xl relative">
                 <BiShoppingBag />
                 {cart?.length > 0 && (
@@ -64,7 +73,11 @@ const MobileMenuPopup = ({ isOpen, onClose, session }: MobileMenuPopupProps) => 
             </Link>
 
             {/* Favorite */}
-            <Link href="/favorite" onClick={onClose} className="flex flex-col items-center gap-2 relative">
+            <Link
+              href="/favorite"
+              onClick={onClose}
+              className="flex flex-col items-center gap-2 relative"
+            >
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-xl relative">
                 <MdFavoriteBorder />
                 {favorite?.length > 0 && (
@@ -78,14 +91,22 @@ const MobileMenuPopup = ({ isOpen, onClose, session }: MobileMenuPopupProps) => 
 
             {/* Profile */}
             {isAuthenticated ? (
-              <Link href="/account" onClick={onClose} className="flex flex-col items-center gap-2">
+              <Link
+                href="/account"
+                onClick={onClose}
+                className="flex flex-col items-center gap-2"
+              >
                 <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-xl">
                   <LiaUser />
                 </div>
                 <span className="text-xs text-black">Profile</span>
               </Link>
             ) : (
-              <Link href="/auth/signin" onClick={onClose} className="flex flex-col items-center gap-2">
+              <Link
+                href="/auth/signin"
+                onClick={onClose}
+                className="flex flex-col items-center gap-2"
+              >
                 <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-xl">
                   <LiaUser />
                 </div>
