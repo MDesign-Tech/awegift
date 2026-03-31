@@ -1,5 +1,5 @@
 // Static paths for images served from public folder
-export const logo = "/logo.png";
+export const logo = "/M DESIGN LOGO final.svg";
 export const notFound = "/notFound.png";
 export const bannerImageOne = "/bannerImageOne.png";
 

@@ -6,7 +6,8 @@ import { generateSEO } from "@/lib/seo";
 
 const baseMetadata = generateSEO({
   title: "AweGift - Multipurpose eCommerce website",
-  description: "Discover unique and thoughtful gifts at AweGift. Shop personalized presents, custom gifts, luxury items, and more with fast delivery and secure checkout.",
+  description:
+    "Discover unique and thoughtful gifts at AweGift. Shop personalized presents, custom gifts, luxury items, and more with fast delivery and secure checkout.",
   keywords: [
     "ecommerce",
     "shopping",
@@ -56,7 +57,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1.0,
 };
 
@@ -67,7 +68,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body suppressHydrationWarning>
         <Providers>{children}</Providers>
         <WhatsAppButton />
       </body>
