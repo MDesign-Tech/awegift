@@ -263,7 +263,7 @@ export default function MPage() {
 
   return (
     <motion.main
-      className="min-h-screen bg-[#05060b] text-white overflow-x-hidden"
+      className="min-h-screen bg-[#05060b] text-white overflow-hidden"
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -24 }}
@@ -331,7 +331,7 @@ export default function MPage() {
                 color: "bg-[#ed4c07] hover:bg-[#ff7f50]",
               },
               {
-                title: "Event Management",
+                title: "Events",
                 color: "bg-[#00cec9] hover:bg-[#3fdce3]",
               },
               {
@@ -366,7 +366,7 @@ export default function MPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-                Story-led animation grounded in purpose
+                We are digital creators
               </h2>
               <p className="text-slate-300 leading-relaxed text-lg md:text-xl">
                 Each section is not a block, it is a chapter; motion and
