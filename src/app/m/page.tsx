@@ -77,6 +77,7 @@ export default function MPage() {
     active: false,
     label: "",
   });
+  const lenisRef = useRef<Lenis | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -148,15 +149,6 @@ export default function MPage() {
           scrub: true,
         },
       });
-
-      // Pinned storytelling panel
-      ScrollTrigger.create({
-        trigger: ".m-pin-panel",
-        start: "top top",
-        end: "+=1200",
-        pin: true,
-        scrub: 1,
-      });
     });
 
     return () => {
@@ -173,6 +165,8 @@ export default function MPage() {
       smooth: true,
       orientation: "vertical",
     });
+
+    lenisRef.current = lenis;
 
     function raf(time: number) {
       lenis.raf(time);
@@ -327,11 +321,11 @@ export default function MPage() {
           >
             {[
               {
-                title: "Visual Creators",
+                title: "Visual Creation",
                 color: "bg-[#ed4c07] hover:bg-[#ff7f50]",
               },
               {
-                title: "Events",
+                title: "Event Management",
                 color: "bg-[#00cec9] hover:bg-[#3fdce3]",
               },
               {
@@ -343,6 +337,11 @@ export default function MPage() {
                 key={service.title}
                 className={`group relative rounded-full border border-white/20 px-7 py-3 text-base md:text-lg font-bold tracking-wide text-white ${service.color} shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition-all duration-300 hover:-translate-y-1 hover:border-white/40`}
                 data-cursor="link"
+                onClick={() =>
+                  lenisRef.current?.scrollTo(
+                    `#${service.title.toLowerCase().replace(/ /g, "-")}`,
+                  )
+                }
               >
                 <div className="relative z-10">{service.title}</div>
               </div>
@@ -392,91 +391,329 @@ export default function MPage() {
         </div>
       </section>
 
-      <section className="m-pin-panel bg-[#060a15] py-24">
+      <section className="py-24 m-reveal" id="services">
         <div className="container mx-auto px-6 md:px-12 lg:px-24">
-          <div className="sticky top-24 bg-[#070d1a]/60 border border-white/5 rounded-3xl p-10 backdrop-blur-xl shadow-[0_14px_48px_rgba(0,0,0,0.35)]">
-            <motion.h3
-              initial={{ opacity: 0, y: 24 }}
+          <h2 className="text-4xl md:text-5xl font-bold mb-10">Our Services</h2>
+
+          <div id="visual-creation" className="mb-20">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9 }}
+              transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold"
             >
-              Scroll-based storytelling elements
-            </motion.h3>
-            <p className="mt-4 text-slate-300 leading-relaxed">
-              Pinned progress sections, layered text, and subtle pace changes
-              create a premium experience.
-            </p>
-          </div>
-          <div className="mt-12 overflow-x-auto pb-6 -mx-6 px-6 lg:-mx-24 lg:px-24">
-            <div className="flex gap-6 min-w-max snap-x snap-mandatory scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-              {[
-                {
-                  title: "A hero with depth and motion",
-                  description:
-                    "3D particle systems and layered parallax create immersive depth",
-                  image:
-                    "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&h=400&fit=crop&crop=center",
-                  video:
-                    "https://player.vimeo.com/video/76979871?background=1&autoplay=1&loop=1&byline=0&title=0&muted=1",
-                },
-                {
-                  title: "Sticky panels that anchor the narrative",
-                  description:
-                    "Scroll-triggered pinning keeps important content in focus",
-                  image:
-                    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=400&fit=crop&crop=center",
-                  video: null,
-                },
-                {
-                  title: "Fast but graceful transitions as you scroll",
-                  description:
-                    "Smooth animations and micro-interactions guide the user journey",
-                  image:
-                    "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=400&fit=crop&crop=center",
-                  video: null,
-                },
-              ].map((item, index) => (
-                <motion.div
-                  key={item.title}
-                  className="h-72 w-[calc(100vw-4rem)] md:w-[calc(50vw-3rem)] lg:w-[calc(33.333vw-2rem)] rounded-2xl border border-white/10 bg-[#0c1221] overflow-hidden relative group snap-center flex-shrink-0"
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: index * 0.2 }}
-                  viewport={{ once: true }}
-                >
-                  {item.video ? (
-                    <div className="absolute inset-0">
-                      <iframe
-                        src={item.video}
-                        className="w-full h-full object-cover"
-                        frameBorder="0"
-                        allow="autoplay; fullscreen"
-                        title={item.title}
-                      />
-                      <div className="absolute inset-0 bg-black/30" />
-                    </div>
-                  ) : (
+              <h3 className="text-3xl font-bold mb-5">Visual Creation</h3>
+              <p className="text-slate-300 leading-relaxed text-lg mb-10">
+                We bring ideas to life through powerful visuals that
+                communicate, inspire, and connect.
+              </p>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="relative group overflow-hidden rounded-lg">
+                  <h4 className="text-2xl font-semibold mb-4">Branding</h4>
+                  {/* <p className="text-slate-400 mb-6">
+                    Logo Design, Brand Identity, Rebranding, Brand Guidelines
+                  </p> */}
+                  <div className="relative grid grid-cols-2 gap-4">
                     <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      loading="lazy"
+                      src="https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=400&h=300&fit=crop"
+                      alt="Branding design 1"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
                     />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-8">
-                    <h4 className="text-xl font-semibold text-white mb-2">
-                      {item.title}
-                    </h4>
-                    <p className="text-slate-300 text-sm leading-relaxed">
-                      {item.description}
-                    </p>
+                    <img
+                      src="https://images.unsplash.com/photo-1558655146-d09347e92766?w=400&h=300&fit=crop"
+                      alt="Branding design 2"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <img
+                      src="https://images.unsplash.com/photo-1634986666676-ec8fd927c23d?w=400&h=300&fit=crop"
+                      alt="Branding design 3"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <img
+                      src="https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=400&h=300&fit=crop"
+                      alt="Branding design 4"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
+                      <button className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-purple-500/25 animate-pulse">
+                        Show more
+                      </button>
+                    </div>
                   </div>
-                </motion.div>
-              ))}
-            </div>
+                </div>
+                <div className="relative group overflow-hidden rounded-lg">
+                  <h4 className="text-2xl font-semibold mb-4">
+                    Social Media & Flyers
+                  </h4>
+                  <div className="relative grid grid-cols-2 gap-4">
+                    <img
+                      src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop"
+                      alt="Social media design 1"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <img
+                      src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop"
+                      alt="Flyer design 1"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <img
+                      src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop"
+                      alt="Social media design 2"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <img
+                      src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop"
+                      alt="Flyer design 2"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
+                      <button className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-blue-500/30 hover:to-cyan-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-blue-500/25 animate-pulse">
+                        Show more
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="relative group overflow-hidden rounded-lg">
+                  <h4 className="text-2xl font-semibold mb-4">
+                    Invitation Design
+                  </h4>
+                  <div className="relative grid grid-cols-2 gap-4">
+                    <img
+                      src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
+                      alt="Invitation design 1"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <img
+                      src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
+                      alt="Invitation design 2"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <img
+                      src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
+                      alt="Invitation design 3"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <img
+                      src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
+                      alt="Invitation design 4"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
+                      <button className="bg-gradient-to-r from-rose-500/20 to-pink-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-rose-500/30 hover:to-pink-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-rose-500/25 animate-pulse">
+                        Show more
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="relative group overflow-hidden rounded-lg">
+                  <h4 className="text-2xl font-semibold mb-4">
+                    Packaging Design
+                  </h4>
+                  <div className="relative grid grid-cols-2 gap-4">
+                    <img
+                      src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
+                      alt="Packaging design 1"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <img
+                      src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
+                      alt="Packaging design 2"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <img
+                      src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
+                      alt="Packaging design 3"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <img
+                      src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
+                      alt="Packaging design 4"
+                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
+                      <button className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-green-500/30 hover:to-emerald-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-green-500/25 animate-pulse">
+                        Show more
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-2xl font-semibold mb-4">
+                    Photography & Videography
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <img
+                      src="https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop"
+                      alt="Wedding photography"
+                      className="rounded-lg"
+                    />
+                    <img
+                      src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=300&fit=crop"
+                      alt="Event photography"
+                      className="rounded-lg"
+                    />
+                  </div>
+                  <video className="w-full rounded-lg" controls>
+                    <source
+                      src="https://player.vimeo.com/video/76979871?background=1&autoplay=0&loop=0&byline=0&title=0&muted=0"
+                      type="video/mp4"
+                    />
+                  </video>
+                </div>
+              </div>
+
+              <div className="mt-10">
+                <h4 className="text-2xl font-semibold mb-4">
+                  Motion Design / Motion Graphics
+                </h4>
+                <video className="w-full rounded-lg" controls>
+                  <source
+                    src="https://player.vimeo.com/video/76979871?background=1&autoplay=0&loop=0&byline=0&title=0&muted=0"
+                    type="video/mp4"
+                  />
+                </video>
+              </div>
+
+              <div className="mt-10">
+                <h4 className="text-2xl font-semibold mb-4">
+                  Signage Design & Installation
+                </h4>
+                <p className="text-slate-400 mb-6">
+                  Design, production, and installation of indoor and outdoor
+                  signage that enhances brand visibility.
+                </p>
+                <ul className="text-slate-400 mb-6 space-y-1">
+                  <li>Billboards</li>
+                  <li>Shop signs</li>
+                  <li>Indoor displays</li>
+                </ul>
+                <img
+                  src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=400&fit=crop"
+                  alt="Signage design"
+                  className="rounded-lg"
+                />
+              </div>
+            </motion.div>
+          </div>
+
+          <div id="event-management" className="mb-20">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="text-3xl font-bold mb-5">Event Management</h3>
+              <p className="text-slate-300 leading-relaxed text-lg mb-10">
+                We are a 1-stop specialized events company that plans and
+                executes seamless, memorable events that leave lasting
+                impressions. From concept to completion, we handle every detail
+                to bring your vision to life.
+              </p>
+
+              <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-10">
+                <div className="text-center">
+                  <h4 className="text-xl font-semibold mb-2">
+                    Pre-event planning
+                  </h4>
+                  <ul className="text-slate-400 text-sm space-y-1">
+                    <li>Strategy & Budget</li>
+                    <li>Logistics & Vendors</li>
+                    <li>Marketing & Registration</li>
+                    <li>Experience Design</li>
+                    <li>Communication</li>
+                  </ul>
+                </div>
+                <svg
+                  className="w-8 h-8 text-slate-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <div className="text-center">
+                  <h4 className="text-xl font-semibold mb-2">
+                    On-site setup and event management
+                  </h4>
+                  <ul className="text-slate-400 text-sm space-y-1">
+                    <li>Registration/Check-in</li>
+                    <li>Logistics & Operations</li>
+                    <li>Production & AV</li>
+                    <li>Attendee Engagement & Safety</li>
+                  </ul>
+                </div>
+                <svg
+                  className="w-8 h-8 text-slate-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <div className="text-center">
+                  <h4 className="text-xl font-semibold mb-2">
+                    Post-event management
+                  </h4>
+                  <ul className="text-slate-400 text-sm space-y-1">
+                    <li>Follow-Up</li>
+                    <li>Evaluation</li>
+                    <li>Content Distribution</li>
+                  </ul>
+                </div>
+              </div>
+
+              <img
+                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=400&fit=crop"
+                alt="Event management infographic"
+                className="rounded-lg"
+              />
+            </motion.div>
+          </div>
+
+          <div id="tech-solutions">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="text-3xl font-bold mb-5">Tech Solutions</h3>
+              <p className="text-slate-300 leading-relaxed text-lg mb-10">
+                We provide smart digital and technical solutions that help
+                businesses grow, operate efficiently, and stay ahead in a
+                fast-changing world.
+              </p>
+
+              <ul className="text-slate-400 mb-10 space-y-2">
+                <li>UI/UX design</li>
+                <li>Web Design & Development</li>
+                <li>SEO (Search Engine Optimization)</li>
+                <li>Digital Solutions & Automation (We provide platforms)</li>
+                <li>IT Support & Maintenance</li>
+                <li>E-commerce Setup</li>
+              </ul>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <img
+                  src="https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop"
+                  alt="UI/UX design screenshot"
+                  className="rounded-lg"
+                />
+                <img
+                  src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop"
+                  alt="Website design screenshot"
+                  className="rounded-lg"
+                />
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
