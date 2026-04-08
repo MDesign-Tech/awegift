@@ -393,7 +393,9 @@ export default function MPage() {
 
       <section className="py-24 m-reveal" id="services">
         <div className="container mx-auto px-6 md:px-12 lg:px-24">
-          <h2 className="text-4xl md:text-5xl font-bold mb-10">Our Services</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-10 text-center">
+            Our Services
+          </h2>
 
           <div id="visual-creation" className="mb-20">
             <motion.div
