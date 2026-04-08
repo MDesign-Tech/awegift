@@ -397,325 +397,658 @@ export default function MPage() {
             Our Services
           </h2>
 
-          <div id="visual-creation" className="mb-20">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-            >
-              <h3 className="text-3xl font-bold mb-5">Visual Creation</h3>
-              <p className="text-slate-300 leading-relaxed text-lg mb-10">
-                We bring ideas to life through powerful visuals that
-                communicate, inspire, and connect.
-              </p>
+          <div className="relative">
+            <div className="absolute left-0 top-0 bottom-0 w-px border-l-2 border-dotted border-white/30"></div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div className="relative group overflow-hidden rounded-lg">
-                  <h4 className="text-2xl font-semibold mb-4">Branding</h4>
-                  {/* <p className="text-slate-400 mb-6">
-                    Logo Design, Brand Identity, Rebranding, Brand Guidelines
-                  </p> */}
-                  <div className="relative grid grid-cols-2 gap-4">
-                    <img
-                      src="https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=400&h=300&fit=crop"
-                      alt="Branding design 1"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+            <div className="space-y-20">
+              <div className="flex items-start gap-8">
+                <div className="flex-shrink-0 w-12 h-12 bg-[#05060b] border-2 border-white/20 rounded-full flex items-center justify-center mt-2 -ml-6 z-10">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                     />
-                    <img
-                      src="https://images.unsplash.com/photo-1558655146-d09347e92766?w=400&h=300&fit=crop"
-                      alt="Branding design 2"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1634986666676-ec8fd927c23d?w=400&h=300&fit=crop"
-                      alt="Branding design 3"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=400&h=300&fit=crop"
-                      alt="Branding design 4"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-                      <button className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-purple-500/25 animate-pulse">
-                        Show more
-                      </button>
+                  </svg>
+                </div>
+                <div className="flex-1" id="visual-creation">
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                    viewport={{ once: true }}
+                  >
+                    <h3 className="text-3xl font-bold mb-5">Visual Creation</h3>
+                    <p className="text-slate-300 leading-relaxed text-lg mb-10">
+                      We bring ideas to life through powerful visuals that
+                      communicate, inspire, and connect.
+                    </p>
+
+                    <div className="space-y-14">
+                      <div>
+                        <h4 className="text-2xl font-bold mb-8">
+                          Graphic Design
+                        </h4>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                          <div className="relative group overflow-hidden rounded-lg">
+                            <h5 className="text-lg font-semibold mb-4 text-slate-400">
+                              Branding
+                            </h5>
+                            {/* <p className="text-slate-400 mb-6">
+                          Logo Design, Brand Identity, Rebranding, Brand Guidelines
+                        </p> */}
+                            <div className="relative grid grid-cols-2 gap-4">
+                              <img
+                                src="https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=400&h=300&fit=crop"
+                                alt="Branding design 1"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <img
+                                src="https://images.unsplash.com/photo-1558655146-d09347e92766?w=400&h=300&fit=crop"
+                                alt="Branding design 2"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <img
+                                src="https://images.unsplash.com/photo-1634986666676-ec8fd927c23d?w=400&h=300&fit=crop"
+                                alt="Branding design 3"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <img
+                                src="https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=400&h=300&fit=crop"
+                                alt="Branding design 4"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
+                                <button className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-purple-500/25 animate-pulse">
+                                  Show more
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="relative group overflow-hidden rounded-lg">
+                            <h5 className="text-lg font-semibold mb-4 text-slate-400">
+                              Social Media & Flyers
+                            </h5>
+                            <div className="relative grid grid-cols-2 gap-4">
+                              <img
+                                src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop"
+                                alt="Social media design 1"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <img
+                                src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop"
+                                alt="Flyer design 1"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <img
+                                src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop"
+                                alt="Social media design 2"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <img
+                                src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop"
+                                alt="Flyer design 2"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
+                                <button className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-blue-500/30 hover:to-cyan-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-blue-500/25 animate-pulse">
+                                  Show more
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="relative group overflow-hidden rounded-lg">
+                            <h5 className="text-lg font-semibold mb-4 text-slate-400">
+                              Invitation Design
+                            </h5>
+                            <div className="relative grid grid-cols-2 gap-4">
+                              <img
+                                src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
+                                alt="Invitation design 1"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <img
+                                src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
+                                alt="Invitation design 2"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <img
+                                src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
+                                alt="Invitation design 3"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <img
+                                src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
+                                alt="Invitation design 4"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
+                                <button className="bg-gradient-to-r from-rose-500/20 to-pink-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-rose-500/30 hover:to-pink-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-rose-500/25 animate-pulse">
+                                  Show more
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="relative group overflow-hidden rounded-lg">
+                            <h5 className="text-lg font-semibold mb-4 text-slate-400">
+                              Packaging Design
+                            </h5>
+                            <div className="relative grid grid-cols-2 gap-4">
+                              <img
+                                src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
+                                alt="Packaging design 1"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <img
+                                src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
+                                alt="Packaging design 2"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <img
+                                src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
+                                alt="Packaging design 3"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <img
+                                src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
+                                alt="Packaging design 4"
+                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
+                                <button className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-green-500/30 hover:to-emerald-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-green-500/25 animate-pulse">
+                                  Show more
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-2xl font-bold mb-8">
+                          Photography & Videography
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <img
+                            src="https://images.unsplash.com/photo-1606986628025-35d57e735ae0?w=400&h=300&fit=crop"
+                            alt="Professional photography"
+                            className="rounded-lg"
+                          />
+                          <img
+                            src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=300&fit=crop"
+                            alt="Video production"
+                            className="rounded-lg"
+                          />
+                          <video
+                            className="col-span-2 w-full rounded-lg"
+                            controls
+                          >
+                            <source
+                              src="https://www.w3schools.com/html/mov_bbb.mp4"
+                              type="video/mp4"
+                            />
+                          </video>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-2xl font-bold mb-8">
+                          Motion Design / Motion Graphics
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <div className="relative group overflow-hidden rounded-lg bg-black">
+                            <video
+                              className="w-full h-48 object-cover"
+                              controls
+                            >
+                              <source
+                                src="https://www.w3schools.com/html/mov_bbb.mp4"
+                                type="video/mp4"
+                              />
+                            </video>
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                              <div className="w-12 h-12 rounded-full border-2 border-white flex items-center justify-center">
+                                <svg
+                                  className="w-6 h-6 text-white fill-white ml-0.5"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="relative group overflow-hidden rounded-lg bg-black">
+                            <video
+                              className="w-full h-48 object-cover"
+                              controls
+                            >
+                              <source
+                                src="https://www.w3schools.com/html/mov_bbb.mp4"
+                                type="video/mp4"
+                              />
+                            </video>
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                              <div className="w-12 h-12 rounded-full border-2 border-white flex items-center justify-center">
+                                <svg
+                                  className="w-6 h-6 text-white fill-white ml-0.5"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="relative group overflow-hidden rounded-lg bg-black">
+                            <video
+                              className="w-full h-48 object-cover"
+                              controls
+                            >
+                              <source
+                                src="https://www.w3schools.com/html/mov_bbb.mp4"
+                                type="video/mp4"
+                              />
+                            </video>
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                              <div className="w-12 h-12 rounded-full border-2 border-white flex items-center justify-center">
+                                <svg
+                                  className="w-6 h-6 text-white fill-white ml-0.5"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-2xl font-bold mb-8">
+                          Signage Design & Installation
+                        </h4>
+                        <p className="text-slate-400 mb-6">
+                          Design, production, and installation of indoor and
+                          outdoor signage that enhances brand visibility.
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <img
+                            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop"
+                            alt="Signage design 1"
+                            className="rounded-lg"
+                          />
+                          <img
+                            src="https://images.unsplash.com/photo-1565043666747-69f6646db940?w=400&h=300&fit=crop"
+                            alt="Signage design 2"
+                            className="rounded-lg md:col-span-2"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
-                <div className="relative group overflow-hidden rounded-lg">
-                  <h4 className="text-2xl font-semibold mb-4">
-                    Social Media & Flyers
-                  </h4>
-                  <div className="relative grid grid-cols-2 gap-4">
-                    <img
-                      src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop"
-                      alt="Social media design 1"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+              </div>
+
+              <div className="flex items-start gap-8">
+                <div className="flex-shrink-0 w-12 h-12 bg-[#05060b] border-2 border-white/20 rounded-full flex items-center justify-center mt-2 -ml-6 z-10">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
-                    <img
-                      src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop"
-                      alt="Flyer design 1"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop"
-                      alt="Social media design 2"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop"
-                      alt="Flyer design 2"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-                      <button className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-blue-500/30 hover:to-cyan-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-blue-500/25 animate-pulse">
-                        Show more
-                      </button>
+                  </svg>
+                </div>
+                <div className="flex-1" id="event-management">
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    viewport={{ once: true }}
+                  >
+                    <h3 className="text-3xl font-bold mb-5">
+                      Event Management
+                    </h3>
+                    <p className="text-slate-300 leading-relaxed text-lg mb-10">
+                      We are a 1-stop specialized events company that plans and
+                      executes seamless, memorable events that leave lasting
+                      impressions. From concept to completion, we handle every
+                      detail to bring your vision to life.
+                    </p>
+
+                    <div className="flex flex-col items-center justify-center gap-6 mb-10 max-w-md mx-auto">
+                      <motion.div
+                        className="relative w-64 h-64 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border-2 border-blue-500/30 flex items-center justify-center group cursor-pointer overflow-hidden"
+                        whileHover={{ scale: 1.08 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 20,
+                        }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-cyan-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="relative z-10 text-center px-6">
+                          <h4 className="text-2xl font-semibold mb-4 text-white">
+                            Pre-event planning
+                          </h4>
+                          <ul className="text-slate-300 text-sm space-y-2 mb-6">
+                            <li>Strategy & Budget</li>
+                            <li>Logistics & Vendors</li>
+                            <li>Marketing & Registration</li>
+                            <li>Experience Design</li>
+                            <li>Communication</li>
+                          </ul>
+                          <motion.button
+                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-semibold transition-colors"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            Talk to Us
+                          </motion.button>
+                        </div>
+                      </motion.div>
+
+                      <svg
+                        className="w-6 h-6 text-slate-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12zm0-8a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+
+                      <motion.div
+                        className="relative w-64 h-64 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/10 border-2 border-purple-500/30 flex items-center justify-center group cursor-pointer overflow-hidden"
+                        whileHover={{ scale: 1.08 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 20,
+                        }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-pink-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="relative z-10 text-center px-6">
+                          <h4 className="text-2xl font-semibold mb-4 text-white">
+                            On-site Setup & Management
+                          </h4>
+                          <ul className="text-slate-300 text-sm space-y-2 mb-6">
+                            <li>Registration/Check-in</li>
+                            <li>Logistics & Operations</li>
+                            <li>Production & AV</li>
+                            <li>Attendee Engagement</li>
+                            <li>Safety Protocols</li>
+                          </ul>
+                          <motion.button
+                            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full text-sm font-semibold transition-colors"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            Talk to Us
+                          </motion.button>
+                        </div>
+                      </motion.div>
+
+                      <svg
+                        className="w-6 h-6 text-slate-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12zm0-8a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+
+                      <motion.div
+                        className="relative w-64 h-64 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/10 border-2 border-orange-500/30 flex items-center justify-center group cursor-pointer overflow-hidden"
+                        whileHover={{ scale: 1.08 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 20,
+                        }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="relative z-10 text-center px-6">
+                          <h4 className="text-2xl font-semibold mb-4 text-white">
+                            Post-event Management
+                          </h4>
+                          <ul className="text-slate-300 text-sm space-y-2 mb-6">
+                            <li>Follow-Up Communications</li>
+                            <li>Evaluation & Feedback</li>
+                            <li>Content Distribution</li>
+                            <li>Report Generation</li>
+                            <li>ROI Analysis</li>
+                          </ul>
+                          <motion.button
+                            className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-full text-sm font-semibold transition-colors"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            Talk to Us
+                          </motion.button>
+                        </div>
+                      </motion.div>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
-                <div className="relative group overflow-hidden rounded-lg">
-                  <h4 className="text-2xl font-semibold mb-4">
-                    Invitation Design
-                  </h4>
-                  <div className="relative grid grid-cols-2 gap-4">
-                    <img
-                      src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
-                      alt="Invitation design 1"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+              </div>
+
+              <div className="flex items-start gap-8">
+                <div className="flex-shrink-0 w-12 h-12 bg-[#05060b] border-2 border-white/20 rounded-full flex items-center justify-center mt-2 -ml-6 z-10">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
                     />
-                    <img
-                      src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
-                      alt="Invitation design 2"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
-                      alt="Invitation design 3"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
-                      alt="Invitation design 4"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-                      <button className="bg-gradient-to-r from-rose-500/20 to-pink-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-rose-500/30 hover:to-pink-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-rose-500/25 animate-pulse">
-                        Show more
-                      </button>
+                  </svg>
+                </div>
+                <div className="flex-1" id="tech-solutions">
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.4 }}
+                    viewport={{ once: true }}
+                  >
+                    <h3 className="text-3xl font-bold mb-5">Tech Solutions</h3>
+                    <p className="text-slate-300 leading-relaxed text-lg mb-10">
+                      We provide smart digital and technical solutions that help
+                      businesses grow, operate efficiently, and stay ahead in a
+                      fast-changing world.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+                      <motion.div
+                        className="p-6 rounded-2xl bg-gradient-to-br from-blue-500/15 to-blue-600/5 border border-blue-500/20 hover:border-blue-500/40 transition-colors duration-300 group"
+                        whileHover={{ y: -8 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <h4 className="text-lg font-semibold mb-4 text-white">
+                          UI/UX Design
+                        </h4>
+                        <div className="w-12 h-12 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
+                          <svg
+                            className="w-6 h-6 text-blue-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+                            />
+                          </svg>
+                        </div>
+                      </motion.div>
+
+                      <motion.div
+                        className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/15 to-purple-600/5 border border-purple-500/20 hover:border-purple-500/40 transition-colors duration-300 group"
+                        whileHover={{ y: -8 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <h4 className="text-lg font-semibold mb-4 text-white">
+                          Web Design & Development
+                        </h4>
+                        <div className="w-12 h-12 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                          <svg
+                            className="w-6 h-6 text-purple-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                            />
+                          </svg>
+                        </div>
+                      </motion.div>
+
+                      <motion.div
+                        className="p-6 rounded-2xl bg-gradient-to-br from-green-500/15 to-green-600/5 border border-green-500/20 hover:border-green-500/40 transition-colors duration-300 group"
+                        whileHover={{ y: -8 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <h4 className="text-lg font-semibold mb-4 text-white">
+                          SEO Optimization
+                        </h4>
+                        <div className="w-12 h-12 rounded-lg bg-green-500/20 border border-green-500/30 flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
+                          <svg
+                            className="w-6 h-6 text-green-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 10V3L4 14h7v7l9-11h-7z"
+                            />
+                          </svg>
+                        </div>
+                      </motion.div>
+
+                      <motion.div
+                        className="p-6 rounded-2xl bg-gradient-to-br from-pink-500/15 to-pink-600/5 border border-pink-500/20 hover:border-pink-500/40 transition-colors duration-300 group"
+                        whileHover={{ y: -8 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <h4 className="text-lg font-semibold mb-4 text-white">
+                          Digital Solutions & Automation
+                        </h4>
+                        <div className="w-12 h-12 rounded-lg bg-pink-500/20 border border-pink-500/30 flex items-center justify-center group-hover:bg-pink-500/30 transition-colors">
+                          <svg
+                            className="w-6 h-6 text-pink-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                            />
+                          </svg>
+                        </div>
+                      </motion.div>
+
+                      <motion.div
+                        className="p-6 rounded-2xl bg-gradient-to-br from-orange-500/15 to-orange-600/5 border border-orange-500/20 hover:border-orange-500/40 transition-colors duration-300 group"
+                        whileHover={{ y: -8 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <h4 className="text-lg font-semibold mb-4 text-white">
+                          IT Support & Maintenance
+                        </h4>
+                        <div className="w-12 h-12 rounded-lg bg-orange-500/20 border border-orange-500/30 flex items-center justify-center group-hover:bg-orange-500/30 transition-colors">
+                          <svg
+                            className="w-6 h-6 text-orange-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                          </svg>
+                        </div>
+                      </motion.div>
+
+                      <motion.div
+                        className="p-6 rounded-2xl bg-gradient-to-br from-cyan-500/15 to-cyan-600/5 border border-cyan-500/20 hover:border-cyan-500/40 transition-colors duration-300 group"
+                        whileHover={{ y: -8 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <h4 className="text-lg font-semibold mb-4 text-white">
+                          E-commerce Setup
+                        </h4>
+                        <div className="w-12 h-12 rounded-lg bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center group-hover:bg-cyan-500/30 transition-colors">
+                          <svg
+                            className="w-6 h-6 text-cyan-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                            />
+                          </svg>
+                        </div>
+                      </motion.div>
                     </div>
-                  </div>
-                </div>
-                <div className="relative group overflow-hidden rounded-lg">
-                  <h4 className="text-2xl font-semibold mb-4">
-                    Packaging Design
-                  </h4>
-                  <div className="relative grid grid-cols-2 gap-4">
-                    <img
-                      src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
-                      alt="Packaging design 1"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
-                      alt="Packaging design 2"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
-                      alt="Packaging design 3"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
-                      alt="Packaging design 4"
-                      className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-                      <button className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-green-500/30 hover:to-emerald-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-green-500/25 animate-pulse">
-                        Show more
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="text-2xl font-semibold mb-4">
-                    Photography & Videography
-                  </h4>
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <img
-                      src="https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop"
-                      alt="Wedding photography"
-                      className="rounded-lg"
-                    />
-                    <img
-                      src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=300&fit=crop"
-                      alt="Event photography"
-                      className="rounded-lg"
-                    />
-                  </div>
-                  <video className="w-full rounded-lg" controls>
-                    <source
-                      src="https://player.vimeo.com/video/76979871?background=1&autoplay=0&loop=0&byline=0&title=0&muted=0"
-                      type="video/mp4"
-                    />
-                  </video>
+                  </motion.div>
                 </div>
               </div>
-
-              <div className="mt-10">
-                <h4 className="text-2xl font-semibold mb-4">
-                  Motion Design / Motion Graphics
-                </h4>
-                <video className="w-full rounded-lg" controls>
-                  <source
-                    src="https://player.vimeo.com/video/76979871?background=1&autoplay=0&loop=0&byline=0&title=0&muted=0"
-                    type="video/mp4"
-                  />
-                </video>
-              </div>
-
-              <div className="mt-10">
-                <h4 className="text-2xl font-semibold mb-4">
-                  Signage Design & Installation
-                </h4>
-                <p className="text-slate-400 mb-6">
-                  Design, production, and installation of indoor and outdoor
-                  signage that enhances brand visibility.
-                </p>
-                <ul className="text-slate-400 mb-6 space-y-1">
-                  <li>Billboards</li>
-                  <li>Shop signs</li>
-                  <li>Indoor displays</li>
-                </ul>
-                <img
-                  src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=400&fit=crop"
-                  alt="Signage design"
-                  className="rounded-lg"
-                />
-              </div>
-            </motion.div>
-          </div>
-
-          <div id="event-management" className="mb-20">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              <h3 className="text-3xl font-bold mb-5">Event Management</h3>
-              <p className="text-slate-300 leading-relaxed text-lg mb-10">
-                We are a 1-stop specialized events company that plans and
-                executes seamless, memorable events that leave lasting
-                impressions. From concept to completion, we handle every detail
-                to bring your vision to life.
-              </p>
-
-              <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-10">
-                <div className="text-center">
-                  <h4 className="text-xl font-semibold mb-2">
-                    Pre-event planning
-                  </h4>
-                  <ul className="text-slate-400 text-sm space-y-1">
-                    <li>Strategy & Budget</li>
-                    <li>Logistics & Vendors</li>
-                    <li>Marketing & Registration</li>
-                    <li>Experience Design</li>
-                    <li>Communication</li>
-                  </ul>
-                </div>
-                <svg
-                  className="w-8 h-8 text-slate-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <div className="text-center">
-                  <h4 className="text-xl font-semibold mb-2">
-                    On-site setup and event management
-                  </h4>
-                  <ul className="text-slate-400 text-sm space-y-1">
-                    <li>Registration/Check-in</li>
-                    <li>Logistics & Operations</li>
-                    <li>Production & AV</li>
-                    <li>Attendee Engagement & Safety</li>
-                  </ul>
-                </div>
-                <svg
-                  className="w-8 h-8 text-slate-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <div className="text-center">
-                  <h4 className="text-xl font-semibold mb-2">
-                    Post-event management
-                  </h4>
-                  <ul className="text-slate-400 text-sm space-y-1">
-                    <li>Follow-Up</li>
-                    <li>Evaluation</li>
-                    <li>Content Distribution</li>
-                  </ul>
-                </div>
-              </div>
-
-              <img
-                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=400&fit=crop"
-                alt="Event management infographic"
-                className="rounded-lg"
-              />
-            </motion.div>
-          </div>
-
-          <div id="tech-solutions">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              viewport={{ once: true }}
-            >
-              <h3 className="text-3xl font-bold mb-5">Tech Solutions</h3>
-              <p className="text-slate-300 leading-relaxed text-lg mb-10">
-                We provide smart digital and technical solutions that help
-                businesses grow, operate efficiently, and stay ahead in a
-                fast-changing world.
-              </p>
-
-              <ul className="text-slate-400 mb-10 space-y-2">
-                <li>UI/UX design</li>
-                <li>Web Design & Development</li>
-                <li>SEO (Search Engine Optimization)</li>
-                <li>Digital Solutions & Automation (We provide platforms)</li>
-                <li>IT Support & Maintenance</li>
-                <li>E-commerce Setup</li>
-              </ul>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <img
-                  src="https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop"
-                  alt="UI/UX design screenshot"
-                  className="rounded-lg"
-                />
-                <img
-                  src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop"
-                  alt="Website design screenshot"
-                  className="rounded-lg"
-                />
-              </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
