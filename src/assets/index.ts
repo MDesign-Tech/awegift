@@ -16,6 +16,10 @@ export const bannerImages = [
   { src: banner4.src, alt: "Hero section 4" },
 ];
 
+// About us image
+import aboutUsImage from "./aboutus image.svg";
+export { aboutUsImage };
+
 // Keep webp import for optimization (webp is better supported by Next.js)
 import paymentImage from "./payment.webp";
 export { paymentImage };

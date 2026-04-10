@@ -399,6 +399,81 @@ button:disabled:hover {
   font-weight: 700;
 }
 
+/* Marquee Animations for About Section */
+@keyframes marquee-left {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes marquee-right {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes marquee-left-slow {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes marquee-right-fast {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes marquee-diagonal {
+  0% {
+    transform: translateX(100%) translateY(0);
+  }
+  25% {
+    transform: translateX(50%) translateY(-20px);
+  }
+  50% {
+    transform: translateX(0%) translateY(0);
+  }
+  75% {
+    transform: translateX(-50%) translateY(20px);
+  }
+  100% {
+    transform: translateX(-100%) translateY(0);
+  }
+}
+
+.animate-marquee-left {
+  animation: marquee-left 60s linear infinite;
+}
+
+.animate-marquee-right {
+  animation: marquee-right 50s linear infinite;
+}
+
+.animate-marquee-left-slow {
+  animation: marquee-left-slow 80s linear infinite;
+}
+
+.animate-marquee-right-fast {
+  animation: marquee-right-fast 35s linear infinite;
+}
+
+.animate-marquee-diagonal {
+  animation: marquee-diagonal 70s linear infinite;
+}
+
 @media (max-width: 768px) {
   .custom-cursor {
     display: none;

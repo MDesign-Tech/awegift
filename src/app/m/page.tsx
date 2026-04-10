@@ -6,6 +6,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "@studio-freight/lenis";
 import * as THREE from "three";
+import { aboutUsImage } from "../../assets";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -68,8 +69,19 @@ const splitChars = (text: string) =>
     </motion.span>
   ));
 
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  color: string;
+}
+
 export default function MPage() {
   const heroCanvasRef = useRef<HTMLCanvasElement>(null);
+  const aboutCanvasRef = useRef<HTMLCanvasElement>(null);
+  const aboutSectionRef = useRef<HTMLDivElement>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [cursor, setCursor] = useState({
     x: 0,
@@ -77,8 +89,10 @@ export default function MPage() {
     active: false,
     label: "",
   });
+  const [aboutCursor, setAboutCursor] = useState({ x: 0, y: 0 });
   const lenisRef = useRef<Lenis | null>(null);
   const [mounted, setMounted] = useState(false);
+  const particlesRef = useRef<Particle[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -179,6 +193,129 @@ export default function MPage() {
       lenis.destroy();
     };
   }, []);
+
+  // About Section Particles with Cursor Tracking
+  useEffect(() => {
+    const canvas = aboutCanvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    // Initialize particles
+    const particleCount = 50;
+    const particles: Particle[] = [];
+    const colors = [
+      "rgba(237, 76, 7, 0.6)",
+      "rgba(0, 206, 201, 0.6)",
+      "rgba(203, 93, 255, 0.6)",
+      "rgba(255, 127, 80, 0.5)",
+      "rgba(63, 220, 227, 0.5)",
+      "rgba(217, 187, 255, 0.5)",
+    ];
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 2,
+        vy: (Math.random() - 0.5) * 2,
+        radius: Math.random() * 2 + 1,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      });
+    }
+
+    particlesRef.current = particles;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!aboutSectionRef.current) return;
+      const rect = aboutSectionRef.current.getBoundingClientRect();
+      setAboutCursor({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    };
+
+    const section = aboutSectionRef.current;
+    if (section) {
+      section.addEventListener("mousemove", handleMouseMove);
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach((particle) => {
+        // Move particles
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        // Bounce off walls
+        if (
+          particle.x - particle.radius < 0 ||
+          particle.x + particle.radius > canvas.width
+        ) {
+          particle.vx *= -1;
+          particle.x = Math.max(
+            particle.radius,
+            Math.min(canvas.width - particle.radius, particle.x),
+          );
+        }
+        if (
+          particle.y - particle.radius < 0 ||
+          particle.y + particle.radius > canvas.height
+        ) {
+          particle.vy *= -1;
+          particle.y = Math.max(
+            particle.radius,
+            Math.min(canvas.height - particle.radius, particle.y),
+          );
+        }
+
+        // Attract to cursor
+        const dx = aboutCursor.x - particle.x;
+        const dy = aboutCursor.y - particle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const maxDistance = 150;
+
+        if (distance < maxDistance) {
+          const force = (1 - distance / maxDistance) * 0.5;
+          particle.vx += (dx / distance) * force;
+          particle.vy += (dy / distance) * force;
+        }
+
+        // Damping
+        particle.vx *= 0.98;
+        particle.vy *= 0.98;
+
+        // Draw particle
+        ctx.fillStyle = particle.color;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    const handleResize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (section) {
+        section.removeEventListener("mousemove", handleMouseMove);
+      }
+    };
+  }, [aboutCursor]);
 
   useEffect(() => {
     // Three.js animated point sphere for hero background
@@ -322,15 +459,18 @@ export default function MPage() {
             {[
               {
                 title: "Visual Creation",
-                color: "bg-[#ed4c07] hover:bg-[#ff7f50]",
+                color:
+                  "bg-gradient-to-r from-[#ed4c07] to-[#ff7f50] hover:from-[#ff7f50] hover:to-[#ed4c07]",
               },
               {
                 title: "Event Management",
-                color: "bg-[#00cec9] hover:bg-[#3fdce3]",
+                color:
+                  "bg-gradient-to-r from-[#00cec9] to-[#3fdce3] hover:from-[#3fdce3] hover:to-[#00cec9]",
               },
               {
                 title: "Tech Solutions",
-                color: "bg-[#cb5dff] hover:bg-[#d9bbff]",
+                color:
+                  "bg-gradient-to-r from-[#cb5dff] to-[#d9bbff] hover:from-[#d9bbff] hover:to-[#cb5dff]",
               },
             ].map((service) => (
               <div
@@ -354,38 +494,55 @@ export default function MPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5, duration: 1 }}
           >
-            <span>Scroll to explore</span>
+            <span>E-Commerce</span>
             <span className="animate-bounce">⌄</span>
           </motion.div>
         </div>
       </section>
 
-      <section className="m-reveal bg-[#070913] py-24 md:py-28">
-        <div className="container mx-auto px-6 md:px-12 lg:px-24">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-                We are digital creators
-              </h2>
-              <p className="text-slate-300 leading-relaxed text-lg md:text-xl">
-                Each section is not a block, it is a chapter; motion and
-                interaction are structured to guide users through a narrative.
-              </p>
-            </div>
-            <div className="relative m-parallax-holder h-80 overflow-hidden rounded-3xl border border-white/10 bg-[#0d1525]">
+      <section
+        className="m-reveal bg-[#070913] py-24 md:py-28 relative overflow-hidden"
+        ref={aboutSectionRef}
+      >
+        <canvas
+          ref={aboutCanvasRef}
+          className="absolute inset-0 w-full h-full pointer-events-none"
+        />
+        <div className="container mx-auto px-6 md:px-12 lg:px-24 relative z-10">
+          <div className="space-y-12">
+            <div className="relative m-parallax-holder h-96 overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=600&fit=crop&crop=center"
+                src={aboutUsImage.src}
                 alt="Creative workspace with motion graphics"
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-contain"
                 loading="lazy"
               />
               <div className="m-parallax-layer absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(29, 131, 248,0.35),transparent_35%),radial-gradient(circle_at_70%_70%,rgba(148, 159, 255,0.23),transparent_40%)]" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6">
-                <p className="text-white/90 text-sm font-medium">
-                  Interactive storytelling in motion
-                </p>
-              </div>
+            </div>
+            <div className="text-center space-y-6">
+              {/* <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+                ABOUT US
+              </h2> */}
+              <p className="text-slate-300 leading-relaxed text-lg md:text-xl">
+                We are a creative agency specializing in <br />{" "}
+                <b>
+                  <span className="bg-gradient-to-r from-[#ed4c07] to-[#ff7f50] bg-clip-text text-transparent">
+                    Visual Creations
+                  </span>
+                  ,{" "}
+                  <span className="bg-gradient-to-r from-[#00cec9] to-[#3fdce3] bg-clip-text text-transparent">
+                    Event Management
+                  </span>
+                  ,
+                </b>{" "}
+                and{" "}
+                <b>
+                  <span className="bg-gradient-to-r from-[#cb5dff] to-[#d9bbff] bg-clip-text text-transparent">
+                    Tech Solutions
+                  </span>
+                </b>{" "}
+                .
+              </p>
             </div>
           </div>
         </div>
@@ -574,26 +731,42 @@ export default function MPage() {
                         <h4 className="text-2xl font-bold mb-8">
                           Photography & Videography
                         </h4>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                           <img
                             src="https://images.unsplash.com/photo-1606986628025-35d57e735ae0?w=400&h=300&fit=crop"
-                            alt="Professional photography"
+                            alt="Professional photography 1"
                             className="rounded-lg"
                           />
                           <img
                             src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=300&fit=crop"
+                            alt="Event photography 1"
+                            className="rounded-lg"
+                          />
+                          <img
+                            src="https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop"
+                            alt="Portrait photography"
+                            className="rounded-lg"
+                          />
+                          <img
+                            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop"
+                            alt="Commercial photography"
+                            className="rounded-lg"
+                          />
+                          <img
+                            src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop"
+                            alt="Product photography"
+                            className="rounded-lg"
+                          />
+                          <img
+                            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop"
                             alt="Video production"
                             className="rounded-lg"
                           />
-                          <video
-                            className="col-span-2 w-full rounded-lg"
-                            controls
-                          >
-                            <source
-                              src="https://www.w3schools.com/html/mov_bbb.mp4"
-                              type="video/mp4"
-                            />
-                          </video>
+                        </div>
+                        <div className="text-center">
+                          <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25">
+                            Book now
+                          </button>
                         </div>
                       </div>
 
@@ -604,8 +777,14 @@ export default function MPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                           <div className="relative group overflow-hidden rounded-lg bg-black">
                             <video
-                              className="w-full h-48 object-cover"
-                              controls
+                              className="w-full h-48 object-cover group-hover:controls-auto"
+                              controls={false}
+                              onMouseEnter={(e) =>
+                                (e.currentTarget.controls = true)
+                              }
+                              onMouseLeave={(e) =>
+                                (e.currentTarget.controls = false)
+                              }
                             >
                               <source
                                 src="https://www.w3schools.com/html/mov_bbb.mp4"
@@ -625,8 +804,14 @@ export default function MPage() {
                           </div>
                           <div className="relative group overflow-hidden rounded-lg bg-black">
                             <video
-                              className="w-full h-48 object-cover"
-                              controls
+                              className="w-full h-48 object-cover group-hover:controls-auto"
+                              controls={false}
+                              onMouseEnter={(e) =>
+                                (e.currentTarget.controls = true)
+                              }
+                              onMouseLeave={(e) =>
+                                (e.currentTarget.controls = false)
+                              }
                             >
                               <source
                                 src="https://www.w3schools.com/html/mov_bbb.mp4"
@@ -646,8 +831,14 @@ export default function MPage() {
                           </div>
                           <div className="relative group overflow-hidden rounded-lg bg-black">
                             <video
-                              className="w-full h-48 object-cover"
-                              controls
+                              className="w-full h-48 object-cover group-hover:controls-auto"
+                              controls={false}
+                              onMouseEnter={(e) =>
+                                (e.currentTarget.controls = true)
+                              }
+                              onMouseLeave={(e) =>
+                                (e.currentTarget.controls = false)
+                              }
                             >
                               <source
                                 src="https://www.w3schools.com/html/mov_bbb.mp4"
@@ -687,6 +878,31 @@ export default function MPage() {
                             alt="Signage design 2"
                             className="rounded-lg md:col-span-2"
                           />
+                          <div className="rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 flex items-center justify-center p-8 hover:from-gray-700 hover:to-gray-800 transition-all duration-300 cursor-pointer group">
+                            <div className="text-center">
+                              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                <svg
+                                  className="w-8 h-8 text-white"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                  />
+                                </svg>
+                              </div>
+                              <h3 className="text-xl font-bold text-white mb-2">
+                                View More
+                              </h3>
+                              <p className="text-gray-400 text-sm">
+                                Explore our complete signage portfolio
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -727,9 +943,9 @@ export default function MPage() {
                       detail to bring your vision to life.
                     </p>
 
-                    <div className="flex flex-col items-center justify-center gap-6 mb-10 max-w-md mx-auto">
+                    <div className="flex flex-col items-center justify-center gap-8 mb-10 max-w-md mx-auto">
                       <motion.div
-                        className="relative w-64 h-64 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border-2 border-blue-500/30 flex items-center justify-center group cursor-pointer overflow-hidden"
+                        className="relative w-80 h-80 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border-2 border-blue-500/30 flex items-center justify-center group cursor-pointer overflow-hidden"
                         whileHover={{ scale: 1.08 }}
                         transition={{
                           type: "spring",
@@ -738,19 +954,24 @@ export default function MPage() {
                         }}
                       >
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-cyan-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="relative z-10 text-center px-6">
-                          <h4 className="text-2xl font-semibold mb-4 text-white">
+                        <div className="relative z-10 text-center px-8 transition-all duration-500">
+                          <h4 className="text-3xl font-semibold mb-6 text-white group-hover:opacity-0 transition-opacity duration-300">
                             Pre-event planning
                           </h4>
-                          <ul className="text-slate-300 text-sm space-y-2 mb-6">
-                            <li>Strategy & Budget</li>
-                            <li>Logistics & Vendors</li>
-                            <li>Marketing & Registration</li>
-                            <li>Experience Design</li>
-                            <li>Communication</li>
-                          </ul>
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 absolute inset-0 flex flex-col items-center justify-center px-6">
+                            <h4 className="text-2xl font-semibold mb-4 text-white">
+                              Pre-event planning
+                            </h4>
+                            <ul className="text-slate-300 text-sm space-y-2 mb-6">
+                              <li>Strategy & Budget</li>
+                              <li>Logistics & Vendors</li>
+                              <li>Marketing & Registration</li>
+                              <li>Experience Design</li>
+                              <li>Communication</li>
+                            </ul>
+                          </div>
                           <motion.button
-                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-semibold transition-colors"
+                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-semibold transition-colors opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             initial={{ opacity: 0, y: 10 }}
@@ -775,7 +996,7 @@ export default function MPage() {
                       </svg>
 
                       <motion.div
-                        className="relative w-64 h-64 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/10 border-2 border-purple-500/30 flex items-center justify-center group cursor-pointer overflow-hidden"
+                        className="relative w-80 h-80 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/10 border-2 border-purple-500/30 flex items-center justify-center group cursor-pointer overflow-hidden"
                         whileHover={{ scale: 1.08 }}
                         transition={{
                           type: "spring",
@@ -784,19 +1005,24 @@ export default function MPage() {
                         }}
                       >
                         <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-pink-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="relative z-10 text-center px-6">
-                          <h4 className="text-2xl font-semibold mb-4 text-white">
+                        <div className="relative z-10 text-center px-8 transition-all duration-500">
+                          <h4 className="text-3xl font-semibold mb-6 text-white group-hover:opacity-0 transition-opacity duration-300">
                             On-site Setup & Management
                           </h4>
-                          <ul className="text-slate-300 text-sm space-y-2 mb-6">
-                            <li>Registration/Check-in</li>
-                            <li>Logistics & Operations</li>
-                            <li>Production & AV</li>
-                            <li>Attendee Engagement</li>
-                            <li>Safety Protocols</li>
-                          </ul>
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 absolute inset-0 flex flex-col items-center justify-center px-6">
+                            <h4 className="text-2xl font-semibold mb-4 text-white">
+                              On-site Setup & Management
+                            </h4>
+                            <ul className="text-slate-300 text-sm space-y-2 mb-6">
+                              <li>Registration/Check-in</li>
+                              <li>Logistics & Operations</li>
+                              <li>Production & AV</li>
+                              <li>Attendee Engagement</li>
+                              <li>Safety Protocols</li>
+                            </ul>
+                          </div>
                           <motion.button
-                            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full text-sm font-semibold transition-colors"
+                            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full text-sm font-semibold transition-colors opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             initial={{ opacity: 0, y: 10 }}
@@ -821,7 +1047,7 @@ export default function MPage() {
                       </svg>
 
                       <motion.div
-                        className="relative w-64 h-64 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/10 border-2 border-orange-500/30 flex items-center justify-center group cursor-pointer overflow-hidden"
+                        className="relative w-80 h-80 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/10 border-2 border-orange-500/30 flex items-center justify-center group cursor-pointer overflow-hidden"
                         whileHover={{ scale: 1.08 }}
                         transition={{
                           type: "spring",
@@ -830,19 +1056,24 @@ export default function MPage() {
                         }}
                       >
                         <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="relative z-10 text-center px-6">
-                          <h4 className="text-2xl font-semibold mb-4 text-white">
+                        <div className="relative z-10 text-center px-8 transition-all duration-500">
+                          <h4 className="text-3xl font-semibold mb-6 text-white group-hover:opacity-0 transition-opacity duration-300">
                             Post-event Management
                           </h4>
-                          <ul className="text-slate-300 text-sm space-y-2 mb-6">
-                            <li>Follow-Up Communications</li>
-                            <li>Evaluation & Feedback</li>
-                            <li>Content Distribution</li>
-                            <li>Report Generation</li>
-                            <li>ROI Analysis</li>
-                          </ul>
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 absolute inset-0 flex flex-col items-center justify-center px-6">
+                            <h4 className="text-2xl font-semibold mb-4 text-white">
+                              Post-event Management
+                            </h4>
+                            <ul className="text-slate-300 text-sm space-y-2 mb-6">
+                              <li>Follow-Up Communications</li>
+                              <li>Evaluation & Feedback</li>
+                              <li>Content Distribution</li>
+                              <li>Report Generation</li>
+                              <li>ROI Analysis</li>
+                            </ul>
+                          </div>
                           <motion.button
-                            className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-full text-sm font-semibold transition-colors"
+                            className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-full text-sm font-semibold transition-colors opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             initial={{ opacity: 0, y: 10 }}
@@ -1130,7 +1361,136 @@ export default function MPage() {
         )}
       </AnimatePresence>
 
-      <section className="py-24 m-reveal relative">
+      <section className="py-24 m-reveal relative overflow-hidden">
+        {/* Animated Background Words */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Row 1 - Left to Right */}
+          <div className="absolute top-10 left-0 w-full animate-marquee-left opacity-5">
+            <div className="flex whitespace-nowrap">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <span
+                  key={`row1-${i}`}
+                  className="text-6xl md:text-8xl font-bold text-white/10 mx-8 tracking-wider"
+                >
+                  Graphic Design • Branding • Logo Design • Brand Identity •
+                  Rebranding • Brand Guidelines • Social media • Flyers
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Row 2 - Right to Left */}
+          <div className="absolute top-32 right-0 w-full animate-marquee-right opacity-5">
+            <div className="flex whitespace-nowrap">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <span
+                  key={`row2-${i}`}
+                  className="text-5xl md:text-7xl font-bold text-white/8 mx-6 tracking-wider"
+                >
+                  Banners • Invitation design • Packaging design • Photography •
+                  Videography • Motion design • Motion Graphics
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Row 3 - Left to Right (Slower) */}
+          <div className="absolute top-56 left-0 w-full animate-marquee-left-slow opacity-5">
+            <div className="flex whitespace-nowrap">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <span
+                  key={`row3-${i}`}
+                  className="text-4xl md:text-6xl font-bold text-white/6 mx-10 tracking-wider"
+                >
+                  Signage Design • Signage Installation • Billboards • Shop
+                  signs • Promotional materials • UI/UX design
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Row 4 - Right to Left (Faster) */}
+          <div className="absolute top-80 right-0 w-full animate-marquee-right-fast opacity-5">
+            <div className="flex whitespace-nowrap">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <span
+                  key={`row4-${i}`}
+                  className="text-3xl md:text-5xl font-bold text-white/7 mx-4 tracking-wider"
+                >
+                  Web Design • Web Development • SEO • Digital Solutions &
+                  Automation • IT Support & Maintenance • E-commerce Setup
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Row 5 - Diagonal Movement */}
+          <div className="absolute top-1/2 left-0 w-full animate-marquee-diagonal opacity-5">
+            <div className="flex whitespace-nowrap">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <span
+                  key={`row5-${i}`}
+                  className="text-7xl md:text-9xl font-bold text-white/4 mx-12 tracking-wider"
+                >
+                  Creative • Design • Motion • Digital • Branding • Innovation •
+                  Experience
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Floating Words */}
+          <motion.div
+            className="absolute top-20 left-1/4 text-4xl font-bold text-white/3 opacity-5"
+            animate={{
+              x: [0, 100, -50, 0],
+              y: [0, -30, 20, 0],
+              rotate: [0, 5, -3, 0],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            Graphic Design
+          </motion.div>
+
+          <motion.div
+            className="absolute bottom-32 right-1/3 text-5xl font-bold text-white/4 opacity-5"
+            animate={{
+              x: [0, -80, 40, 0],
+              y: [0, 25, -15, 0],
+              rotate: [0, -4, 6, 0],
+            }}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2,
+            }}
+          >
+            Motion Graphics
+          </motion.div>
+
+          <motion.div
+            className="absolute top-1/3 right-10 text-3xl font-bold text-white/3 opacity-5"
+            animate={{
+              x: [0, 60, -30, 0],
+              y: [0, -20, 10, 0],
+              rotate: [0, 3, -2, 0],
+            }}
+            transition={{
+              duration: 18,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 4,
+            }}
+          >
+            UI/UX Design
+          </motion.div>
+        </div>
+
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
           style={{
