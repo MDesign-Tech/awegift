@@ -7,7 +7,13 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "@studio-freight/lenis";
 import * as THREE from "three";
 import { useRouter } from "next/navigation";
-import { aboutUsImage } from "../../assets";
+import {
+  aboutUsImage,
+  logoImages,
+  socialMediaImages,
+  weddingImages,
+  packagingImages,
+} from "../../assets";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -605,17 +611,17 @@ export default function MPage() {
                         </p> */}
                             <div className="grid grid-cols-2 gap-4">
                               <img
-                                src="https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=400&h=300&fit=crop"
+                                src={logoImages[0].src}
                                 alt="Branding design 1"
                                 className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
-                                src="https://images.unsplash.com/photo-1558655146-d09347e92766?w=400&h=300&fit=crop"
+                                src={logoImages[1].src}
                                 alt="Branding design 2"
                                 className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
-                                src="https://images.unsplash.com/photo-1634986666676-ec8fd927c23d?w=400&h=300&fit=crop"
+                                src={logoImages[2].src}
                                 alt="Branding design 3"
                                 className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
@@ -655,18 +661,18 @@ export default function MPage() {
                             </h5>
                             <div className="grid grid-cols-2 gap-4">
                               <img
-                                src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop"
-                                alt="Social media design 1"
+                                src={socialMediaImages[0].src}
+                                alt={socialMediaImages[0].alt}
                                 className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
-                                src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop"
-                                alt="Flyer design 1"
+                                src={socialMediaImages[1].src}
+                                alt={socialMediaImages[1].alt}
                                 className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
-                                src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop"
-                                alt="Social media design 2"
+                                src={socialMediaImages[2].src}
+                                alt={socialMediaImages[2].alt}
                                 className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <button
@@ -705,18 +711,18 @@ export default function MPage() {
                             </h5>
                             <div className="grid grid-cols-2 gap-4">
                               <img
-                                src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
-                                alt="Invitation design 1"
+                                src={weddingImages[0].src}
+                                alt={weddingImages[0].alt}
                                 className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
-                                src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
-                                alt="Invitation design 2"
+                                src={weddingImages[1].src}
+                                alt={weddingImages[1].alt}
                                 className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
-                                src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
-                                alt="Invitation design 3"
+                                src={weddingImages[2].src}
+                                alt={weddingImages[2].alt}
                                 className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <button
@@ -755,18 +761,18 @@ export default function MPage() {
                             </h5>
                             <div className="grid grid-cols-2 gap-4">
                               <img
-                                src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
-                                alt="Packaging design 1"
+                                src={packagingImages[0].src}
+                                alt={packagingImages[0].alt}
                                 className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
-                                src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
-                                alt="Packaging design 2"
+                                src={packagingImages[1].src}
+                                alt={packagingImages[1].alt}
                                 className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
-                                src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
-                                alt="Packaging design 3"
+                                src={packagingImages[2].src}
+                                alt={packagingImages[2].alt}
                                 className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <button

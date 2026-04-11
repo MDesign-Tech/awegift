@@ -23,3 +23,47 @@ export { aboutUsImage };
 // Keep webp import for optimization (webp is better supported by Next.js)
 import paymentImage from "./payment.webp";
 export { paymentImage };
+
+// Logo images
+import logo1 from "./logos/LOGOS - CONTENT FOR WE-01.png";
+import logo2 from "./logos/LOGOS - CONTENT FOR WE-02.png";
+import logo3 from "./logos/LOGOS - CONTENT FOR WE-03.png";
+
+export const logoImages = [
+  { src: logo1.src, alt: "Branding design 1" },
+  { src: logo2.src, alt: "Branding design 2" },
+  { src: logo3.src, alt: "Branding design 3" },
+];
+
+// Social media and flyers images
+import socialMedia1 from "./social media/CONTENT FOR WEB-04.png";
+import socialMedia2 from "./social media/CONTENT FOR WEB-05.png";
+import socialMedia3 from "./social media/CONTENT FOR WEB-06.png";
+
+export const socialMediaImages = [
+  { src: socialMedia1.src, alt: "Social media design 1" },
+  { src: socialMedia2.src, alt: "Social media design 2" },
+  { src: socialMedia3.src, alt: "Social media design 3" },
+];
+
+// Wedding invitation images
+import wedding1 from "./wedding/CONTENT FOR WEB-07.png";
+import wedding2 from "./wedding/CONTENT FOR WEB-08.png";
+import wedding3 from "./wedding/CONTENT FOR WEB-09.png";
+
+export const weddingImages = [
+  { src: wedding1.src, alt: "Invitation design 1" },
+  { src: wedding2.src, alt: "Invitation design 2" },
+  { src: wedding3.src, alt: "Invitation design 3" },
+];
+
+// Packaging images
+import packaging1 from "./packaging/CONTENT FOR WEB-10.png";
+import packaging2 from "./packaging/CONTENT FOR WEB-11.png";
+import packaging3 from "./packaging/CONTENT FOR WEB-12.png";
+
+export const packagingImages = [
+  { src: packaging1.src, alt: "Packaging design 1" },
+  { src: packaging2.src, alt: "Packaging design 2" },
+  { src: packaging3.src, alt: "Packaging design 3" },
+];
