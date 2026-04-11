@@ -6,6 +6,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "@studio-freight/lenis";
 import * as THREE from "three";
+import { useRouter } from "next/navigation";
 import { aboutUsImage } from "../../assets";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -79,6 +80,7 @@ interface Particle {
 }
 
 export default function MPage() {
+  const router = useRouter();
   const heroCanvasRef = useRef<HTMLCanvasElement>(null);
   const aboutCanvasRef = useRef<HTMLCanvasElement>(null);
   const aboutSectionRef = useRef<HTMLDivElement>(null);
@@ -176,7 +178,6 @@ export default function MPage() {
     const lenis = new Lenis({
       duration: 1.6,
       easing: (t: number) => 1 - Math.pow(1 - t, 3),
-      smooth: true,
       orientation: "vertical",
     });
 
@@ -550,9 +551,11 @@ export default function MPage() {
 
       <section className="py-24 m-reveal" id="services">
         <div className="container mx-auto px-6 md:px-12 lg:px-24">
-          <h2 className="text-4xl md:text-5xl font-bold mb-10 text-center">
-            Our Services
-          </h2>
+          <div className="text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-10">
+              Our Services
+            </h2>
+          </div>
 
           <div className="relative">
             <div className="absolute left-0 top-0 bottom-0 w-px border-l-2 border-dotted border-white/30"></div>
@@ -600,128 +603,200 @@ export default function MPage() {
                             {/* <p className="text-slate-400 mb-6">
                           Logo Design, Brand Identity, Rebranding, Brand Guidelines
                         </p> */}
-                            <div className="relative grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                               <img
                                 src="https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=400&h=300&fit=crop"
                                 alt="Branding design 1"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                                className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
                                 src="https://images.unsplash.com/photo-1558655146-d09347e92766?w=400&h=300&fit=crop"
                                 alt="Branding design 2"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                                className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
                                 src="https://images.unsplash.com/photo-1634986666676-ec8fd927c23d?w=400&h=300&fit=crop"
                                 alt="Branding design 3"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                                className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
-                              <img
-                                src="https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=400&h=300&fit=crop"
-                                alt="Branding design 4"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-                                <button className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-purple-500/25 animate-pulse">
-                                  Show more
-                                </button>
-                              </div>
+                              <button
+                                className="group relative rounded-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-purple-500/20 via-pink-500/15 to-purple-600/20 backdrop-blur-md border border-purple-400/30 text-white px-6 py-4 font-bold hover:from-purple-500/30 hover:via-pink-500/25 hover:to-purple-600/30 transition-all duration-300 shadow-lg hover:shadow-purple-500/25 overflow-hidden"
+                                onClick={() =>
+                                  router.push(
+                                    "/services?category=graphic-design",
+                                  )
+                                }
+                              >
+                                <div className="relative z-10 flex items-center justify-center gap-2">
+                                  <span className="text-sm font-bold tracking-wide">
+                                    More
+                                  </span>
+                                  <svg
+                                    className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                                    />
+                                  </svg>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-400/10 to-pink-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                              </button>
                             </div>
                           </div>
                           <div className="relative group overflow-hidden rounded-lg">
                             <h5 className="text-lg font-semibold mb-4 text-slate-400">
                               Social Media & Flyers
                             </h5>
-                            <div className="relative grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                               <img
                                 src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop"
                                 alt="Social media design 1"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                                className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
                                 src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop"
                                 alt="Flyer design 1"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                                className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
                                 src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop"
                                 alt="Social media design 2"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                                className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
-                              <img
-                                src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop"
-                                alt="Flyer design 2"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-                                <button className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-blue-500/30 hover:to-cyan-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-blue-500/25 animate-pulse">
-                                  Show more
-                                </button>
-                              </div>
+                              <button
+                                className="group relative rounded-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-blue-500/20 via-cyan-500/15 to-blue-600/20 backdrop-blur-md border border-blue-400/30 text-white px-6 py-4 font-bold hover:from-blue-500/30 hover:via-cyan-500/25 hover:to-blue-600/30 transition-all duration-300 shadow-lg hover:shadow-blue-500/25 overflow-hidden"
+                                onClick={() =>
+                                  router.push(
+                                    "/services?category=graphic-design",
+                                  )
+                                }
+                              >
+                                <div className="relative z-10 flex items-center justify-center gap-2">
+                                  <span className="text-sm font-bold tracking-wide">
+                                    More
+                                  </span>
+                                  <svg
+                                    className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                                    />
+                                  </svg>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-cyan-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                              </button>
                             </div>
                           </div>
                           <div className="relative group overflow-hidden rounded-lg">
                             <h5 className="text-lg font-semibold mb-4 text-slate-400">
                               Invitation Design
                             </h5>
-                            <div className="relative grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                               <img
                                 src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
                                 alt="Invitation design 1"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                                className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
                                 src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
                                 alt="Invitation design 2"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                                className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
                                 src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
                                 alt="Invitation design 3"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                                className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
-                              <img
-                                src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop"
-                                alt="Invitation design 4"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-                                <button className="bg-gradient-to-r from-rose-500/20 to-pink-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-rose-500/30 hover:to-pink-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-rose-500/25 animate-pulse">
-                                  Show more
-                                </button>
-                              </div>
+                              <button
+                                className="group relative rounded-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-rose-500/20 via-pink-500/15 to-rose-600/20 backdrop-blur-md border border-rose-400/30 text-white px-6 py-4 font-bold hover:from-rose-500/30 hover:via-pink-500/25 hover:to-rose-600/30 transition-all duration-300 shadow-lg hover:shadow-rose-500/25 overflow-hidden"
+                                onClick={() =>
+                                  router.push(
+                                    "/services?category=event-wedding",
+                                  )
+                                }
+                              >
+                                <div className="relative z-10 flex items-center justify-center gap-2">
+                                  <span className="text-sm font-bold tracking-wide">
+                                    More
+                                  </span>
+                                  <svg
+                                    className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                                    />
+                                  </svg>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-rose-400/10 to-pink-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                              </button>
                             </div>
                           </div>
                           <div className="relative group overflow-hidden rounded-lg">
                             <h5 className="text-lg font-semibold mb-4 text-slate-400">
                               Packaging Design
                             </h5>
-                            <div className="relative grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                               <img
                                 src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
                                 alt="Packaging design 1"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                                className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
                                 src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
                                 alt="Packaging design 2"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                                className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
                               <img
                                 src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
                                 alt="Packaging design 3"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
+                                className="rounded-lg transition-transform duration-300 hover:scale-105"
                               />
-                              <img
-                                src="https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=300&fit=crop"
-                                alt="Packaging design 4"
-                                className="rounded-lg transition-transform duration-300 group-hover:scale-105"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-                                <button className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:from-green-500/30 hover:to-emerald-500/30 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-green-500/25 animate-pulse">
-                                  Show more
-                                </button>
-                              </div>
+                              <button
+                                className="group relative rounded-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-green-500/20 via-emerald-500/15 to-green-600/20 backdrop-blur-md border border-green-400/30 text-white px-6 py-4 font-bold hover:from-green-500/30 hover:via-emerald-500/25 hover:to-green-600/30 transition-all duration-300 shadow-lg hover:shadow-green-500/25 overflow-hidden"
+                                onClick={() =>
+                                  router.push(
+                                    "/services?category=branding-signage",
+                                  )
+                                }
+                              >
+                                <div className="relative z-10 flex items-center justify-center gap-2">
+                                  <span className="text-sm font-bold tracking-wide">
+                                    More
+                                  </span>
+                                  <svg
+                                    className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                                    />
+                                  </svg>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-green-400/10 to-emerald-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                              </button>
                             </div>
                           </div>
                         </div>
