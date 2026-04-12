@@ -13,6 +13,8 @@ import {
   socialMediaImages,
   weddingImages,
   packagingImages,
+  photographyImages,
+  brandingImages,
 } from "../../assets";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -637,7 +639,7 @@ export default function MPage() {
                               >
                                 <div className="relative z-10 flex items-center justify-center gap-2">
                                   <span className="text-sm font-bold tracking-wide">
-                                    More
+                                    Logofolio
                                   </span>
                                   <svg
                                     className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
@@ -659,7 +661,7 @@ export default function MPage() {
                           </div>
                           <div className="relative group overflow-hidden rounded-lg">
                             <h5 className="text-lg font-semibold mb-4 text-slate-400">
-                              Social Media & Flyers
+                              Social Media Daily Creative
                             </h5>
                             <div className="grid grid-cols-2 gap-4">
                               <img
@@ -687,7 +689,7 @@ export default function MPage() {
                               >
                                 <div className="relative z-10 flex items-center justify-center gap-2">
                                   <span className="text-sm font-bold tracking-wide">
-                                    More
+                                    More posters
                                   </span>
                                   <svg
                                     className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
@@ -737,7 +739,7 @@ export default function MPage() {
                               >
                                 <div className="relative z-10 flex items-center justify-center gap-2">
                                   <span className="text-sm font-bold tracking-wide">
-                                    More
+                                    Talk to Us
                                   </span>
                                   <svg
                                     className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
@@ -787,7 +789,7 @@ export default function MPage() {
                               >
                                 <div className="relative z-10 flex items-center justify-center gap-2">
                                   <span className="text-sm font-bold tracking-wide">
-                                    More
+                                    Get in touch
                                   </span>
                                   <svg
                                     className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
@@ -814,27 +816,37 @@ export default function MPage() {
                         <h4 className="text-2xl font-bold mb-8">
                           Photography & Videography
                         </h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                          <img
-                            src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=300&fit=crop"
-                            alt="Event photography 1"
-                            className="rounded-lg"
-                          />
-                          <img
-                            src="https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop"
-                            alt="Portrait photography"
-                            className="rounded-lg"
-                          />
-                          <img
-                            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop"
-                            alt="Commercial photography"
-                            className="rounded-lg"
-                          />
-                        </div>
-                        <div className="text-center">
-                          <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25">
-                            Book now
-                          </button>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                          {photographyImages.map((photo) => (
+                            <div
+                              key={photo.src}
+                              className="overflow-hidden rounded-3xl border border-white/10 bg-[#070b13] shadow-[0_20px_70px_rgba(0,0,0,0.35)]"
+                            >
+                              <div className="aspect-[4/3] w-full overflow-hidden bg-slate-900">
+                                <img
+                                  src={photo.src}
+                                  alt={photo.alt}
+                                  className="h-full w-full object-cover object-center transition-transform duration-500 hover:scale-105"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                          <div className="relative flex items-center justify-center rounded-3xl border border-dashed border-white/20 bg-[#070b13] p-6 overflow-hidden shadow-[0_25px_70px_rgba(128,0,255,0.12)]">
+                            <div className="absolute -left-8 top-0 h-24 w-24 rounded-full bg-purple-500/20 blur-2xl" />
+                            <div className="absolute -right-8 bottom-0 h-24 w-24 rounded-full bg-pink-500/20 blur-2xl" />
+                            <button
+                              className="relative inline-flex items-center justify-center rounded-full border border-white/10 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 px-8 py-4 text-lg font-semibold text-white shadow-xl shadow-fuchsia-500/25 transition duration-300 hover:-translate-y-1 hover:shadow-purple-500/40"
+                              onClick={() => router.push("/quote")}
+                            >
+                              <span className="absolute inset-0 rounded-full opacity-0 bg-white/10 blur-sm transition duration-300 hover:opacity-100" />
+                              <span className="relative z-10 flex items-center gap-3">
+                                <span>Book</span>
+                                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm">
+                                  ➜
+                                </span>
+                              </span>
+                            </button>
+                          </div>
                         </div>
                       </div>
 
@@ -843,44 +855,39 @@ export default function MPage() {
                           Branding materials
                         </h4>
                         <p className="text-slate-400 mb-6">
-                          Design & Installation (Signage, Pullups, Teardrops,
-                          Backdrops.)
+                          Design & installation for signage, posters, branding assets and visual campaigns.
                         </p>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          <img
-                            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop"
-                            alt="Signage design 1"
-                            className="rounded-lg"
-                          />
-                          <img
-                            src="https://images.unsplash.com/photo-1565043666747-69f6646db940?w=400&h=300&fit=crop"
-                            alt="Signage design 2"
-                            className="rounded-lg md:col-span-2"
-                          />
-                          <div className="rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 flex items-center justify-center p-8 hover:from-gray-700 hover:to-gray-800 transition-all duration-300 cursor-pointer group">
-                            <div className="text-center">
-                              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <svg
-                                  className="w-8 h-8 text-white"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                  />
-                                </svg>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {brandingImages.map((brand) => (
+                            <div
+                              key={brand.src}
+                              className="overflow-hidden rounded-3xl border border-white/10 bg-[#070b13] shadow-[0_20px_70px_rgba(0,0,0,0.35)]"
+                            >
+                              <div className="aspect-[4/3] w-full overflow-hidden bg-slate-900">
+                                <img
+                                  src={brand.src}
+                                  alt={brand.alt}
+                                  className="h-full w-full object-cover object-center transition-transform duration-500 hover:scale-105"
+                                />
                               </div>
-                              <h3 className="text-xl font-bold text-white mb-2">
-                                View More
-                              </h3>
-                              <p className="text-gray-400 text-sm">
-                                Explore our complete signage portfolio
-                              </p>
                             </div>
+                          ))}
+                          <div className="relative flex items-center justify-center rounded-3xl border border-dashed border-white/20 bg-[#070b13] p-6 overflow-hidden shadow-[0_25px_70px_rgba(255,128,128,0.12)]">
+                            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/10 to-orange-500/10 opacity-90" />
+                            <a
+                              href="http://localhost:3000/quote"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="relative inline-flex items-center justify-center rounded-full border border-white/10 bg-[#111827]/95 px-8 py-4 text-lg font-semibold text-white shadow-xl shadow-orange-500/20 transition duration-300 hover:-translate-y-1 hover:bg-[#1f1f3a]"
+                            >
+                              <span className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-400 via-fuchsia-500 to-purple-500 opacity-0 transition duration-300 hover:opacity-25" />
+                              <span className="relative z-10 flex items-center gap-3">
+                                <span>Request Quotation</span>
+                                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm">
+                                  ✉
+                                </span>
+                              </span>
+                            </a>
                           </div>
                         </div>
                       </div>

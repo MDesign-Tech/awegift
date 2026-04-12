@@ -67,3 +67,27 @@ export const packagingImages = [
   { src: packaging2.src, alt: "Packaging design 2" },
   { src: packaging3.src, alt: "Packaging design 3" },
 ];
+
+// Photography & Videography images
+import photography1 from "./Photography & Videography/CONTENT FOR WEB-14.png";
+import photography2 from "./Photography & Videography/photography.gif";
+
+export const photographyImages = [
+  { src: photography1.src, alt: "Photography & videography project 1" },
+  { src: photography2.src, alt: "Photography & videography project 2" },
+];
+
+// Branding materials images
+import branding1 from "./Branding materials/CONTENT FOR WEB-15.png";
+import branding2 from "./Branding materials/CONTENT FOR WEB-16.png";
+import branding3 from "./Branding materials/CONTENT FOR WEB-17.png";
+import branding4 from "./Branding materials/CONTENT FOR WEB-18.png";
+import branding5 from "./Branding materials/CONTENT FOR WEB-19.png";
+
+export const brandingImages = [
+  { src: branding1.src, alt: "Branding material 1" },
+  { src: branding2.src, alt: "Branding material 2" },
+  { src: branding3.src, alt: "Branding material 3" },
+  { src: branding4.src, alt: "Branding material 4" },
+  { src: branding5.src, alt: "Branding material 5" },
+];
