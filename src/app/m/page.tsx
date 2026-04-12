@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "@studio-freight/lenis";
@@ -19,65 +19,6 @@ import {
 
 gsap.registerPlugin(ScrollTrigger);
 
-type Project = {
-  id: number;
-  title: string;
-  description: string;
-  category: string;
-  color: string;
-  details: string;
-  image: string;
-};
-
-const projects: Project[] = [
-  {
-    id: 1,
-    title: "NOVA Immersion",
-    description: "Cinematic web narrative for a launch campaign.",
-    category: "Web Experience",
-    color: "#F59E0B",
-    image:
-      "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&h=600&fit=crop&crop=center",
-    details:
-      "A full-screen interactive storytelling site with scroll-bound chapters, 3D parallax layers and dynamic audio cues.",
-  },
-  {
-    id: 2,
-    title: "Pulse UI Rebrand",
-    description: "UI/UX system for an emerging fintech ecosystem.",
-    category: "Digital Product",
-    color: "#22D3EE",
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop&crop=center",
-    details:
-      "Modular component platform with advanced motion states and adaptive interactions for desktop and mobile.",
-  },
-  {
-    id: 3,
-    title: "Astra Motion",
-    description: "Motion-led design for a creative studio identity.",
-    category: "Branding",
-    color: "#A855F7",
-    image:
-      "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=600&fit=crop&crop=center",
-    details:
-      "Animated brand assets, ink-bleed transitions, and a strong dark highlight aesthetic with immersive hover feedback.",
-  },
-];
-
-const splitChars = (text: string) =>
-  text.split("").map((char, index) => (
-    <motion.span
-      key={`${char}-${index}`}
-      className="inline-block"
-      initial={{ y: 20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: index * 0.02, duration: 0.5, ease: "easeOut" }}
-    >
-      {char}
-    </motion.span>
-  ));
-
 interface Particle {
   x: number;
   y: number;
@@ -92,7 +33,6 @@ export default function MPage() {
   const heroCanvasRef = useRef<HTMLCanvasElement>(null);
   const aboutCanvasRef = useRef<HTMLCanvasElement>(null);
   const aboutSectionRef = useRef<HTMLDivElement>(null);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [cursor, setCursor] = useState({
     x: 0,
     y: 0,
@@ -855,7 +795,8 @@ export default function MPage() {
                           Branding materials
                         </h4>
                         <p className="text-slate-400 mb-6">
-                          Design & installation for signage, posters, branding assets and visual campaigns.
+                          Design & installation for signage, posters, branding
+                          assets and visual campaigns.
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                           {brandingImages.map((brand) => (
@@ -956,18 +897,6 @@ export default function MPage() {
                             </motion.button>
                           </div>
                         </motion.div>
-                        <div className="absolute left-full top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-8 flex flex-col items-start justify-center max-w-sm">
-                          <h4 className="text-3xl font-semibold mb-6 text-white">
-                            Pre-event planning
-                          </h4>
-                          <ul className="text-slate-300 text-base space-y-3 mb-6">
-                            <li>Strategy & Budget</li>
-                            <li>Logistics & Vendors</li>
-                            <li>Marketing & Registration</li>
-                            <li>Experience Design</li>
-                            <li>Communication</li>
-                          </ul>
-                        </div>
                       </div>
 
                       <svg
@@ -1008,18 +937,6 @@ export default function MPage() {
                             </motion.button>
                           </div>
                         </motion.div>
-                        <div className="absolute left-full top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-8 flex flex-col items-start justify-center max-w-sm">
-                          <h4 className="text-3xl font-semibold mb-6 text-white">
-                            On-site Setup & Management
-                          </h4>
-                          <ul className="text-slate-300 text-base space-y-3 mb-6">
-                            <li>Registration/Check-in</li>
-                            <li>Logistics & Operations</li>
-                            <li>Production & AV</li>
-                            <li>Attendee Engagement</li>
-                            <li>Safety Protocols</li>
-                          </ul>
-                        </div>
                       </div>
 
                       <svg
@@ -1060,18 +977,6 @@ export default function MPage() {
                             </motion.button>
                           </div>
                         </motion.div>
-                        <div className="absolute left-full top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-8 flex flex-col items-start justify-center max-w-sm">
-                          <h4 className="text-3xl font-semibold mb-6 text-white">
-                            Post-event Management
-                          </h4>
-                          <ul className="text-slate-300 text-base space-y-3 mb-6">
-                            <li>Follow-Up Communications</li>
-                            <li>Evaluation & Feedback</li>
-                            <li>Content Distribution</li>
-                            <li>Report Generation</li>
-                            <li>ROI Analysis</li>
-                          </ul>
-                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -1274,43 +1179,6 @@ export default function MPage() {
           </div>
         </div>
       </section>
-
-      <AnimatePresence>
-        {selectedProject && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedProject(null)}
-          >
-            <motion.div
-              className="relative max-w-3xl w-full rounded-3xl bg-[#0f172a] p-8 border border-white/10 shadow-2xl"
-              initial={{ y: 40, opacity: 0, scale: 0.98 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 30, opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.35 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                className="absolute top-4 right-4 text-white/70 hover:text-white"
-                onClick={() => setSelectedProject(null)}
-                aria-label="Close project details"
-              >
-                ✕
-              </button>
-              <h3 className="text-3xl font-bold mb-3">
-                {selectedProject.title}
-              </h3>
-              <p className="text-slate-300 mb-4">{selectedProject.details}</p>
-              <div className="grid grid-cols-2 gap-2 text-sm text-slate-400">
-                <span>Category: {selectedProject.category}</span>
-                <span>Motion, UI, Narrative</span>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <section className="py-24 m-reveal relative overflow-hidden">
         {/* Animated Background Words */}
