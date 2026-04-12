@@ -559,7 +559,7 @@ export default function MPage() {
         <div className="container mx-auto px-6 md:px-12 lg:px-24">
           <div className="text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-10">
-              Our Services
+              What we do?
             </h2>
           </div>
 
@@ -590,7 +590,9 @@ export default function MPage() {
                     transition={{ duration: 0.8 }}
                     viewport={{ once: true }}
                   >
-                    <h3 className="text-3xl font-bold mb-5">Visual Creation</h3>
+                    <h3 className="text-3xl font-bold mb-5 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                      Visual Creation
+                    </h3>
                     <p className="text-slate-300 leading-relaxed text-lg mb-10">
                       We bring ideas to life through powerful visuals that
                       communicate, inspire, and connect.
@@ -1014,7 +1016,7 @@ export default function MPage() {
                     transition={{ duration: 0.8, delay: 0.2 }}
                     viewport={{ once: true }}
                   >
-                    <h3 className="text-3xl font-bold mb-5">
+                    <h3 className="text-3xl font-bold mb-5 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                       Event Management
                     </h3>
                     <p className="text-slate-300 leading-relaxed text-lg mb-10">
@@ -1024,45 +1026,46 @@ export default function MPage() {
                       detail to bring your vision to life.
                     </p>
 
-                    <div className="flex flex-col items-center justify-center gap-8 mb-10 max-w-md mx-auto">
-                      <motion.div
-                        className="relative w-80 h-80 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border-2 border-blue-500/30 flex items-center justify-center group cursor-pointer overflow-hidden"
-                        whileHover={{ scale: 1.08 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 300,
-                          damping: 20,
-                        }}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-cyan-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="relative z-10 text-center px-8 transition-all duration-500">
-                          <h4 className="text-3xl font-semibold mb-6 text-white group-hover:opacity-0 transition-opacity duration-300">
-                            Pre-event planning
-                          </h4>
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 absolute inset-0 flex flex-col items-center justify-center px-6">
-                            <h4 className="text-2xl font-semibold mb-4 text-white">
+                    <div className="flex flex-col items-start justify-start gap-8 mb-10 max-w-6xl mx-auto">
+                      <div className="group relative flex items-center">
+                        <motion.div
+                          className="relative w-80 h-80 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border-2 border-blue-500/30 flex items-center justify-center cursor-pointer"
+                          whileHover={{ scale: 1.08 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 20,
+                          }}
+                        >
+                          <div className="relative z-10 text-center px-8 transition-all duration-500">
+                            <h4 className="text-3xl font-semibold mb-6 text-white">
                               Pre-event planning
                             </h4>
-                            <ul className="text-slate-300 text-sm space-y-2 mb-6">
-                              <li>Strategy & Budget</li>
-                              <li>Logistics & Vendors</li>
-                              <li>Marketing & Registration</li>
-                              <li>Experience Design</li>
-                              <li>Communication</li>
-                            </ul>
+                            <motion.button
+                              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-semibold transition-colors opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              initial={{ opacity: 0, y: 10 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              Talk to Us
+                            </motion.button>
                           </div>
-                          <motion.button
-                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-semibold transition-colors opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            initial={{ opacity: 0, y: 10 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            Talk to Us
-                          </motion.button>
+                        </motion.div>
+                        <div className="absolute left-full top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-8 flex flex-col items-start justify-center max-w-sm">
+                          <h4 className="text-3xl font-semibold mb-6 text-white">
+                            Pre-event planning
+                          </h4>
+                          <ul className="text-slate-300 text-base space-y-3 mb-6">
+                            <li>Strategy & Budget</li>
+                            <li>Logistics & Vendors</li>
+                            <li>Marketing & Registration</li>
+                            <li>Experience Design</li>
+                            <li>Communication</li>
+                          </ul>
                         </div>
-                      </motion.div>
+                      </div>
 
                       <svg
                         className="w-6 h-6 text-slate-400"
@@ -1076,44 +1079,45 @@ export default function MPage() {
                         />
                       </svg>
 
-                      <motion.div
-                        className="relative w-80 h-80 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/10 border-2 border-purple-500/30 flex items-center justify-center group cursor-pointer overflow-hidden"
-                        whileHover={{ scale: 1.08 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 300,
-                          damping: 20,
-                        }}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-pink-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="relative z-10 text-center px-8 transition-all duration-500">
-                          <h4 className="text-3xl font-semibold mb-6 text-white group-hover:opacity-0 transition-opacity duration-300">
-                            On-site Setup & Management
-                          </h4>
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 absolute inset-0 flex flex-col items-center justify-center px-6">
-                            <h4 className="text-2xl font-semibold mb-4 text-white">
+                      <div className="group relative flex items-center">
+                        <motion.div
+                          className="relative w-80 h-80 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/10 border-2 border-purple-500/30 flex items-center justify-center cursor-pointer"
+                          whileHover={{ scale: 1.08 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 20,
+                          }}
+                        >
+                          <div className="relative z-10 text-center px-8 transition-all duration-500">
+                            <h4 className="text-3xl font-semibold mb-6 text-white">
                               On-site Setup & Management
                             </h4>
-                            <ul className="text-slate-300 text-sm space-y-2 mb-6">
-                              <li>Registration/Check-in</li>
-                              <li>Logistics & Operations</li>
-                              <li>Production & AV</li>
-                              <li>Attendee Engagement</li>
-                              <li>Safety Protocols</li>
-                            </ul>
+                            <motion.button
+                              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full text-sm font-semibold transition-colors opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              initial={{ opacity: 0, y: 10 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              Talk to Us
+                            </motion.button>
                           </div>
-                          <motion.button
-                            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full text-sm font-semibold transition-colors opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            initial={{ opacity: 0, y: 10 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            Talk to Us
-                          </motion.button>
+                        </motion.div>
+                        <div className="absolute left-full top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-8 flex flex-col items-start justify-center max-w-sm">
+                          <h4 className="text-3xl font-semibold mb-6 text-white">
+                            On-site Setup & Management
+                          </h4>
+                          <ul className="text-slate-300 text-base space-y-3 mb-6">
+                            <li>Registration/Check-in</li>
+                            <li>Logistics & Operations</li>
+                            <li>Production & AV</li>
+                            <li>Attendee Engagement</li>
+                            <li>Safety Protocols</li>
+                          </ul>
                         </div>
-                      </motion.div>
+                      </div>
 
                       <svg
                         className="w-6 h-6 text-slate-400"
@@ -1127,44 +1131,45 @@ export default function MPage() {
                         />
                       </svg>
 
-                      <motion.div
-                        className="relative w-80 h-80 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/10 border-2 border-orange-500/30 flex items-center justify-center group cursor-pointer overflow-hidden"
-                        whileHover={{ scale: 1.08 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 300,
-                          damping: 20,
-                        }}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="relative z-10 text-center px-8 transition-all duration-500">
-                          <h4 className="text-3xl font-semibold mb-6 text-white group-hover:opacity-0 transition-opacity duration-300">
-                            Post-event Management
-                          </h4>
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 absolute inset-0 flex flex-col items-center justify-center px-6">
-                            <h4 className="text-2xl font-semibold mb-4 text-white">
+                      <div className="group relative flex items-center">
+                        <motion.div
+                          className="relative w-80 h-80 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/10 border-2 border-orange-500/30 flex items-center justify-center cursor-pointer"
+                          whileHover={{ scale: 1.08 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 20,
+                          }}
+                        >
+                          <div className="relative z-10 text-center px-8 transition-all duration-500">
+                            <h4 className="text-3xl font-semibold mb-6 text-white">
                               Post-event Management
                             </h4>
-                            <ul className="text-slate-300 text-sm space-y-2 mb-6">
-                              <li>Follow-Up Communications</li>
-                              <li>Evaluation & Feedback</li>
-                              <li>Content Distribution</li>
-                              <li>Report Generation</li>
-                              <li>ROI Analysis</li>
-                            </ul>
+                            <motion.button
+                              className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-full text-sm font-semibold transition-colors opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              initial={{ opacity: 0, y: 10 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              Talk to Us
+                            </motion.button>
                           </div>
-                          <motion.button
-                            className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-full text-sm font-semibold transition-colors opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            initial={{ opacity: 0, y: 10 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            Talk to Us
-                          </motion.button>
+                        </motion.div>
+                        <div className="absolute left-full top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-8 flex flex-col items-start justify-center max-w-sm">
+                          <h4 className="text-3xl font-semibold mb-6 text-white">
+                            Post-event Management
+                          </h4>
+                          <ul className="text-slate-300 text-base space-y-3 mb-6">
+                            <li>Follow-Up Communications</li>
+                            <li>Evaluation & Feedback</li>
+                            <li>Content Distribution</li>
+                            <li>Report Generation</li>
+                            <li>ROI Analysis</li>
+                          </ul>
                         </div>
-                      </motion.div>
+                      </div>
                     </div>
                   </motion.div>
                 </div>
@@ -1193,7 +1198,9 @@ export default function MPage() {
                     transition={{ duration: 0.8, delay: 0.4 }}
                     viewport={{ once: true }}
                   >
-                    <h3 className="text-3xl font-bold mb-5">Tech Solutions</h3>
+                    <h3 className="text-3xl font-bold mb-5 bg-gradient-to-r from-green-400 to-teal-400 bg-clip-text text-transparent">
+                      Tech Solutions
+                    </h3>
                     <p className="text-slate-300 leading-relaxed text-lg mb-10">
                       We provide smart digital and technical solutions that help
                       businesses grow, operate efficiently, and stay ahead in a
@@ -1361,46 +1368,6 @@ export default function MPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-24 m-reveal">
-        <div className="container mx-auto px-6 md:px-12 lg:px-24">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
-            <h2 className="text-4xl md:text-5xl font-bold">
-              Interactive projects
-            </h2>
-            <p className="text-slate-400 max-w-xl">
-              Hover for depth and click to dive into each crafted case study
-              experience.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {projects.map((project) => (
-              <motion.article
-                key={project.id}
-                data-cursor="link"
-                className="group rounded-3xl border border-white/10 p-6 bg-[#0a0f1d] shadow-[0_10px_40px_rgba(0,0,0,0.2)] transform transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(0,0,0,0.32)]"
-                whileHover={{ scale: 1.02 }}
-                onClick={() => setSelectedProject(project)}
-              >
-                <div className="h-48 rounded-2xl mb-5 overflow-hidden bg-gradient-to-br from-white/5 to-transparent">
-                  <img
-                    src={project.image}
-                    alt={project.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
-                <p className="text-sm text-slate-300 mb-3">
-                  {project.category}
-                </p>
-                <h3 className="text-2xl font-semibold mb-2">{project.title}</h3>
-                <p className="text-slate-400">{project.description}</p>
-              </motion.article>
-            ))}
           </div>
         </div>
       </section>
@@ -1604,66 +1571,6 @@ export default function MPage() {
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-24 bg-[#06070f] m-reveal relative">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-5"
-          style={{
-            backgroundImage:
-              "url(https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1920&h=1080&fit=crop&crop=center)",
-          }}
-        />
-        <div className="container mx-auto px-6 md:px-12 lg:px-24 relative z-10">
-          <h2 className="text-4xl font-bold mb-10">Services</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                title: "Brand Narrative",
-                detail:
-                  "Concept systems, identity motion, storytelling experiences",
-                color: "#22d3ee",
-              },
-              {
-                title: "Product Experience",
-                detail: "Design systems, UI motion, responsive product flows",
-                color: "#f43f5e",
-              },
-              {
-                title: "WebGL Interactions",
-                detail: "WebGL shaders, physics-driven UI, 3D motion",
-                color: "#a855f7",
-              },
-              {
-                title: "Content Animation",
-                detail: "Text, scroll transitions, Lottie and sprite motion",
-                color: "#f59e0b",
-              },
-              {
-                title: "Performance Design",
-                detail:
-                  "Optimized visuals, progressive loading, smooth 60fps interactions",
-                color: "#22c55e",
-              },
-            ].map((service) => (
-              <motion.article
-                key={service.title}
-                data-cursor="link"
-                className="rounded-2xl border border-white/10 p-6 bg-[#0a0f1c]/90 backdrop-blur-sm hover:bg-[#101629]/90 transition-colors duration-300"
-                whileHover={{ y: -4 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              >
-                <h3
-                  className="text-2xl font-semibold"
-                  style={{ color: service.color }}
-                >
-                  {service.title}
-                </h3>
-                <p className="mt-3 text-slate-300">{service.detail}</p>
-              </motion.article>
-            ))}
           </div>
         </div>
       </section>
