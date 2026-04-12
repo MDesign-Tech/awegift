@@ -606,7 +606,7 @@ export default function MPage() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                           <div className="relative group overflow-hidden rounded-lg">
                             <h5 className="text-lg font-semibold mb-4 text-slate-400">
-                              Branding
+                              Branding identity & Logo Design
                             </h5>
                             {/* <p className="text-slate-400 mb-6">
                           Logo Design, Brand Identity, Rebranding, Brand Guidelines
@@ -709,7 +709,7 @@ export default function MPage() {
                           </div>
                           <div className="relative group overflow-hidden rounded-lg">
                             <h5 className="text-lg font-semibold mb-4 text-slate-400">
-                              Invitation Design
+                              Invitation Design & other wedding related dsigns
                             </h5>
                             <div className="grid grid-cols-2 gap-4">
                               <img
@@ -816,11 +816,6 @@ export default function MPage() {
                         </h4>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                           <img
-                            src="https://images.unsplash.com/photo-1606986628025-35d57e735ae0?w=400&h=300&fit=crop"
-                            alt="Professional photography 1"
-                            className="rounded-lg"
-                          />
-                          <img
                             src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=300&fit=crop"
                             alt="Event photography 1"
                             className="rounded-lg"
@@ -835,16 +830,6 @@ export default function MPage() {
                             alt="Commercial photography"
                             className="rounded-lg"
                           />
-                          <img
-                            src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop"
-                            alt="Product photography"
-                            className="rounded-lg"
-                          />
-                          <img
-                            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop"
-                            alt="Video production"
-                            className="rounded-lg"
-                          />
                         </div>
                         <div className="text-center">
                           <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25">
@@ -855,100 +840,11 @@ export default function MPage() {
 
                       <div>
                         <h4 className="text-2xl font-bold mb-8">
-                          Motion Design / Motion Graphics
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          <div className="relative group overflow-hidden rounded-lg bg-black">
-                            <video
-                              className="w-full h-48 object-cover group-hover:controls-auto"
-                              controls={false}
-                              onMouseEnter={(e) =>
-                                (e.currentTarget.controls = true)
-                              }
-                              onMouseLeave={(e) =>
-                                (e.currentTarget.controls = false)
-                              }
-                            >
-                              <source
-                                src="https://www.w3schools.com/html/mov_bbb.mp4"
-                                type="video/mp4"
-                              />
-                            </video>
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                              <div className="w-12 h-12 rounded-full border-2 border-white flex items-center justify-center">
-                                <svg
-                                  className="w-6 h-6 text-white fill-white ml-0.5"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="relative group overflow-hidden rounded-lg bg-black">
-                            <video
-                              className="w-full h-48 object-cover group-hover:controls-auto"
-                              controls={false}
-                              onMouseEnter={(e) =>
-                                (e.currentTarget.controls = true)
-                              }
-                              onMouseLeave={(e) =>
-                                (e.currentTarget.controls = false)
-                              }
-                            >
-                              <source
-                                src="https://www.w3schools.com/html/mov_bbb.mp4"
-                                type="video/mp4"
-                              />
-                            </video>
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                              <div className="w-12 h-12 rounded-full border-2 border-white flex items-center justify-center">
-                                <svg
-                                  className="w-6 h-6 text-white fill-white ml-0.5"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="relative group overflow-hidden rounded-lg bg-black">
-                            <video
-                              className="w-full h-48 object-cover group-hover:controls-auto"
-                              controls={false}
-                              onMouseEnter={(e) =>
-                                (e.currentTarget.controls = true)
-                              }
-                              onMouseLeave={(e) =>
-                                (e.currentTarget.controls = false)
-                              }
-                            >
-                              <source
-                                src="https://www.w3schools.com/html/mov_bbb.mp4"
-                                type="video/mp4"
-                              />
-                            </video>
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                              <div className="w-12 h-12 rounded-full border-2 border-white flex items-center justify-center">
-                                <svg
-                                  className="w-6 h-6 text-white fill-white ml-0.5"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="text-2xl font-bold mb-8">
-                          Signage Design & Installation
+                          Branding materials
                         </h4>
                         <p className="text-slate-400 mb-6">
-                          Design, production, and installation of indoor and
-                          outdoor signage that enhances brand visibility.
+                          Design & Installation (Signage, Pullups, Teardrops,
+                          Backdrops.)
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                           <img
