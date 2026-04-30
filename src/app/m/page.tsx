@@ -412,7 +412,7 @@ export default function MPage() {
                   "bg-gradient-to-r from-[#ed4c07] to-[#ff7f50] hover:from-[#ff7f50] hover:to-[#ed4c07]",
               },
               {
-                title: "Event Management",
+                title: "Event Services",
                 color:
                   "bg-gradient-to-r from-[#00cec9] to-[#3fdce3] hover:from-[#3fdce3] hover:to-[#00cec9]",
               },
@@ -480,7 +480,7 @@ export default function MPage() {
                   </span>
                   ,{" "}
                   <span className="bg-gradient-to-r from-[#00cec9] to-[#3fdce3] bg-clip-text text-transparent">
-                    Event Management
+                    Event Services
                   </span>
                   ,
                 </b>{" "}
@@ -853,7 +853,7 @@ export default function MPage() {
                     />
                   </svg>
                 </div>
-                <div className="flex-1" id="event-management">
+                <div className="flex-1" id="event-services">
                   <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -861,7 +861,7 @@ export default function MPage() {
                     viewport={{ once: true }}
                   >
                     <h3 className="text-3xl font-bold mb-5 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                      Event Management
+                      Event Services
                     </h3>
                     <p className="text-slate-300 leading-relaxed text-lg mb-10">
                       We are a 1-stop specialized events company that plans and
@@ -870,10 +870,10 @@ export default function MPage() {
                       detail to bring your vision to life.
                     </p>
 
-                    <div className="flex flex-col items-start justify-start gap-8 mb-10 max-w-6xl mx-auto">
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-10 max-w-6xl mx-auto">
                       <div className="group relative flex items-center">
                         <motion.div
-                          className="relative w-80 h-80 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border-2 border-blue-500/30 flex items-center justify-center cursor-pointer"
+                          className="relative w-64 h-64 md:w-80 md:h-80 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border-2 border-blue-500/30 flex items-center justify-center cursor-pointer"
                           whileHover={{ scale: 1.08 }}
                           transition={{
                             type: "spring",
@@ -882,7 +882,7 @@ export default function MPage() {
                           }}
                         >
                           <div className="relative z-10 text-center px-8 transition-all duration-500">
-                            <h4 className="text-3xl font-semibold mb-6 text-white">
+                            <h4 className="text-2xl md:text-3xl font-semibold mb-6 text-white">
                               Pre-event planning
                             </h4>
                             <motion.button
@@ -900,7 +900,7 @@ export default function MPage() {
                       </div>
 
                       <svg
-                        className="w-6 h-6 text-slate-400"
+                        className="w-6 h-6 text-slate-400 hidden md:block"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -913,7 +913,7 @@ export default function MPage() {
 
                       <div className="group relative flex items-center">
                         <motion.div
-                          className="relative w-80 h-80 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/10 border-2 border-purple-500/30 flex items-center justify-center cursor-pointer"
+                          className="relative w-64 h-64 md:w-80 md:h-80 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/10 border-2 border-purple-500/30 flex items-center justify-center cursor-pointer"
                           whileHover={{ scale: 1.08 }}
                           transition={{
                             type: "spring",
@@ -922,7 +922,7 @@ export default function MPage() {
                           }}
                         >
                           <div className="relative z-10 text-center px-8 transition-all duration-500">
-                            <h4 className="text-3xl font-semibold mb-6 text-white">
+                            <h4 className="text-2xl md:text-3xl font-semibold mb-6 text-white">
                               On-site Setup & Management
                             </h4>
                             <motion.button
@@ -940,7 +940,7 @@ export default function MPage() {
                       </div>
 
                       <svg
-                        className="w-6 h-6 text-slate-400"
+                        className="w-6 h-6 text-slate-400 hidden md:block"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -953,7 +953,7 @@ export default function MPage() {
 
                       <div className="group relative flex items-center">
                         <motion.div
-                          className="relative w-80 h-80 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/10 border-2 border-orange-500/30 flex items-center justify-center cursor-pointer"
+                          className="relative w-64 h-64 md:w-80 md:h-80 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/10 border-2 border-orange-500/30 flex items-center justify-center cursor-pointer"
                           whileHover={{ scale: 1.08 }}
                           transition={{
                             type: "spring",
@@ -962,7 +962,7 @@ export default function MPage() {
                           }}
                         >
                           <div className="relative z-10 text-center px-8 transition-all duration-500">
-                            <h4 className="text-3xl font-semibold mb-6 text-white">
+                            <h4 className="text-2xl md:text-3xl font-semibold mb-6 text-white">
                               Post-event Management
                             </h4>
                             <motion.button
