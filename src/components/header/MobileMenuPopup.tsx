@@ -25,10 +25,10 @@ const MobileMenuPopup = ({
   const isAuthenticated = session?.user && session.user.email ? true : false;
 
   const menuItems = [
-    { title: "Our Services", href: "/services", icon: null },
-    { title: "About Us", href: "/about", icon: null },
-    { title: "MDesign", href: "/mdesign", icon: null },
-    { title: "Contact Us", href: "/contact", icon: null },
+    { title: "Home", href: "/", icon: null },
+    { title: "Products", href: "/products", icon: null },
+    { title: "Our Services", href: "/m", icon: null },
+    { title: "Categories", href: "/categories", icon: null },
   ];
 
   return (

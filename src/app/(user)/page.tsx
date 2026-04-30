@@ -1,26 +1,26 @@
-
 import Banner from "@/components/pages/home/Banner";
 import Products from "@/components/pages/home/Products";
 import DynamicFeaturedCategories from "@/components/pages/home/DynamicFeaturedCategories";
-import DynamicServicesSection from "@/components/pages/home/DynamicServicesSection";
+import FAQClient from "@/components/FAQClient";
 import SectionDivider from "@/components/ui/SectionDivider";
 
 export default function Home() {
   return (
     <main>
-     <Banner />
+      <Banner />
 
       {/* Featured Categories Section */}
       <DynamicFeaturedCategories />
 
       <SectionDivider />
 
-      <DynamicServicesSection />
+      {/* Products Section */}
+      <Products />
 
       <SectionDivider />
 
-      {/* Products Section */}
-      <Products />
+      {/* Frequently Asked Questions Section */}
+      <FAQClient />
     </main>
   );
 }
