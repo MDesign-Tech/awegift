@@ -22,7 +22,7 @@ const Footer = () => {
           <SocialLink />
         </div>
         <div>
-          <Title>My Account</Title>
+          <Title>Shop</Title>
           <div className="mt-3 flex flex-col gap-y-2">
             {navigation?.map((item) => (
               <Link
@@ -63,12 +63,34 @@ const Footer = () => {
                 <BsEnvelopeAt /> support@awegift.com
               </p>
               <p className="text-base flex items-center gap-x-3 text-gray-600">
-                <GrLocation />Kigali, Rwanda
+                <GrLocation />
+                Kigali, Rwanda
               </p>
             </div>
           </div>
         </div>
       </Container>
+      <div className="border-t border-gray-200 mt-8 pt-6">
+        <Container className="flex flex-col gap-y-4 md:flex-row md:items-center md:justify-between">
+          <p className="text-sm text-gray-600">
+            © 2026 AweGift. All rights reserved.
+          </p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
+            <Link
+              href="/privacy"
+              className="hover:text-theme-color transition-colors duration-200"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/terms"
+              className="hover:text-theme-color transition-colors duration-200"
+            >
+              Terms
+            </Link>
+          </div>
+        </Container>
+      </div>
     </div>
   );
 };

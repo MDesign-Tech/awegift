@@ -3,6 +3,7 @@
 import Container from "../Container";
 import Link from "next/link";
 import { FaWhatsapp } from "react-icons/fa";
+import { FiChevronDown } from "react-icons/fi";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -72,22 +73,16 @@ const BottomHeader = () => {
               aria-expanded={isDropdownOpen}
             >
               CATEGORIES
-              <span className="inline-block h-2.5 w-2.5 border-b border-r border-current rotate-45" />
+              <FiChevronDown
+                className={`w-3 h-3 text-current transition-transform duration-200 ${isDropdownOpen ? "rotate-90" : "rotate-0"} relative -top-0.5`}
+              />
             </button>
 
             {isDropdownOpen && (
               <div className="absolute left-0 top-full z-50 mt-2 w-80 min-w-[18rem] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
-                <Link
-                  href="/categories"
-                  className="block px-4 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-50"
-                  onClick={() => setIsDropdownOpen(false)}
-                >
-                  All categories
-                </Link>
-                <div className="border-t border-gray-200" />
                 <div className="max-h-72 overflow-y-auto">
                   {categories.length > 0 ? (
-                    categories.map((category) => (
+                    categories.slice(0, 5).map((category) => (
                       <Link
                         key={category.slug}
                         href={`/products?category=${category.slug}`}
@@ -117,6 +112,14 @@ const BottomHeader = () => {
                     </div>
                   )}
                 </div>
+                <div className="border-t border-gray-200" />
+                <Link
+                  href="/categories"
+                  className="block w-full px-4 py-3 text-sm font-semibold text-center text-gray-900 bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
+                  onClick={() => setIsDropdownOpen(false)}
+                >
+                  All categories
+                </Link>
               </div>
             )}
           </div>
