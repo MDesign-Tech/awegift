@@ -47,7 +47,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       ...safeUserData,
       email: userData.email,
-      id: userDoc.id
+      id: userDoc.id,
+      role: userData.role || "user",
     });
   } catch (error) {
     console.error("Profile GET error:", error);

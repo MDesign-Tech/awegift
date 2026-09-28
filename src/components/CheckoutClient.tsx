@@ -33,9 +33,10 @@ const CheckoutClient = ({ existingOrderId }: CheckoutClientProps) => {
   const [loading, setLoading] = useState(true);
   const [existingOrder, setExistingOrder] = useState<OrderData | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<
-    "online" | "MTN" | "AIRTEL" | null
+    "online" | "PAYPACK" | "MTN" | "AIRTEL" | null
   >(null);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [paymentScreenshot, setPaymentScreenshot] = useState<File | null>(null);
   const [paymentError, setPaymentError] = useState<{
     message: string;
@@ -211,6 +212,36 @@ const CheckoutClient = ({ existingOrderId }: CheckoutClientProps) => {
           error instanceof Error
             ? error.message
             : "Payment processing failed. Please try again.",
+        canRetry: true,
+      });
+    } finally {
+      setPaymentProcessing(false);
+    }
+  };
+
+  const handlePaypackPayment = async () => {
+    if (!existingOrder) return;
+
+    try {
+      setPaymentProcessing(true);
+      setPaymentError(null);
+
+      const response = await fetch("/api/paypack/cashin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: existingOrder.id, phone: phoneNumber.trim() }),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Unable to start Mobile Money payment.");
+      }
+
+      toast.success("A payment prompt has been sent to your phone.");
+      router.push(`/account/orders/${existingOrder.id}`);
+    } catch (error) {
+      setPaymentError({
+        message: error instanceof Error ? error.message : "Unable to start Mobile Money payment.",
         canRetry: true,
       });
     } finally {
@@ -523,33 +554,33 @@ const CheckoutClient = ({ existingOrderId }: CheckoutClientProps) => {
                   </div>
                 </div>
 
-                {/* MTN Momo */}
+                {/* PayPack Mobile Money */}
                 <div
                   className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
-                    paymentMethod === "MTN"
+                    paymentMethod === "PAYPACK"
                       ? "border-theme-color bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
-                  onClick={() => setPaymentMethod("MTN")}
+                  onClick={() => setPaymentMethod("PAYPACK")}
                 >
                   <div className="flex items-center">
                     <div className="w-5 h-5 mr-3 bg-yellow-500 rounded text-white text-xs flex items-center justify-center font-bold">
                       M
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">MTN</h4>
+                      <h4 className="font-medium text-gray-900">Mobile Money</h4>
                       <p className="text-sm text-gray-600">
-                        Pay via MTN Mobile Money / MoMo pay
+                        Pay securely with PayPack
                       </p>
                     </div>
                     <div
                       className={`w-4 h-4 rounded-full border-2 ${
-                        paymentMethod === "MTN"
+                        paymentMethod === "PAYPACK"
                           ? "border-theme-color bg-theme-color"
                           : "border-gray-300"
                       }`}
                     >
-                      {paymentMethod === "MTN" && (
+                      {paymentMethod === "PAYPACK" && (
                         <div className="w-full h-full rounded-full bg-white scale-50"></div>
                       )}
                     </div>
@@ -607,6 +638,43 @@ const CheckoutClient = ({ existingOrderId }: CheckoutClientProps) => {
                       "Pay Online"
                     )}
                   </button>
+                ) : paymentMethod === "PAYPACK" ? (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <h4 className="font-medium text-blue-900 mb-2">
+                        Pay with Mobile Money
+                      </h4>
+                      <p className="text-sm text-blue-800">
+                        Enter the Rwanda Mobile Money number that should receive the payment prompt. Confirm the prompt on your phone; your order is updated automatically after PayPack confirms payment.
+                      </p>
+                    </div>
+                    <div>
+                      <label htmlFor="paypack-phone" className="block text-sm font-medium text-gray-700 mb-2">
+                        Mobile Money number
+                      </label>
+                      <input
+                        id="paypack-phone"
+                        type="tel"
+                        inputMode="numeric"
+                        autoComplete="tel"
+                        placeholder="0781990310"
+                        value={phoneNumber}
+                        onChange={(event) => setPhoneNumber(event.target.value.replace(/\s/g, ""))}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-3 focus:border-theme-color focus:outline-none focus:ring-1 focus:ring-theme-color"
+                      />
+                    </div>
+                    <button
+                      onClick={handlePaypackPayment}
+                      disabled={paymentProcessing || !/^07\d{8}$/.test(phoneNumber)}
+                      className="w-full bg-yellow-500 text-white py-3 px-4 rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      {paymentProcessing ? (
+                        <><FiLoader className="animate-spin mr-2" />Sending payment prompt...</>
+                      ) : (
+                        "Pay with Mobile Money"
+                      )}
+                    </button>
+                  </div>
                 ) : paymentMethod === "MTN" || paymentMethod === "AIRTEL" ? (
                   <div className="space-y-4">
                     <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
