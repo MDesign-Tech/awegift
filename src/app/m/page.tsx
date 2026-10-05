@@ -383,11 +383,11 @@ export default function MPage() {
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
           >
             <img
-              src="/M DESIGN LOGO final.svg"
-              alt="M DESIGN logo"
+              src="/AWEGIFT LOGO.svg"
+              alt="AWEGIFT logo"
               className="mx-auto h-20 md:h-28 lg:h-32"
             />
-            <span className="sr-only">M DESIGN</span>
+            <span className="sr-only">AWEGIFT</span>
           </motion.h1>
 
           <motion.p
@@ -396,7 +396,7 @@ export default function MPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.9, ease: "easeOut" }}
           >
-            M Design
+            AWEGIFT
           </motion.p>
 
           <motion.div
