@@ -1,7 +1,7 @@
 import { absoluteUrl } from "../../../../config";
 
 export const getData = async (path: string) => {
-  const url = absoluteUrl(path);
+  const url = typeof window === "undefined" ? absoluteUrl(path) : path;
 
   const res = await fetch(url, {
     cache: "no-store",

@@ -23,10 +23,9 @@ export async function GET(request: NextRequest) {
     if (searchQuery) {
       allDocs = allDocs.filter((doc) => {
         const data = doc.data() as ProductType;
-        return (
-          data.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          data.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          data.description.toLowerCase().includes(searchQuery.toLowerCase())
+        const query = searchQuery.toLowerCase();
+        return [data.title, data.brand, data.description].some(
+          (value) => typeof value === "string" && value.toLowerCase().includes(query)
         );
       });
     }

@@ -71,8 +71,7 @@ export const useProductSearch = ({
     setHasSearched(true);
 
     try {
-      // Use API search endpoint for better results
-      const searchEndpoint = `/api/products/search?q=${encodeURIComponent(
+      const searchEndpoint = `${API_BASE_URL}?q=${encodeURIComponent(
         searchTerm
       )}&limit=10`;
       const searchData = await getData(searchEndpoint);

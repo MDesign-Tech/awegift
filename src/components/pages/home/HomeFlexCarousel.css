@@ -1,0 +1,25 @@
+.home-flex-carousel-section {
+  overflow: hidden;
+  background: var(--color-light-bg);
+  padding: 24px;
+}
+
+.home-flex-carousel-inner {
+  width: min(100%, 1400px);
+  height: 540px;
+  margin-inline: auto;
+}
+
+.home-flex-carousel {
+  border-radius: 18px;
+}
+
+@media (max-width: 760px) {
+  .home-flex-carousel-section {
+    padding: 16px 0;
+  }
+
+  .home-flex-carousel-inner {
+    height: 390px;
+  }
+}

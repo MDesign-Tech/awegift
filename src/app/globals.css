@@ -6,6 +6,104 @@
 @import "./base.css" layer(components);
 @import "tailwindcss/utilities" layer(utilities);
 
+.mockup-showcase {
+  --mockup-accent: #78f54a;
+  overflow: hidden;
+  background: var(--color-light-bg);
+  padding: 54px 24px 50px;
+}
+
+.mockup-showcase__track {
+  width: min(100%, 1400px);
+  min-height: 466px;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: 1.12fr 0.78fr 1.12fr 0.78fr 1.12fr;
+  align-items: center;
+  gap: 16px;
+}
+
+.mockup-card {
+  position: relative;
+  height: 418px;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 17px;
+  background: #252725;
+  isolation: isolate;
+}
+
+.mockup-card--1,
+.mockup-card--5 {
+  height: 466px;
+}
+
+.mockup-card--2,
+.mockup-card--4 {
+  height: 376px;
+}
+
+.mockup-card__image {
+  object-fit: cover;
+  transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.mockup-card:hover .mockup-card__image {
+  transform: scale(1.045);
+}
+
+.mockup-card__slash {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 145%;
+  background: var(--mockup-accent);
+  opacity: 0.88;
+  transform: translate(-50%, -50%) rotate(35deg);
+  pointer-events: none;
+}
+
+@media (max-width: 760px) {
+  .mockup-showcase {
+    padding: 34px 0;
+  }
+
+  .mockup-showcase__track {
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding: 4px 20px 12px;
+  }
+
+  .mockup-showcase__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mockup-card,
+  .mockup-card--1,
+  .mockup-card--2,
+  .mockup-card--3,
+  .mockup-card--4,
+  .mockup-card--5 {
+    flex: 0 0 min(72vw, 320px);
+    height: min(112vw, 440px);
+    scroll-snap-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mockup-card__image {
+    transition: none;
+  }
+}
+
 /* Your theme variables */
 @theme {
   --font-sans:
@@ -590,4 +688,17 @@ button:disabled:hover {
   50% {
     opacity: 0.65;
   }
+}
+
+@font-face {
+  font-family: "Yorkmade";
+  src: url("/fonts/YorkmadeDemo.otf") format("opentype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+.hero-rotating-text {
+  font-family: "Yorkmade", sans-serif;
+  letter-spacing: 0.055em;
 }

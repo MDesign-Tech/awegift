@@ -109,6 +109,12 @@ A modern, full-featured e-commerce platform built with Next.js 15 and Firebase, 
 
    # Site Configuration
    NEXT_PUBLIC_SITE_URL=http://localhost:3000
+   NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+
+   # Firebase Admin Configuration (required by categories/products API routes)
+   FIREBASE_PROJECT_ID=your-project-id
+   FIREBASE_CLIENT_EMAIL=your-service-account-email
+   FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY\n-----END PRIVATE KEY-----\n"
    ```
 
 4. **Firebase Setup**
@@ -175,6 +181,12 @@ awegift/
 1. Connect GitHub repository to Vercel
 2. Add environment variables
 3. Deploy automatically on push
+
+### Hostinger
+Configure the same Firebase Admin credentials used by Vercel in Hostinger's
+environment variables. Set `NEXT_PUBLIC_API_BASE_URL` to the Hostinger site's
+canonical HTTPS origin (for example, `https://your-domain.com`), not the Vercel
+URL. This setting is used by server-rendered pages to call this deployment's API.
 
 ## 🤝 Contributing
 

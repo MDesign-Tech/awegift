@@ -7,7 +7,7 @@ const checkConfig = (server: string): Config | {} => {
   switch (server) {
     case "production":
       config = {
-        baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "https://awegift.vercel.app",
+        baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "",
       };
       break;
     case "local":
@@ -26,7 +26,12 @@ export const config = checkConfig(selectServer) as Config;
 
 
 export const absoluteUrl = (path: string) => {
-  // For server-side API calls, we need absolute URLs
+  if (!config.baseUrl) {
+    throw new Error(
+      "NEXT_PUBLIC_API_BASE_URL must be set to this deployment's public URL"
+    );
+  }
+
   return `${config.baseUrl}${path}`;
 };
 console.log("API Base URL:", config.baseUrl);

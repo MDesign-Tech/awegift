@@ -7,6 +7,7 @@ import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import GiftButton from "@/components/GiftButton";
 import GiftCharacter from "@/components/GiftCharacter";
 import Container from "@/components/Container";
+import RotatingText from "@/components/RotatingText";
 import { bannerImages } from "@/assets";
 
 const Banner = () => {
@@ -185,7 +186,20 @@ const Banner = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3, duration: 0.5 }}
                 >
-                  Welcome to AweGift
+                  <RotatingText
+                    texts={[
+                      "Welcome to AweGift",
+                      "Personalize Everything",
+                      "Your Ideas, Our Creativity",
+                      "Custom Office Supplies",
+                      "Every Detail Matters",
+                      "From Ideas to Reality",
+                    ]}
+                    effect="flip"
+                    direction="up"
+                    rotationInterval={2600}
+                    mainClassName="inline-block hero-rotating-text"
+                  />
                 </motion.h1>
 
                 <motion.div
