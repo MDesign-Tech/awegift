@@ -793,6 +793,34 @@ if (response.status === 401 && errorData.code === 'USER_DELETED') {
                       {viewOrderModal.paymentMethod || "Not specified"}
                     </dd>
                   </div>
+                  {viewOrderModal.paymentMethod === "pawapay" && (
+                    <>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          PawaPay checkout reference
+                        </dt>
+                        <dd className="break-all text-sm text-gray-900">
+                          {viewOrderModal.pawapayCheckoutId || "Pending"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          PawaPay deposit reference
+                        </dt>
+                        <dd className="break-all text-sm text-gray-900">
+                          {viewOrderModal.pawapayDepositId || "Pending"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">
+                          Payment status
+                        </dt>
+                        <dd className="text-sm text-gray-900">
+                          {viewOrderModal.pawapayPaymentStatus || "Pending"}
+                        </dd>
+                      </div>
+                    </>
+                  )}
                 </dl>
               </div>
 
@@ -1037,6 +1065,4 @@ if (response.status === 401 && errorData.code === 'USER_DELETED') {
     </div>
   );
 }
-
-
 

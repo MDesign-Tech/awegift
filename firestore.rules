@@ -67,10 +67,28 @@ service cloud.firestore {
       // Allow create for authenticated users (their own orders)
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
 
-      // Allow update for admins or the order owner (with restrictions)
+      // Owners may not alter prices or payment data; those changes are server managed.
       allow update: if request.auth != null && (
-        resource.data.userId == request.auth.uid ||
-        isAdmin(request.auth.uid)
+        isAdmin(request.auth.uid) ||
+        (resource.data.userId == request.auth.uid &&
+         !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+           'items',
+           'totalAmount',
+           'currency',
+           'pricingVerified',
+           'paymentStatus',
+           'paymentMethod',
+           'paymentHistory',
+           'paymentScreenshot',
+           'pawapayCheckoutId',
+           'pawapayPaymentStatus',
+           'pawapayDepositId',
+           'pawapayRefundStatus',
+           'paypackTransactionRef',
+           'paypackAmount',
+           'paypackPhone',
+           'stripeSessionId'
+         ]))
       );
 
       // Allow delete for admins only

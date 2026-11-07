@@ -151,6 +151,12 @@ export interface OrderData {
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   paymentScreenshot?: string;
+  currency?: string;
+  pricingVerified?: boolean;
+  pawapayCheckoutId?: string;
+  pawapayPaymentStatus?: string;
+  pawapayDepositId?: string;
+  pawapayRefundStatus?: string;
 
   statusHistory: OrderStatusHistory[];
 
@@ -442,4 +448,3 @@ export interface ServiceType {
   image: string;
   icon?: string;
 }
-

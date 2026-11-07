@@ -85,7 +85,7 @@ const CartSummary = ({ cart }: Props) => {
         })),
         totalAmount: finalTotal,
         orderAddress: selectedAddress!,
-        paymentMethod: PAYMENT_METHODS.ONLINE, // Default to online, will be updated in checkout
+        paymentMethod: PAYMENT_METHODS.PAWAPAY,
         paymentStatus: PAYMENT_STATUSES.PENDING,
         statusHistory: [
           {

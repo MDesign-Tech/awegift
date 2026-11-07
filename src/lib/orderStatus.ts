@@ -18,6 +18,7 @@ export const PAYMENT_STATUSES = {
 
 export const PAYMENT_METHODS = {
   ONLINE: "online",
+  PAWAPAY: "pawapay",
   MTN: "mtn",
   AIRTEL: "airtel",
 } as const;
@@ -78,16 +79,7 @@ export const canUpdatePaymentStatus = (
       return true; // Admin can update anything
 
     case "user":
-      // User updates only their own mobile money or online payments
-      const methodToCheck = paymentMethod || newPaymentMethod;
-      return (
-        methodToCheck &&
-        (methodToCheck === PAYMENT_METHODS.MTN ||
-          methodToCheck === PAYMENT_METHODS.AIRTEL ||
-          methodToCheck === PAYMENT_METHODS.ONLINE) &&
-        currentPaymentStatus === PAYMENT_STATUSES.PENDING &&
-        (newPaymentStatus === PAYMENT_STATUSES.PENDING || newPaymentStatus === PAYMENT_STATUSES.PAID)
-      );
+      return false;
 
     default:
       return false;
@@ -131,6 +123,7 @@ export const getPaymentStatusDisplayInfo = (status: PaymentStatus, method: Payme
   if (method === PAYMENT_METHODS.MTN) providerLabel = "mtn";
   if (method === PAYMENT_METHODS.AIRTEL) providerLabel = "airtel";
   if (method === PAYMENT_METHODS.ONLINE) providerLabel = "Online";
+  if (method === PAYMENT_METHODS.PAWAPAY) providerLabel = "PawaPay";
 
   switch (status) {
     case PAYMENT_STATUSES.PENDING:

@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
         id: doc.id,
         orderId: data.orderId,
         amount: data.total || "0",
-        currency: "USD",
+        currency: data.currency || "RWF",
         status: data.status,
         paymentStatus: data.paymentStatus,
         createdAt:
@@ -95,6 +95,9 @@ export async function GET(request: NextRequest) {
         totalAmount: data.totalAmount || 0,
         paymentMethod: data.paymentMethod,
         paymentScreenshot: data.paymentScreenshot,
+        pawapayCheckoutId: data.pawapayCheckoutId,
+        pawapayDepositId: data.pawapayDepositId,
+        pawapayPaymentStatus: data.pawapayPaymentStatus,
         deliveryAddress: data.orderAddress || data.shippingAddress,
         trackingNumber: data.trackingNumber,
       };
@@ -149,6 +152,9 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ error: "Invalid order update." }, { status: 400 });
+    }
     const { orderId, userId, updates, status, paymentStatus } = body;
 
     if (!orderId) {
@@ -156,9 +162,24 @@ export async function PUT(request: NextRequest) {
     }
 
     // Build updates object from individual fields or use provided updates
-    const updateFields = updates || {};
+    if (updates !== undefined && (!updates || typeof updates !== "object" || Array.isArray(updates))) {
+      return NextResponse.json({ error: "Invalid order updates." }, { status: 400 });
+    }
+    const updateFields = updates ? { ...updates } : {};
     if (status) updateFields.status = status;
     if (paymentStatus) updateFields.paymentStatus = paymentStatus;
+    const pawapayInternalFields = [
+      "pawapayCheckoutId",
+      "pawapayDepositId",
+      "pawapayPaymentStatus",
+      "pawapayRefundStatus",
+    ];
+    if (pawapayInternalFields.some((field) => field in updateFields)) {
+      return NextResponse.json(
+        { error: "PawaPay payment records can only be updated by verified payment processing." },
+        { status: 400 },
+      );
+    }
 
     // If orderId exists in orders collection, update it there
     try {
@@ -167,6 +188,20 @@ export async function PUT(request: NextRequest) {
 
       if (orderDoc.exists) {
         const currentOrderData = orderDoc.data();
+        const effectivePaymentMethod = String(
+          updateFields.paymentMethod || currentOrderData?.paymentMethod || "",
+        ).toLowerCase();
+        if (
+          effectivePaymentMethod === "pawapay" &&
+          String(updateFields.paymentStatus || "").toLowerCase() === "paid" &&
+          currentOrderData?.pawapayPaymentStatus !== "COMPLETED"
+        ) {
+          return NextResponse.json(
+            { error: "PawaPay payments must be verified before an order can be marked paid." },
+            { status: 409 },
+          );
+        }
+
         const oldStatus = currentOrderData?.status;
         const newStatus = updateFields.status;
 

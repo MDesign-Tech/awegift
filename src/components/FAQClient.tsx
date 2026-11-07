@@ -29,7 +29,7 @@ const faqCategories = [
       {
         question: "What payment methods do you accept?",
         answer:
-          "We accept multiple secure payment options, including Mobile Money (MTN MoMo, Airtel Money), Bank transfers, and Debit/Credit cards (where available).",
+          "Pay securely through PawaPay using a supported mobile money provider in Rwanda.",
       },
       {
         question: "How do I return a product?",

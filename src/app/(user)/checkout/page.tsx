@@ -1,4 +1,4 @@
-import CheckoutClient from "@/components/CheckoutClient";
+import PawapayCheckoutClient from "@/components/PawapayCheckoutClient";
 import { generateSEO } from "@/lib/seo";
 import type { Metadata } from "next";
 
@@ -24,7 +24,7 @@ const CheckoutPage = async ({ searchParams }: Props) => {
     // This will be handled in the client component
   }
 
-  return <CheckoutClient existingOrderId={existingOrderId || ""} />;
+  return <PawapayCheckoutClient existingOrderId={existingOrderId || ""} />;
 };
 
 export default CheckoutPage;
