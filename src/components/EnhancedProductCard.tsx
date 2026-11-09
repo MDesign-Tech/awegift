@@ -5,6 +5,7 @@ import Link from "next/link";
 import ProductPrice from "./ProductPrice";
 import { FaStar, FaHeart, FaWhatsapp } from "react-icons/fa";
 import ProductActionsClient from "./ProductActionsClient";
+import { isProductAvailable } from "@/lib/productLimits";
 
 interface Props {
   product: ProductType;
@@ -55,7 +56,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
             )} */}
 
             {/* Quick Actions */}
-            {product?.stock === 0 && (
+            {!isProductAvailable(product) && (
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                 <div className="bg-red-500 text-white px-3 py-2 rounded-lg font-bold text-sm">
                   OUT OF STOCK
@@ -169,7 +170,7 @@ const EnhancedProductCard = ({ product, view = "grid" }: Props) => {
         )} 
          */}
 
-        {product?.stock === 0 && (
+        {!isProductAvailable(product) && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <div className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
               OUT OF STOCK

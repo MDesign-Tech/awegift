@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { getDefaultDashboardRoute, UserRole } from "@/lib/rbac/roles";
 import MainLoader from "@/components/MainLoader";
+import { requestAuthModal } from "@/lib/authModal";
 
 export default function RoleDashboardRedirect() {
   const { data: session, status } = useSession();
@@ -14,7 +15,7 @@ export default function RoleDashboardRedirect() {
     if (status === "loading") return; // Still loading
 
     if (!session?.user) {
-      router.push("/auth/signin");
+      requestAuthModal("signIn");
       return;
     }
 

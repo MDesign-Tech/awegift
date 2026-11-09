@@ -11,9 +11,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FiAlertCircle, FiLoader } from "react-icons/fi";
 import { FaSignInAlt } from "react-icons/fa";
-import Link from "next/link";
 import { resetCart } from "@/redux/aweGiftSlice";
 import toast from "react-hot-toast";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 interface Props {
   cart: ProductType[];
@@ -29,6 +29,7 @@ const CartSummary = ({ cart }: Props) => {
   const { data: session } = useSession();
   const router = useRouter();
   const dispatch = useDispatch();
+  const { openAuthModal } = useAuthModal();
 
   const userRole = session?.user?.role as UserRole;
   const canPlaceOrder = hasPermission(userRole, "canCreateOrders");
@@ -45,8 +46,7 @@ const CartSummary = ({ cart }: Props) => {
 
   const handleCheckout = async () => {
     if (!session?.user) {
-      // Redirect to login page for unauthenticated users
-      router.push("/auth/signin?callbackUrl=/cart");
+      openAuthModal("signIn", "/cart");
       return;
     }
 
@@ -170,13 +170,14 @@ const CartSummary = ({ cart }: Props) => {
                 You can browse and add items to your cart, but you&apos;ll need
                 to sign in to complete your purchase and access checkout.
               </p>
-              <Link
-                href="/auth/signin?callbackUrl=/cart"
-                className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium underline"
+              <Button
+                size="sm"
+                onClick={() => openAuthModal("signIn", "/cart")}
+                className="gap-2 active:scale-95 active:bg-accent-color"
               >
                 <FaSignInAlt className="w-3 h-3" />
                 Sign in to continue
-              </Link>
+              </Button>
             </div>
           </div>
         </div>

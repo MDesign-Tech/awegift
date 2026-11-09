@@ -3,9 +3,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { FiArrowRight, FiPackage } from "react-icons/fi";
-import { getData } from "../../../app/(user)/helpers";
-
-import type { CategoryType } from "../../../../type";
 
 interface Category {
   slug: string;
@@ -16,7 +13,6 @@ interface Category {
 }
 
 interface InfiniteCategoryGridProps {
-  // optional seed categories (kept for compatibility) — the component will fetch from /api/categories
   initialCategories?: Category[];
   totalProducts?: number;
   allProducts?: any[];
@@ -191,61 +187,18 @@ const InfiniteCategoryGrid: React.FC<InfiniteCategoryGridProps> = ({
   allProducts = [],
 }) => {
   // allCategories is the full dataset (from API). categories is the paginated slice shown.
-  const [allCategories, setAllCategories] = useState<Category[]>(
-    initialCategories || []
+  const activeCategories = (initialCategories || []).filter(
+    (category) => (category.count || 0) > 0
   );
+  const [allCategories] = useState<Category[]>(activeCategories);
   const [categories, setCategories] = useState<Category[]>(
-    (initialCategories || []).slice(0, 12)
+    activeCategories.slice(0, 12)
   );
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState((initialCategories || []).length > 12);
+  const [hasMore, setHasMore] = useState(activeCategories.length > 12);
   const [page, setPage] = useState(1);
   const [totalBrands, setTotalBrands] = useState(0);
 
-  // Fetch categories from the API on mount and replace the data source
-  useEffect(() => {
-    let mounted = true;
-
-    const fetchCategories = async () => {
-      setLoading(true);
-      try {
-        const data = await getData("/api/categories");
-
-        // Support different response shapes: array or { categories: [] }
-        const list: CategoryType[] = Array.isArray(data)
-          ? data
-          : data?.categories || [];
-
-        const mapped: Category[] = list.map((c) => ({
-          slug: c.slug,
-          name: c.name,
-          url: c.image || "",
-          description: c.description || "",
-          count: (c as any).productCount ?? 0,
-        }));
-
-        if (!mounted) return;
-
-        setAllCategories(mapped);
-        setCategories(mapped.slice(0, 12));
-        setHasMore(mapped.length > 12);
-        setPage(1);
-      } catch (err) {
-        // keep existing initialCategories if fetch fails
-        // console.warn(err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    fetchCategories();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  // Calculate unique brands from allProducts
   useEffect(() => {
     if (allProducts.length > 0) {
       const uniqueBrands = [...new Set(allProducts.map((p: any) => p.brand).filter(Boolean))];
@@ -299,7 +252,14 @@ const InfiniteCategoryGrid: React.FC<InfiniteCategoryGridProps> = ({
   return (
     <div >
       {/* Categories Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+      {categories.length === 0 ? (
+        <div className="rounded-2xl bg-gray-50 py-12 text-center">
+          <p className="text-lg text-gray-600">
+            No categories with available products are currently listed.
+          </p>
+        </div>
+      ) : (
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         {categories.map((category, index) => (
           <CategoryCard
             key={`${category.slug}-${index}`}
@@ -314,6 +274,7 @@ const InfiniteCategoryGrid: React.FC<InfiniteCategoryGridProps> = ({
             <CategorySkeleton key={`skeleton-${index}`} />
           ))}
       </div>
+      )}
 
       {/* Loading/End Message */}
       <div className="text-center py-8">
@@ -324,13 +285,13 @@ const InfiniteCategoryGrid: React.FC<InfiniteCategoryGridProps> = ({
           </div>
         )}
 
-        {!hasMore && !loading && (
+        {activeCategories.length > 0 && !hasMore && !loading && (
           <div className="bg-gradient-to-r from-theme-color/10 to-accent-color/10 rounded-2xl p-8">
             <div className="text-2xl font-bold text-light-text mb-2">
               🎉 You&apos;ve seen it all!
             </div>
             <p className="text-light-text mb-6">
-              You&apos;ve explored all our {initialCategories.length}{" "}
+              You&apos;ve explored all our {activeCategories.length}{" "}
               categories. Ready to start shopping?
             </p>
             <Link

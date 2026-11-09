@@ -2,6 +2,7 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { FaTimes, FaUndo } from "react-icons/fa";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { formatCurrency as formatCurrencyValue } from "@/lib/currency";
 
 const ActiveFilters = () => {
   const searchParams = useSearchParams();
@@ -12,12 +13,7 @@ const ActiveFilters = () => {
     if (!amount || amount === "∞") return amount === "∞" ? "∞" : "0";
     const num = typeof amount === "string" ? parseFloat(amount) : amount;
     const converted = convertPrice(num, "RWF");
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: selectedCurrency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(converted);
+    return formatCurrencyValue(converted, selectedCurrency);
   };
 
   const activeFilters = [];

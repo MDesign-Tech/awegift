@@ -19,6 +19,8 @@ export interface ProductType {
   price: number;
   stock: number;
   minimumOrderQuantity: number;
+  isUnlimitedStock?: boolean;
+  isUnlimitedMinimumOrderQuantity?: boolean;
   discount: number;
   currency: string;
   isActive: boolean;
@@ -202,6 +204,7 @@ export interface CategoryType {
   description: string;
   image: string;
   isFeatured?: boolean;
+  productCount?: number;
   meta?: {
     createdAt: string;
     updatedAt: string;

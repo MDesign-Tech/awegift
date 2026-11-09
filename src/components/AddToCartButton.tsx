@@ -4,6 +4,7 @@ import {
   addToCart,
   decreaseQuantity,
   increaseQuantity,
+  setQuantity,
 } from "@/redux/aweGiftSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { ProductType, StateType } from "../../type";
@@ -12,6 +13,12 @@ import { FaPlus, FaCheck } from "react-icons/fa6";
 import { FaMinus, FaShoppingCart } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
+import {
+  getProductMinimumOrderQuantity,
+  getProductMaximumOrderQuantity,
+  isProductAvailable,
+  isValidProductQuantity,
+} from "@/lib/productLimits";
 
 interface PropsType {
   product?: ProductType;
@@ -35,6 +42,7 @@ const AddToCartButton = ({
   );
   const [isAdding, setIsAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
+  const [quantityDraft, setQuantityDraft] = useState("");
 
   useEffect(() => {
     const availableProduct = cart?.find((item) => item?.id === product?.id);
@@ -45,8 +53,20 @@ const AddToCartButton = ({
     }
   }, [cart, product]);
 
+  useEffect(() => {
+    setQuantityDraft(String(existingProduct?.quantity ?? ""));
+  }, [existingProduct?.quantity]);
+
   const handleAddToCart = async () => {
-    if (product && product.stock > 0) {
+    if (product && isProductAvailable(product)) {
+      const currentQuantity = existingProduct?.quantity || 0;
+      const nextQuantity = existingProduct
+        ? currentQuantity + 1
+        : getProductMinimumOrderQuantity(product);
+      if (!isValidProductQuantity(product, nextQuantity)) {
+        toast.error("The requested quantity is not available.");
+        return;
+      }
       setIsAdding(true);
       dispatch(addToCart(product));
 
@@ -76,6 +96,14 @@ const AddToCartButton = ({
   };
 
   const handleIncrease = () => {
+    const nextQuantity = (existingProduct?.quantity || 0) + 1;
+    if (
+      !product ||
+      nextQuantity > maximumQuantity
+    ) {
+      toast.error("Maximum available quantity reached.");
+      return;
+    }
     dispatch(increaseQuantity(product?.id));
     toast.success(`Quantity increased!`, {
       duration: 1500,
@@ -87,7 +115,10 @@ const AddToCartButton = ({
   };
 
   const handleDecrease = () => {
-    if (existingProduct?.quantity! > 1) {
+    if (
+      product &&
+      isValidProductQuantity(product, (existingProduct?.quantity || 0) - 1)
+    ) {
       dispatch(decreaseQuantity(product?.id));
       toast.success(`Quantity decreased!`, {
         duration: 1500,
@@ -97,12 +128,33 @@ const AddToCartButton = ({
         },
       });
     } else {
-      toast.error("Minimum quantity is 1", {
+      toast.error(`Minimum quantity is ${getProductMinimumOrderQuantity(product || {})}`, {
         style: {
           background: "#EF4444",
           color: "white",
         },
       });
+    }
+  };
+
+  const handleQuantityChange = (value: string) => {
+    if (/^\d*$/.test(value)) {
+      setQuantityDraft(value);
+    }
+  };
+
+  const commitQuantity = () => {
+    const quantity = Number(quantityDraft);
+    if (quantityDraft && isValidProductQuantity(existingProduct || {}, quantity)) {
+      dispatch(setQuantity({ id: existingProduct!.id, quantity }));
+    } else {
+      setQuantityDraft(String(existingProduct?.quantity ?? 1));
+      if (quantityDraft) {
+        const maximum = getProductMaximumOrderQuantity(existingProduct || {});
+        toast.error(
+          `Enter a whole quantity from ${getProductMinimumOrderQuantity(existingProduct || {})} to ${maximum}.`
+        );
+      }
     }
   };
 
@@ -133,14 +185,18 @@ const AddToCartButton = ({
   };
 
   // Check if product is out of stock
-  const isOutOfStock = !product?.stock || product.stock <= 0;
+  const isOutOfStock = !product || !isProductAvailable(product);
+  const maximumQuantity = getProductMaximumOrderQuantity(product || {});
 
   return (
     <>
       {existingProduct && showQuantity ? (
         <div className="flex items-center justify-center gap-2 bg-white rounded-lg border border-gray-200 p-1 shadow-sm">
           <button
-            disabled={existingProduct?.quantity! <= 1}
+            disabled={
+              existingProduct?.quantity! <=
+              getProductMinimumOrderQuantity(existingProduct)
+            }
             onClick={handleDecrease}
             className="flex items-center justify-center w-8 h-8 bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 rounded-md border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-100 disabled:hover:text-gray-600"
           >
@@ -148,15 +204,27 @@ const AddToCartButton = ({
           </button>
 
           <div className="flex flex-col items-center min-w-[40px]">
-            <span className="text-sm font-semibold text-gray-800">
-              {existingProduct?.quantity}
-            </span>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              aria-label={`Quantity of ${product?.title}`}
+              value={quantityDraft}
+              onChange={(event) => handleQuantityChange(event.target.value)}
+              onBlur={commitQuantity}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") event.currentTarget.blur();
+              }}
+              className="w-10 rounded bg-transparent text-center text-sm font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-theme-color"
+            />
             <span className="text-xs text-gray-500">in cart</span>
           </div>
 
           <button
             onClick={handleIncrease}
-            disabled={existingProduct?.quantity! >= (product?.stock || 0)}
+            disabled={
+              existingProduct?.quantity! >= maximumQuantity
+            }
             className="flex items-center justify-center w-8 h-8 bg-gray-100 hover:bg-green-100 text-gray-600 hover:text-green-600 rounded-md border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FaPlus className="w-3 h-3" />

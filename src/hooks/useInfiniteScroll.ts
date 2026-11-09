@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { requestAuthModal } from "@/lib/authModal";
 import { ProductType, OrderData, QuotationType } from "../../type";
 
 interface UseInfiniteProductsReturn {
@@ -76,7 +77,7 @@ export const useInfiniteProducts = (
       const response = await fetch(`${apiEndpoint}?${params}`);
       if (!response.ok) {
         if (response.status === 401) {
-          router.push("/auth/signin");
+          requestAuthModal("signIn");
           return;
         } else if (response.status === 403) {
           throw new Error('Insufficient permissions');
@@ -89,7 +90,7 @@ export const useInfiniteProducts = (
 
       // Check for unauthorized error (fallback)
       if (data.error === "Unauthorized") {
-        router.push("/auth/signin");
+        requestAuthModal("signIn");
         return;
       }
 
@@ -198,7 +199,7 @@ export const useInfiniteOrders = (
       const response = await fetch(`${apiEndpoint}?${params}`);
       if (!response.ok) {
         if (response.status === 401) {
-          router.push("/auth/signin");
+          requestAuthModal("signIn");
           return;
         } else if (response.status === 403) {
           throw new Error('Insufficient permissions');
@@ -211,7 +212,7 @@ export const useInfiniteOrders = (
 
       // Check for unauthorized error (fallback)
       if (data.error === "Unauthorized") {
-        router.push("/auth/signin");
+        requestAuthModal("signIn");
         return;
       }
 
@@ -305,7 +306,7 @@ export const useInfiniteQuotes = (
       const response = await fetch(`${apiEndpoint}?${params}`);
       if (!response.ok) {
         if (response.status === 401) {
-          router.push("/auth/signin");
+          requestAuthModal("signIn");
           return;
         } else if (response.status === 403) {
           throw new Error('Insufficient permissions');
@@ -318,7 +319,7 @@ export const useInfiniteQuotes = (
 
       // Check for unauthorized error (fallback)
       if (data.error === "Unauthorized") {
-        router.push("/auth/signin");
+        requestAuthModal("signIn");
         return;
       }
 

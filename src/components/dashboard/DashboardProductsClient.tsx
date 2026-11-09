@@ -597,13 +597,13 @@ if (response.status === 401 && errorData.code === 'USER_DELETED') {
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    product.stock > 10
+                    product.isUnlimitedStock || product.stock > 10
                       ? 'bg-green-100 text-green-800'
                       : product.stock > 0
                       ? 'bg-yellow-100 text-yellow-800'
                       : 'bg-red-100 text-red-800'
                   }`}>
-                    {product.stock}
+                    {product.isUnlimitedStock ? "Unlimited" : product.stock}
                   </span>
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap">
@@ -869,7 +869,9 @@ if (response.status === 401 && errorData.code === 'USER_DELETED') {
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Stock</dt>
                     <dd className="text-sm text-gray-900">
-                      {viewProductModal.stock}
+                      {viewProductModal.isUnlimitedStock
+                        ? "Unlimited"
+                        : viewProductModal.stock}
                     </dd>
                   </div>
                   <div>
@@ -973,7 +975,10 @@ if (response.status === 401 && errorData.code === 'USER_DELETED') {
                     )}
                   </div>
                   <div>
-                    <strong>Stock:</strong> {deleteProductModal.stock}
+                    <strong>Stock:</strong>{" "}
+                    {deleteProductModal.isUnlimitedStock
+                      ? "Unlimited"
+                      : deleteProductModal.stock}
                   </div>
                 </div>
               </div>
@@ -1106,6 +1111,3 @@ if (response.status === 401 && errorData.code === 'USER_DELETED') {
     </div>
   );
 }
-
-
-

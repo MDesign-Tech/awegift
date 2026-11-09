@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 import Container from "@/components/Container";
 import InfiniteCategoryGrid from "@/components/pages/categories/InfiniteCategoryGrid";
 import { getData } from "../helpers";
-import { getCategoriesWithCounts } from "../helpers/productHelpers";
 import { generateSEO } from "@/lib/seo";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -31,8 +30,6 @@ export const metadata: Metadata = generateSEO({
 export default async function CategoriesPage() {
   // Fetch categories with product counts from API
   const categoriesData = await getData(`/api/categories`) as CategoryWithCount[];
-
-  console.log("Categories Data:", categoriesData);
 
   // Map to Category interface expected by InfiniteCategoryGrid
   const enrichedCategories =

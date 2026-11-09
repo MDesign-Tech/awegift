@@ -1,6 +1,7 @@
 import Banner from "@/components/pages/home/Banner";
 import Products from "@/components/pages/home/Products";
 import DynamicFeaturedCategories from "@/components/pages/home/DynamicFeaturedCategories";
+import ServicesPromotion from "@/components/pages/home/ServicesPromotion";
 import FAQClient from "@/components/FAQClient";
 import SectionDivider from "@/components/ui/SectionDivider";
 import HomeFlexCarousel from "@/components/pages/home/HomeFlexCarousel";
@@ -24,7 +25,7 @@ export default function Home() {
         lensHeight={0.79}
         tilt={0}
         roundness={0.02}
-        bend={0.3}
+        bend={0}
         reach={0.36}
         curl="fall"
         dispersion={0.4}
@@ -37,6 +38,8 @@ export default function Home() {
 
       {/* Featured Categories Section */}
       <DynamicFeaturedCategories />
+
+      {/* <ServicesPromotion /> */}
 
       <SectionDivider />
 

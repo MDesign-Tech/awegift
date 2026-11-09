@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { adminDb } from "@/lib/firebase/admin";
 import puppeteer from "puppeteer";
 import { OrderData, QuotationType } from "@/../../type";
+import { formatCurrency } from "@/lib/currency";
 
 export async function GET(request: NextRequest) {
   try {
@@ -139,7 +140,7 @@ export async function GET(request: NextRequest) {
                   <tr>
                     <td>${order.id}</td>
                     <td>${order.status}</td>
-                    <td>$${order.totalAmount}</td>
+                    <td>${formatCurrency(order.totalAmount, order.currency || "RWF")}</td>
                     <td>${new Date(order.createdAt).toLocaleDateString()}</td>
                   </tr>
                 `).join('')}
@@ -165,7 +166,7 @@ export async function GET(request: NextRequest) {
                   <tr>
                     <td>${quote.id}</td>
                     <td>${quote.status}</td>
-                    <td>$${quote.finalAmount || 'N/A'}</td>
+                    <td>${quote.finalAmount ? formatCurrency(quote.finalAmount, quote.currency || "RWF") : "N/A"}</td>
                     <td>${new Date(quote.createdAt).toLocaleDateString()}</td>
                   </tr>
                 `).join('')}

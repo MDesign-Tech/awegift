@@ -8,6 +8,7 @@ import RoleDashboardRedirect from "@/components/dashboard/RoleDashboardRedirect"
 import Container from "@/components/Container";
 import { FiLoader } from "react-icons/fi";
 import Link from "next/link";
+import { requestAuthModal } from "@/lib/authModal";
 
 interface RoleProtectedRouteProps {
   children: ReactNode;
@@ -37,11 +38,8 @@ export default function RoleProtectedRoute({
       setRedirectReason("unauthenticated");
       setIsRedirecting(true);
       
-      const timer = setTimeout(() => {
-        router.push(fallbackPath);
-      }, 1500);
-
-      return () => clearTimeout(timer);
+      requestAuthModal("signIn", window.location.href);
+      return;
     }
 
     if (userRole && !allowedRoles.includes(userRole)) {

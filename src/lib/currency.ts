@@ -159,14 +159,15 @@ export const getCurrencySymbol = (currencyCode: CurrencyCode): string => {
 
 export const formatCurrency = (
     amount: number,
-    currencyCode: CurrencyCode = "RWF",
-    locale: string = "en-US"
+    currencyCode: string = "RWF",
+    locale: string = "en-US",
+    currencyDisplay: Intl.NumberFormatOptions["currencyDisplay"] = "symbol"
 ): string => {
     return new Intl.NumberFormat(locale, {
         style: "currency",
         currency: currencyCode,
-        // Specific formatting for Rwandan Franc (RWF) to avoid decimal places as is common
-        minimumFractionDigits: currencyCode === "RWF" ? 0 : 2,
+        currencyDisplay,
+        minimumFractionDigits: 0,
         maximumFractionDigits: currencyCode === "RWF" ? 0 : 2,
     }).format(amount);
 };

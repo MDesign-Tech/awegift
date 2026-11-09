@@ -15,6 +15,7 @@ import {
 import Container from "@/components/Container";
 import PriceFormat from "@/components/PriceFormat";
 import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
+import { formatCurrency } from "@/lib/currency";
 import type { OrderData } from "../../type";
 
 type ApiResponse = {
@@ -298,11 +299,7 @@ export default function PawapayCheckoutClient({
               <div className="flex justify-between">
                 <span className="text-gray-600">Total Amount</span>
                 <span className="font-semibold text-theme-color">
-                  {new Intl.NumberFormat("en-RW", {
-                    style: "currency",
-                    currency: "RWF",
-                    maximumFractionDigits: 0,
-                  }).format(existingOrder.totalAmount || 0)}
+                  {formatCurrency(existingOrder.totalAmount || 0, "RWF", "en-RW")}
                 </span>
               </div>
             </section>

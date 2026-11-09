@@ -6,6 +6,7 @@ import { toast } from "react-hot-toast";
 import { ProductType } from "../../../type";
 import { CldUploadWidget, CldImage } from 'next-cloudinary';
 import { getCurrencySymbol } from "@/lib/currency";
+import { MAX_ORDER_QUANTITY } from "@/lib/productLimits";
 
 const generateSKU = (product: { categories: string[]; brand: string; title: string; id: string | number }) => {
   const { categories, brand, title, id } = product;
@@ -33,6 +34,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
     price: 1,
     discount: 1,
     stock: 1,
+    isUnlimitedStock: false,
     brand: "M Design",
     sku: "",
     weight: 1,
@@ -40,6 +42,7 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
     warrantyInformation: "1 year warranty",
     returnPolicy: "30 days return policy",
     minimumOrderQuantity: 3,
+    isUnlimitedMinimumOrderQuantity: false,
     tags: [],
     colors: [],
     reviews: [],
@@ -95,7 +98,14 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
 
   // Fill form if editing
   useEffect(() => {
-    if (product) setFormData(product);
+    if (product) {
+      setFormData({
+        ...product,
+        isUnlimitedStock: product.isUnlimitedStock === true,
+        isUnlimitedMinimumOrderQuantity:
+          product.isUnlimitedMinimumOrderQuantity === true,
+      });
+    }
   }, [product]);
 
 
@@ -106,15 +116,24 @@ export default function ProductForm({ product, onCancel, onSuccess, refetchProdu
     if (!formData.price || formData.price <= 0) newErrors.price = "Price must be greater than 0";
     if (!formData.categories || formData.categories.length === 0) newErrors.category = "At least one category is required";
     if (!formData.brand.trim()) newErrors.brand = "Brand is required";
-    if (formData.stock < 0) newErrors.stock = "Stock must be 0 or greater";
-
+    if (!formData.isUnlimitedStock && formData.stock < 0) {
+      newErrors.stock = "Stock must be 0 or greater";
+    }
+    if (
+      !formData.isUnlimitedMinimumOrderQuantity &&
+      (!Number.isSafeInteger(formData.minimumOrderQuantity) ||
+        formData.minimumOrderQuantity < 1 ||
+        formData.minimumOrderQuantity > MAX_ORDER_QUANTITY)
+    ) {
+      newErrors.minimumOrderQuantity = `Minimum order quantity must be between 1 and ${MAX_ORDER_QUANTITY}`;
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const scrollToFirstError = () => {
     // Find the first error field and scroll to it
-    const errorFields = ['title', 'description', 'brand', 'category', 'price', 'stock'];
+    const errorFields = ['title', 'description', 'brand', 'category', 'price', 'stock', 'minimumOrderQuantity'];
     for (const field of errorFields) {
       if (errors[field]) {
         const element = document.getElementById(field) as HTMLElement;
@@ -529,24 +548,50 @@ if (response.status === 401 && errorData.code === 'USER_DELETED') {
       {/* Stock & Availability */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Stock *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Stock</label>
           <input
             id="stock"
             type="number"
             value={formData.stock}
             onChange={(e) => handleInputChange("stock", parseInt(e.target.value) || 0)}
+            disabled={formData.isUnlimitedStock}
             className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color text-sm sm:text-base ${errors.stock ? "border-red-500" : "border-gray-300"}`}
           />
           {errors.stock && <p className="text-red-500 text-sm">{errors.stock}</p>}
+          <label className="mt-2 flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={formData.isUnlimitedStock === true}
+              onChange={(e) => handleInputChange("isUnlimitedStock", e.target.checked)}
+              className="h-4 w-4 accent-theme-color"
+            />
+            Unlimited stock
+          </label>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Order Quantity</label>
           <input
+            id="minimumOrderQuantity"
             type="number"
             value={formData.minimumOrderQuantity}
             onChange={(e) => handleInputChange("minimumOrderQuantity", parseInt(e.target.value) || 1)}
+            disabled={formData.isUnlimitedMinimumOrderQuantity}
             className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-theme-color text-sm sm:text-base border-gray-300"
           />
+          {errors.minimumOrderQuantity && (
+            <p className="text-red-500 text-sm">{errors.minimumOrderQuantity}</p>
+          )}
+          <label className="mt-2 flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={formData.isUnlimitedMinimumOrderQuantity === true}
+              onChange={(e) =>
+                handleInputChange("isUnlimitedMinimumOrderQuantity", e.target.checked)
+              }
+              className="h-4 w-4 accent-theme-color"
+            />
+            No minimum quantity
+          </label>
         </div>
       </div>
 
@@ -913,7 +958,3 @@ if (response.status === 401 && errorData.code === 'USER_DELETED') {
     </form>
   );
 }
-
-
-
-

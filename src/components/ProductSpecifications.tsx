@@ -1,5 +1,9 @@
 import { ProductType } from "../../type";
 import { FiPackage, FiShield, FiInfo } from "react-icons/fi";
+import {
+  getProductMinimumOrderQuantity,
+  getProductStockLimit,
+} from "@/lib/productLimits";
 
 interface ProductSpecificationsProps {
   product: ProductType;
@@ -28,9 +32,18 @@ const ProductSpecifications = ({ product }: ProductSpecificationsProps) => {
     { label: "SKU", value: product?.sku || "N/A" },
     {
       label: "Minimum Order",
-      value: `${product?.minimumOrderQuantity || 1} unit(s)`,
+      value:
+        product.isUnlimitedMinimumOrderQuantity === true
+          ? "No minimum"
+          : `${getProductMinimumOrderQuantity(product)} unit(s)`,
     },
-    { label: "Stock", value: `${product?.stock || 0} available` },
+    {
+      label: "Stock",
+      value:
+        getProductStockLimit(product) === null
+          ? "Unlimited"
+          : `${getProductStockLimit(product)} available`,
+    },
   ];
 
   return (

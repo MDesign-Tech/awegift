@@ -1,4 +1,5 @@
 import { EmailType, EmailPayload, OrderEmailData, QuotationEmailData, ProductLounchEmailData } from '@/../type';
+import { formatCurrency as formatCurrencyValue } from '@/lib/currency';
 
 /**
  * Email templates for different email types
@@ -1649,10 +1650,7 @@ Please review this quotation request in your admin dashboard.
 
   private static formatCurrency(amount: number, currency: string): string {
     try {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currency || 'RWF',
-      }).format(amount);
+      return formatCurrencyValue(amount, currency || 'RWF');
     } catch {
       return `${amount} ${currency || 'RWF'}`;
     }

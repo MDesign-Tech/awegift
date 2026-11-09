@@ -29,7 +29,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const getPageTitle = () => {
     if (params.category) {
       const categories = Array.isArray(params.category) ? params.category : [params.category];
-      const regularCategories = categories
+      const regularCategories = categories;
 
       // If multiple categories or regular categories
       if (regularCategories.length > 0) {
@@ -85,7 +85,15 @@ const ProductsPage = async ({ searchParams }: Props) => {
   // Apply filters
   if (params.category) {
     const categories = Array.isArray(params.category) ? params.category : [params.category];
-    const regularCategories = categories
+    const regularCategories = categories.map((selectedCategory) => {
+      const match = Array.isArray(categoriesData)
+        ? categoriesData.find((category: { slug?: string; name?: string }) =>
+            category.slug?.toLowerCase() === selectedCategory.toLowerCase() ||
+            category.name?.toLowerCase() === selectedCategory.toLowerCase()
+          )
+        : undefined;
+      return match?.name || selectedCategory;
+    });
 
     // Apply regular category filters - products must match ANY of the selected categories
     if (regularCategories.length > 0) {
@@ -217,4 +225,3 @@ const ProductsPage = async ({ searchParams }: Props) => {
 };
 
 export default ProductsPage;
-

@@ -11,6 +11,7 @@ import { FaHeart, FaShoppingCart, FaTrash } from "react-icons/fa";
 import { MdFavoriteBorder, MdFavorite } from "react-icons/md";
 import toast from "react-hot-toast";
 import PriceFormat from "@/components/PriceFormat";
+import { isProductAvailable } from "@/lib/productLimits";
 
 const FavoritePage = () => {
   const { favorite } = useSelector((state: StateType) => state?.aweGift);
@@ -160,15 +161,15 @@ const FavoritePage = () => {
                   {/* Add to Cart Button */}
                   <button
                     onClick={() => handleAddToCart(product)}
-                    disabled={product.stock === 0}
+                    disabled={!isProductAvailable(product)}
                     className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md font-medium transition-colors duration-200 ${
-                      product.stock === 0
+                      !isProductAvailable(product)
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                         : "bg-theme-color text-white hover:bg-theme-color/90"
                     }`}
                   >
                     <FaShoppingCart className="h-4 w-4" />
-                    {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                    {!isProductAvailable(product) ? "Out of Stock" : "Add to Cart"}
                   </button>
                 </div>
               </div>

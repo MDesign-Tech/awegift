@@ -51,6 +51,14 @@ export async function POST(request: NextRequest) {
     if (!productData.title || !productData.price || !productData.categories || !Array.isArray(productData.categories) || productData.categories.length === 0) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
+    if (
+      (productData.isUnlimitedStock !== undefined &&
+        typeof productData.isUnlimitedStock !== "boolean") ||
+      (productData.isUnlimitedMinimumOrderQuantity !== undefined &&
+        typeof productData.isUnlimitedMinimumOrderQuantity !== "boolean")
+    ) {
+      return NextResponse.json({ error: "Invalid product limits" }, { status: 400 });
+    }
 
     // Add timestamps
     const now = new Date().toISOString();
@@ -59,6 +67,9 @@ export async function POST(request: NextRequest) {
       colors: productData.colors || [], // start with admin provided colors
       isActive: productData.isActive !== undefined ? productData.isActive : true, // default active
       isFeatured: productData.isFeatured !== undefined ? productData.isFeatured : false, // default not featured
+      isUnlimitedStock: productData.isUnlimitedStock === true,
+      isUnlimitedMinimumOrderQuantity:
+        productData.isUnlimitedMinimumOrderQuantity === true,
       meta: {
         createdAt: now,
         updatedAt: now,

@@ -1,5 +1,6 @@
 import puppeteer from "puppeteer";
 import { OrderData, UserData } from "@/../../type";
+import { formatCurrency } from "@/lib/currency";
 
 export async function generateReceiptPdf(
   order: OrderData,
@@ -37,13 +38,6 @@ export async function generateReceiptPdf(
 }
 
 function generateReceiptHtml(order: OrderData, user: UserData): string {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-RW", {
-      style: "currency",
-      currency: "RWF",
-    }).format(amount);
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",

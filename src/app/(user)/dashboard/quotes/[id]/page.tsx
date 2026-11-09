@@ -385,7 +385,7 @@ export default function AdminQuoteDetailPage() {
                                 value={product.unitPrice || ''}
                                 onChange={(e) => updateProduct(index, 'unitPrice', parseFloat(e.target.value) || 0)}
                                 className="w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-theme-color focus:border-theme-color"
-                                placeholder="0.00"
+                                placeholder="0"
                               />
                             </td>
                             <td className="px-4 py-3 text-sm font-medium text-gray-900">
@@ -431,7 +431,7 @@ export default function AdminQuoteDetailPage() {
                       value={editableQuote.discount || ''}
                       onChange={(e) => updateQuoteField('discount', parseFloat(e.target.value) || 0)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-theme-color focus:border-theme-color"
-                      placeholder="0.00"
+                      placeholder="0"
                     />
                   </div>
                   <div>
@@ -445,7 +445,7 @@ export default function AdminQuoteDetailPage() {
                       value={editableQuote.deliveryFee || ''}
                       onChange={(e) => updateQuoteField('deliveryFee', parseFloat(e.target.value) || 0)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-theme-color focus:border-theme-color"
-                      placeholder="0.00"
+                      placeholder="0"
                     />
                   </div>
                 </div>

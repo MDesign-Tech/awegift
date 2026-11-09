@@ -63,15 +63,15 @@ const SingleProductPage = async ({ params }: Props) => {
 
   return (
     <div>
-      <Container className="flex flex-col gap-10 py-10">
+      <Container className="flex flex-col gap-10 py-10  border-1 rounded-xl mt-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Product Image */}
-          <ProductImages
+          <ProductImages 
             images={product?.images}
             thumbsail={product?.thumbnail}
           />
           {/* Product Details */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 ">
             <h2 className="text-3xl font-bold">{product?.title}</h2>
             <div className="flex items-center justify-between">
               <ProductPrice regularPrice={regularPrice} product={product} />
@@ -82,11 +82,11 @@ const SingleProductPage = async ({ params }: Props) => {
               <p className="text-sm tracking-wide">{product?.description}</p>
               <p className="text-base">{product?.warrantyInformation}</p>
             </div>
-            <p>
+            {/* <p>
               <span className="font-bold">Brand:</span> <span className="font-medium">{product?.brand}</span>
-            </p>
+            </p> */}
             <p>
-              <span className="font-bold">Categories:</span> 
+              <span className="font-bold">Categories: </span> 
               <span className="font-medium capitalize">
                 {product?.categories && product.categories.length > 0
                   ? product.categories.join(", ")
@@ -99,21 +99,21 @@ const SingleProductPage = async ({ params }: Props) => {
               className=" rounded-md uppercase font-semibold"
             />
 
-            <div className="bg-[#f7f7f7] p-5 rounded-md flex flex-col items-center justify-center gap-2">
+            {/* <div className="bg-[#f7f7f7] p-5 rounded-md flex flex-col items-center justify-center gap-2">
               <img
                 src={paymentImage.src}
                 alt="payment"
                 className="w-auto object-cover"
               />
               <p className="font-semibold">Guaranteed safe & secure checkout</p>
-            </div>
+            </div> */}
           </div>
         </div>
 
         {/* Product Specifications */}
-        <div className="w-full">
+        {/* <div className="w-full">
           <ProductSpecifications product={product} />
-        </div>
+        </div> */}
       </Container>
 
       {/* Product Features Section */}

@@ -1,6 +1,7 @@
 "use client";
 import { twMerge } from "tailwind-merge";
 import { useCurrency } from "../contexts/CurrencyContext";
+import { formatCurrency } from "../lib/currency";
 
 type CurrencyCode =
   | "USD"
@@ -19,17 +20,7 @@ const PriceFormat = ({ amount, className, fromCurrency = "RWF" }: Props) => {
     return <span className={twMerge("font-medium", className)}>-</span>;
 
   const convertedAmount = convertPrice(amount, fromCurrency);
-
-  // Currencies that don't use decimal places
-  const noDecimalCurrencies = ["JPY", "BDT"];
-  const useDecimals = !noDecimalCurrencies.includes(selectedCurrency);
-
-  const formattedPrice = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: selectedCurrency,
-    minimumFractionDigits: useDecimals ? 2 : 0,
-    maximumFractionDigits: useDecimals ? 2 : 0,
-  }).format(convertedAmount);
+  const formattedPrice = formatCurrency(convertedAmount, selectedCurrency);
 
   return (
     <span className={twMerge("font-medium", className)}>{formattedPrice}</span>

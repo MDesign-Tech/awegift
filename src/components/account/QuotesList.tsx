@@ -17,6 +17,7 @@ import Link from "next/link";
 import { QuotationType, QuotationProductType } from "../../../type";
 import { getStatusDisplayInfo, QuotationStatus } from "@/lib/quoteStatuses";
 import { getData } from "@/app/(user)/helpers";
+import { formatCurrency } from "@/lib/currency";
 
 interface QuotesListProps {
   showHeader?: boolean;
@@ -146,7 +147,7 @@ export default function QuotesList({
 
   const getEstimatedPrice = (quote: QuotationType) => {
     if (quote.finalAmount > 0) {
-      return `${quote.finalAmount.toLocaleString()} RWF`;
+      return formatCurrency(quote.finalAmount, "RWF");
     }
     return "Waiting for seller response";
   };

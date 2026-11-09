@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { FaArrowLeft, FaMobileAlt } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { signIn } from "next-auth/react";
+import { requestAuthModal } from "@/lib/authModal";
 
 export default function Verify2FAPage() {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
   const tempToken = searchParams.get("token");
@@ -19,9 +19,9 @@ export default function Verify2FAPage() {
   useEffect(() => {
     if (!email || !tempToken) {
       toast.error("Invalid verification link");
-      router.push("/auth/signin");
+      requestAuthModal("signIn");
     }
-  }, [email, tempToken, router]);
+  }, [email, tempToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +65,7 @@ export default function Verify2FAPage() {
         window.location.href = callbackUrl;
       } else {
         toast.error("Login failed after 2FA verification");
-        router.push("/auth/signin");
+        requestAuthModal("signIn");
       }
     } catch (error: any) {
       toast.error(error.message || "Verification failed");

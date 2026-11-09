@@ -7,7 +7,15 @@ import Link from "next/link";
 import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 
-export default function RegisterForm() {
+interface RegisterFormProps {
+  onSuccess?: (email: string) => void | Promise<void>;
+  onRequestSignIn?: () => void;
+}
+
+export default function RegisterForm({
+  onSuccess,
+  onRequestSignIn,
+}: RegisterFormProps = {}) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,7 +66,11 @@ export default function RegisterForm() {
         setConfirmPassword("");
 
         // Redirect to verify email page
-        router.push(`/auth/verify-email?email=${encodeURIComponent(registeredEmail)}`);
+        if (onSuccess) {
+          await onSuccess(registeredEmail);
+        } else {
+          router.push(`/auth/verify-email?email=${encodeURIComponent(registeredEmail)}`);
+        }
       } else {
         toast.error(data.error || "Registration failed");
       }
@@ -232,6 +244,18 @@ export default function RegisterForm() {
           </button>
         </div>
       </div>
+      {onRequestSignIn && (
+        <p className="text-center text-sm text-gray-600">
+          Already have an account?{" "}
+          <button
+            type="button"
+            onClick={onRequestSignIn}
+            className="font-semibold text-theme-color hover:text-accent-color"
+          >
+            Sign in
+          </button>
+        </p>
+      )}
     </div>
   );
 }

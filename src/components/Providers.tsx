@@ -6,6 +6,7 @@ import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { UserSyncProvider } from "@/components/UserSyncProvider";
 import StateProvider from "@/components/auth/StateProvider";
 import { NotificationProvider } from "@/components/NotificationProvider";
+import AuthModalProvider from "@/components/auth/AuthModalProvider";
 import { NetworkProvider } from "@/contexts/NetworkContext";
 import NetworkStatus from "@/components/NetworkStatus";
 import { useState, useEffect } from "react";
@@ -37,7 +38,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <UserSyncProvider>
             <CurrencyProvider>
               <NotificationProvider scope={currentScope}>
-                {children}
+                <AuthModalProvider>{children}</AuthModalProvider>
                 <Toaster
                   position="bottom-right"
                   toastOptions={{

@@ -1,5 +1,11 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ProductType, UserData } from "../../type";
+import {
+  getProductMinimumOrderQuantity,
+  getProductMaximumOrderQuantity,
+  isProductAvailable,
+  isValidProductQuantity,
+} from "@/lib/productLimits";
 
 interface InitialState {
   cart: ProductType[];
@@ -18,13 +24,25 @@ export const aweGiftSlice = createSlice({
   initialState,
   reducers: {
     addToCart: (state, action) => {
+      const product = action.payload as ProductType;
+      if (!isProductAvailable(product)) return;
       const existingProduct = state?.cart?.find(
-        (item) => item?.id === action.payload?.id
+        (item) => item?.id === product?.id
       );
       if (existingProduct) {
-        existingProduct.quantity! += 1;
+        const nextQuantity = (existingProduct.quantity || 0) + 1;
+        const maximum = getProductMaximumOrderQuantity(existingProduct);
+        if (
+          Number.isSafeInteger(nextQuantity) &&
+          nextQuantity <= maximum
+        ) {
+          existingProduct.quantity = nextQuantity;
+        }
       } else {
-        state.cart.push({ ...action.payload, quantity: 1 });
+        const quantity = getProductMinimumOrderQuantity(product);
+        if (isValidProductQuantity(product, quantity)) {
+          state.cart.push({ ...product, quantity });
+        }
       }
     },
     increaseQuantity: (state, action) => {
@@ -32,7 +50,14 @@ export const aweGiftSlice = createSlice({
         (item) => item?.id === action.payload
       );
       if (existingProduct) {
-        existingProduct.quantity! += 1;
+        const nextQuantity = (existingProduct.quantity || 0) + 1;
+        const maximum = getProductMaximumOrderQuantity(existingProduct);
+        if (
+          Number.isSafeInteger(nextQuantity) &&
+          nextQuantity <= maximum
+        ) {
+          existingProduct.quantity = nextQuantity;
+        }
       }
     },
     decreaseQuantity: (state, action) => {
@@ -40,7 +65,20 @@ export const aweGiftSlice = createSlice({
         (item) => item?.id === action.payload
       );
       if (existingProduct) {
-        existingProduct.quantity! -= 1;
+        const nextQuantity = (existingProduct.quantity || 0) - 1;
+        if (isValidProductQuantity(existingProduct, nextQuantity)) {
+          existingProduct.quantity = nextQuantity;
+        }
+      }
+    },
+    setQuantity: (state, action: PayloadAction<{
+        id: string;
+        quantity: number;
+      }>) => {
+      const { id, quantity } = action.payload;
+      const existingProduct = state.cart.find((item) => item.id === id);
+      if (existingProduct && isValidProductQuantity(existingProduct, quantity)) {
+        existingProduct.quantity = quantity;
       }
     },
     removeFromCart: (state, action) => {
@@ -86,6 +124,7 @@ export const {
   removeUser,
   increaseQuantity,
   decreaseQuantity,
+  setQuantity,
   removeFromCart,
   resetCart,
   addToFavorite,

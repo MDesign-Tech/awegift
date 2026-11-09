@@ -17,7 +17,8 @@ interface CategoryItem {
 const bottomLinks = [
   { title: "Home", href: "/" },
   { title: "Products", href: "/products" },
-  { title: "Our Services", href: "/m" },
+  // { title: "Our Services", href: "/m" },
+  { title: "Contact", href: "/contact" },
 ];
 
 const BottomHeader = () => {

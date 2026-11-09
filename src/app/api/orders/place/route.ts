@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { ORDER_STATUSES, PAYMENT_METHODS, PAYMENT_STATUSES } from "@/lib/orderStatus";
 import { UserRole } from "@/lib/rbac/roles";
+import { isValidProductQuantity } from "@/lib/productLimits";
 import {
   createOrderPlacedNotification,
   createAdminOrderAlertNotification,
@@ -76,7 +77,8 @@ export async function POST(request: NextRequest) {
           product.isActive === false ||
           !Number.isFinite(price) ||
           price < 0 ||
-          (product.currency && product.currency !== "RWF")
+          (product.currency && product.currency !== "RWF") ||
+          !isValidProductQuantity(product, Number(item.quantity))
         ) {
           return null;
         }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Container from "../Container";
 import CurrencyDropdown from "./CurrencyDropdown";
 import DeliveryModal from "../DeliveryModal";
+import { formatCurrency } from "@/lib/currency";
 
 const TopHeader = ({
   freeShippingThreshold,
@@ -12,6 +13,7 @@ const TopHeader = ({
   freeShippingThreshold: string;
 }) => {
   const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
+  const formattedThreshold = formatCurrency(Number(freeShippingThreshold), "RWF");
 
   return (
     <div className="bg-[#010f1c] text-gray-200 w-full">
@@ -21,7 +23,7 @@ const TopHeader = ({
           onClick={() => setIsDeliveryModalOpen(true)}
         >
           <CiDeliveryTruck className="text-[#ffb342] text-2xl mr-1" /> FREE
-          Delivery On Orders {freeShippingThreshold} RWF+
+          Delivery On Orders {formattedThreshold}+
         </p>
         <div className="w-full md:w-auto flex items-center justify-end md:justify-normal text-sm text-white gap-1">
           <Link

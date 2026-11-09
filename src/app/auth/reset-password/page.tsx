@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
+import { requestAuthModal } from "@/lib/authModal";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState("");
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -19,9 +19,9 @@ export default function ResetPasswordPage() {
       setToken(tokenParam);
     } else {
       toast.error("Invalid reset link");
-      router.push("/auth/forgot-password");
+      requestAuthModal("forgotPassword");
     }
-  }, [searchParams, router]);
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +55,7 @@ export default function ResetPasswordPage() {
 
       if (response.ok) {
         toast.success("Password reset successfully!");
-        router.push("/auth/signin");
+        requestAuthModal("signIn");
       } else {
         toast.error(data.error || "Something went wrong");
       }

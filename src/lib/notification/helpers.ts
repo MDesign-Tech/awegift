@@ -9,6 +9,7 @@ import { UserRole } from '@/lib/rbac/roles';
 import { emailService } from '@/lib/email/service';
 import { fetchUserFromFirestore } from '@/lib/firebase/adminUser';
 import { adminDb } from '@/lib/firebase/admin';
+import { formatCurrency } from '@/lib/currency';
 
 /**
  * Get all admin emails
@@ -64,7 +65,7 @@ export async function createOrderPlacedNotification(
     scope: 'personal' as NotificationScope,
     type: 'ORDER_CREATED' as NotificationType,
     title: 'Order Placed Successfully',
-    message: `Hi ${customerName}, your order #${orderId} has been placed successfully. Total: ${currency} ${totalAmount.toFixed(2)}`,
+    message: `Hi ${customerName}, your order #${orderId} has been placed successfully. Total: ${formatCurrency(totalAmount, currency, "en-US", "code")}`,
     url: `/account/orders/${orderId}`,
     data: orderData,
   };
@@ -168,7 +169,7 @@ export async function createQuotationSentNotification(
     scope: 'personal' as NotificationScope,
     type: 'QUOTATION_SENT' as NotificationType,
     title: 'Quotation Response',
-    message: `Hi ${customerName}, we've prepared a response to your quotation request #${quotationId}. Total: ${currency} ${totalAmount.toFixed(2)}`,
+    message: `Hi ${customerName}, we've prepared a response to your quotation request #${quotationId}. Total: ${formatCurrency(totalAmount, currency, "en-US", "code")}`,
     url: `/account/quotes/${quotationId}`,
     data: quotationData,
   };
@@ -216,7 +217,7 @@ export async function createAdminOrderAlertNotification(
       scope: 'admin' as NotificationScope,
       type: 'ADMIN_NEW_ORDER' as NotificationType,
       title: 'New Order Received',
-      message: `New order #${orderId} from ${customerName}. Total: ${currency} ${totalAmount.toFixed(2)}`,
+      message: `New order #${orderId} from ${customerName}. Total: ${formatCurrency(totalAmount, currency, "en-US", "code")}`,
       url: `/dashboard/orders/${orderId}`,
       data: orderData,
     }
@@ -270,7 +271,7 @@ export async function createOrderPaidNotification(
     scope: 'personal' as NotificationScope,
     type: 'ORDER_PAID' as NotificationType,
     title: 'Payment Confirmed',
-    message: `Hi ${customerName}, your payment for order #${orderId} has been confirmed. Total: ${currency} ${totalAmount.toFixed(2)}`,
+    message: `Hi ${customerName}, your payment for order #${orderId} has been confirmed. Total: ${formatCurrency(totalAmount, currency, "en-US", "code")}`,
     url: `/account/orders/${orderId}`,
     data: orderData,
   };
@@ -507,7 +508,7 @@ export async function createOrderRefundedNotification(
     scope: 'personal' as NotificationScope,
     type: 'ORDER_REFUNDED' as NotificationType,
     title: 'Refund Processed',
-    message: `Hi ${customerName}, your refund of ${currency} ${refundAmount.toFixed(2)} for order #${orderId} has been processed.`,
+    message: `Hi ${customerName}, your refund of ${formatCurrency(refundAmount, currency, "en-US", "code")} for order #${orderId} has been processed.`,
     url: `/account/orders/${orderId}`,
     data: orderData,
   };

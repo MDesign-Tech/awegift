@@ -31,7 +31,7 @@ const ProductFeatures = () => {
     {
       icon: <FiRefreshCw className="w-8 h-8 text-orange-600" />,
       title: "Easy Returns",
-      description: "30-day hassle-free returns",
+      description: "1-day hassle-free returns",
       bgColor: "bg-orange-50",
       borderColor: "border-orange-200",
     },

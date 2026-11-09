@@ -95,6 +95,10 @@ export async function PUT(
     // Validate provided fields
     if ((productData.title !== undefined && productData.title === "") ||
         (productData.price !== undefined && productData.price === null) ||
+        (productData.isUnlimitedStock !== undefined &&
+          typeof productData.isUnlimitedStock !== "boolean") ||
+        (productData.isUnlimitedMinimumOrderQuantity !== undefined &&
+          typeof productData.isUnlimitedMinimumOrderQuantity !== "boolean") ||
         (productData.categories !== undefined && (!Array.isArray(productData.categories) || productData.categories.length === 0))) {
       return NextResponse.json({ error: "Invalid field values" }, { status: 400 });
     }

@@ -1,4 +1,5 @@
 import { FiX, FiTruck } from "react-icons/fi";
+import { formatCurrency } from "@/lib/currency";
 
 interface DeliveryModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ const DeliveryModal = ({
   freeShippingThreshold,
 }: DeliveryModalProps) => {
   if (!isOpen) return null;
+  const formattedThreshold = formatCurrency(Number(freeShippingThreshold), "RWF");
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -51,10 +53,10 @@ const DeliveryModal = ({
           <div className="text-center">
             <FiTruck className="w-16 h-16 text-orange-500 mx-auto mb-4" />
             <h4 className="text-xl font-semibold text-gray-900 mb-2">
-              Free Delivery on Orders Over {freeShippingThreshold} RWF
+              Free Delivery on Orders Over {formattedThreshold}
             </h4>
             <p className="text-gray-600 mb-4">
-              Shop now and enjoy complimentary delivery when your order total exceeds {freeShippingThreshold} RWF. No hidden fees, just fast and reliable shipping to your doorstep.
+              Shop now and enjoy complimentary delivery when your order total exceeds {formattedThreshold}. No hidden fees, just fast and reliable shipping to your doorstep.
             </p>
             <div className="bg-orange-50 p-4 rounded-lg">
               <p className="text-sm text-orange-800">

@@ -63,7 +63,10 @@ const CartProduct = ({ product }: { product: ProductType }) => {
                 amount={product?.price * product?.quantity!}
                 className="text-base font-semibold"
               />
-              <AddToCartButton product={product} className="gap-5" />
+              <AddToCartButton
+                product={product}
+                className="gap-5"
+              />
             </div>
           </div>
           <div className="mt-4 sm:mt-0 sm:pr-9">

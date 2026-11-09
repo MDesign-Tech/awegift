@@ -7,15 +7,28 @@ import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { signIn, useSession } from "next-auth/react";
 
-export default function SignInForm() {
+interface SignInFormProps {
+  onSuccess?: () => void | Promise<void>;
+  callbackUrl?: string;
+  onRequestSignUp?: () => void;
+  onRequestForgotPassword?: () => void;
+}
+
+export default function SignInForm({
+  onSuccess,
+  callbackUrl: callbackUrlProp,
+  onRequestSignUp,
+  onRequestForgotPassword,
+}: SignInFormProps = {}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const callbackUrl = callbackUrlProp || searchParams.get("callbackUrl") || "/";
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -57,6 +70,7 @@ export default function SignInForm() {
       return;
     }
 
+    setAuthError("");
     setIsLoading(true);
 
     try {
@@ -69,20 +83,29 @@ export default function SignInForm() {
       if (result?.error) {
         if (result.error === "Please verify your email before signing in.") {
           toast.error("Please verify your email address.");
+          if (onSuccess) await onSuccess();
           router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
         } else if (result.error.startsWith("2FA_REQUIRED:")) {
           const tempToken = result.error.split(":")[1];
           toast.success("2-Step Verification required");
+          if (onSuccess) await onSuccess();
           router.push(`/verify-2fa?email=${encodeURIComponent(email)}&token=${tempToken}&callbackUrl=${encodeURIComponent(callbackUrl)}`);
         } else {
-          toast.error(result.error || "Invalid email or password");
+          const message = result.error || "Invalid email or password";
+          setAuthError(message);
+          toast.error(message);
         }
       } else if (result?.ok) {
+        await update();
         toast.success("Sign in successful!");
-        // Force full page reload to ensure session data is applied
-        window.location.href = "/";
+        if (onSuccess) {
+          await onSuccess();
+        } else {
+          window.location.href = "/";
+        }
       }
     } catch (error) {
+      setAuthError("Something went wrong. Please try again.");
       toast.error("Something went wrong");
     } finally {
       setIsLoading(false);
@@ -96,7 +119,7 @@ export default function SignInForm() {
     }
 
     try {
-      await signIn(provider, { callbackUrl: "/" });
+      await signIn(provider, { callbackUrl: onSuccess ? callbackUrl : "/" });
     } catch (error) {
       toast.error("OAuth sign in failed");
     }
@@ -120,7 +143,10 @@ export default function SignInForm() {
               autoComplete="off"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setAuthError("");
+              }}
               className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-theme-color focus:border-theme-color"
               placeholder="Enter your email"
             />
@@ -142,7 +168,10 @@ export default function SignInForm() {
               autoComplete="off"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setAuthError("");
+              }}
               className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-theme-color focus:border-theme-color"
               placeholder="Enter your password"
             />
@@ -162,16 +191,31 @@ export default function SignInForm() {
 
         <div className="flex items-center justify-end">
           <div className="text-sm">
-            <Link
-              href="/auth/forgot-password"
-              className="font-medium text-theme-color hover:text-accent-color"
-            >
-              Forgot your password?
-            </Link>
+            {onRequestForgotPassword ? (
+              <button
+                type="button"
+                onClick={onRequestForgotPassword}
+                className="font-medium text-theme-color hover:text-accent-color"
+              >
+                Forgot your password?
+              </button>
+            ) : (
+              <Link
+                href="/auth/forgot-password"
+                className="font-medium text-theme-color hover:text-accent-color"
+              >
+                Forgot your password?
+              </Link>
+            )}
           </div>
         </div>
 
         <div>
+          {authError && (
+            <p role="alert" className="text-sm text-red-600">
+              {authError}
+            </p>
+          )}
           <button
             type="submit"
             disabled={isLoading}
@@ -196,6 +240,7 @@ export default function SignInForm() {
 
         <div className="mt-6">
           <button
+            type="button"
             onClick={() => handleOAuthSignIn("google")}
             className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
           >
@@ -204,6 +249,18 @@ export default function SignInForm() {
           </button>
         </div>
       </div>
+      {onRequestSignUp && (
+        <p className="text-center text-sm text-gray-600">
+          Don&apos;t have an account?{" "}
+          <button
+            type="button"
+            onClick={onRequestSignUp}
+            className="font-semibold text-theme-color hover:text-accent-color"
+          >
+            Sign up
+          </button>
+        </p>
+      )}
     </div>
   );
 }

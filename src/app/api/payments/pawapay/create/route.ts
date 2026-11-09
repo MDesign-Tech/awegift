@@ -13,6 +13,7 @@ import {
   pawapayRequest,
   validatePawapayRedirectUrl,
 } from "@/lib/payments/pawapay";
+import { isValidProductQuantity } from "@/lib/productLimits";
 
 export const runtime = "nodejs";
 
@@ -63,7 +64,8 @@ async function getVerifiedOrderAmount(
       product.isActive === false ||
       !Number.isFinite(price) ||
       price < 0 ||
-      (product.currency && product.currency !== "RWF")
+      (product.currency && product.currency !== "RWF") ||
+      !isValidProductQuantity(product, Number(rawItem.quantity))
     ) {
       return null;
     }

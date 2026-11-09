@@ -18,9 +18,9 @@ export default function ContactPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-12">
-          <Title className="text-3xl lg:text-4xl font-bold mb-4">
+          {/* <Title className="text-3xl lg:text-4xl font-bold mb-4">
             Contact Us
-          </Title>
+          </Title> */}
           <p className="text-light-text text-lg">
             We&apos;d love to hear from you. Get in touch with our team.
           </p>
@@ -32,10 +32,10 @@ export default function ContactPage() {
             <h2 className="text-2xl font-semibold text-theme-color mb-6">
               Get in Touch
             </h2>
-            <p className="text-light-text mb-8">
+            {/* <p className="text-light-text mb-8">
               Have questions about our products or services? Need help with an
               order? Our friendly customer service team is here to assist you.
-            </p>
+            </p> */}
 
             {/* Contact Cards */}
             <div className="space-y-6">
@@ -46,11 +46,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-1">Address</h3>
                   <p className="text-light-text">
-                    KG-250 Business Street
-                    <br />
-                    Commerce City, KC 250
-                    <br />
-                    Rwanda
+                    KN 78 St, Kigali - Rwabda
                   </p>
                 </div>
               </div>
@@ -71,7 +67,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-1">Email</h3>
-                  <p className="text-light-text">support@awegift.com</p>
+                  <p className="text-light-text">support@aweegift.com</p>
                 </div>
               </div>
 
@@ -199,7 +195,7 @@ export default function ContactPage() {
         </div>
 
         {/* Additional Information */}
-        <div className="mt-16 text-center bg-sky-color/10 rounded-lg p-8">
+        {/* <div className="mt-16 text-center bg-sky-color/10 rounded-lg p-8">
           <h2 className="text-2xl font-semibold text-theme-color mb-4">
             Need Immediate Help?
           </h2>
@@ -223,7 +219,7 @@ export default function ContactPage() {
               Email Support
             </a>
           </div>
-        </div>
+        </div> */}
       </div>
     </Container>
   );
