@@ -1,4 +1,13 @@
 import Container from "@/components/Container";
+import { generateSEO } from "@/lib/seo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = generateSEO({
+  title: "Terms of Service | AweGift",
+  description:
+    "Review the terms and conditions that apply when using the AweGift online showroom.",
+  url: "/terms",
+});
 
 const TermsPage = () => (
   <main className="py-16">

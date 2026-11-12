@@ -5,10 +5,51 @@ import ServicesPromotion from "@/components/pages/home/ServicesPromotion";
 import FAQClient from "@/components/FAQClient";
 import SectionDivider from "@/components/ui/SectionDivider";
 import HomeFlexCarousel from "@/components/pages/home/HomeFlexCarousel";
+import JsonLd from "@/components/JsonLd";
+import { SITE_URL } from "@/lib/seo";
 
 export default function Home() {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
+        name: "AweGift",
+        url: `${SITE_URL}/`,
+        logo: {
+          "@type": "ImageObject",
+          url: `${SITE_URL}/AWEGIFT%20LOGO.svg`,
+        },
+        image: `${SITE_URL}/og-image.svg`,
+        description:
+          "AweGift is your online showroom for personalized products, custom printing, branding materials, packaging, promotional products, corporate gifts and supplies in Rwanda.",
+        email: "support@aweegift.com",
+        telephone: "+250781990310",
+        areaServed: {
+          "@type": "Country",
+          name: "Rwanda",
+        },
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        url: `${SITE_URL}/`,
+        name: "AweGift",
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        inLanguage: "en",
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${SITE_URL}/products?search={search_term_string}`,
+          "query-input": "required name=search_term_string",
+        },
+      },
+    ],
+  };
+
   return (
     <main>
+      <JsonLd data={structuredData} />
       <Banner />
 
       <HomeFlexCarousel

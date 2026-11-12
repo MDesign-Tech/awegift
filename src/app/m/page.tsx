@@ -816,7 +816,7 @@ export default function MPage() {
                           <div className="relative flex items-center justify-center rounded-3xl border border-dashed border-white/20 bg-[#070b13] p-6 overflow-hidden shadow-[0_25px_70px_rgba(255,128,128,0.12)]">
                             <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/10 to-orange-500/10 opacity-90" />
                             <a
-                              href="http://localhost:3000/quote"
+                              href="/quote"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="relative inline-flex items-center justify-center rounded-full border border-white/10 bg-[#111827]/95 px-8 py-4 text-lg font-semibold text-white shadow-xl shadow-orange-500/20 transition duration-300 hover:-translate-y-1 hover:bg-[#1f1f3a]"

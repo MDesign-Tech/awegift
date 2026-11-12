@@ -1,5 +1,4 @@
 import Container from "@/components/Container";
-import Title from "@/components/Title";
 import { generateSEO } from "@/lib/seo";
 import type { Metadata } from "next";
 import { BsEnvelopeAt, BsTelephone } from "react-icons/bs";
@@ -7,8 +6,9 @@ import { GrLocation } from "react-icons/gr";
 import { FiClock, FiMail, FiMapPin, FiPhone } from "react-icons/fi";
 
 export const metadata: Metadata = generateSEO({
-  title: "Contact Us",
-  description: "Get in touch with AweGift - We're here to help with any questions or concerns about your orders and products.",
+  title: "Contact AweGift | Get in Touch",
+  description:
+    "Contact AweGift in Kigali, Rwanda for help with personalized products, custom printing, branding, corporate supplies or an order.",
   url: "/contact",
 });
 
@@ -21,9 +21,9 @@ export default function ContactPage() {
           {/* <Title className="text-3xl lg:text-4xl font-bold mb-4">
             Contact Us
           </Title> */}
-          <p className="text-light-text text-lg">
+          <h1 className="text-light-text text-lg">
             We&apos;d love to hear from you. Get in touch with our team.
-          </p>
+          </h1>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">

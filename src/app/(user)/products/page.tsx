@@ -26,37 +26,59 @@ interface Props {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const params = await searchParams;
-  const getPageTitle = () => {
-    if (params.category) {
-      const categories = Array.isArray(params.category) ? params.category : [params.category];
-      const regularCategories = categories;
-
-      // If multiple categories or regular categories
-      if (regularCategories.length > 0) {
-        if (regularCategories.length === 1) {
-          const singleRegularCategory = regularCategories[0] as string;
-          return `${singleRegularCategory.charAt(0).toUpperCase() + singleRegularCategory.slice(1)} Products`;
-        } else {
-          return "Filtered Products";
-        }
-      }
-
-      // Multiple special categories
-      return "Special Products";
-    }
-    if (params.search) {
-      return `Search Results for "${params.search}"`;
-    }
-    return "All Products";
-  };
-
-  const title = getPageTitle();
-  const description = `Browse ${title.toLowerCase()} at AweGift. Find the best deals on personalized gifts, luxury presents, custom items, and more.`;
+  const categories = params.category
+    ? Array.isArray(params.category)
+      ? params.category
+      : [params.category]
+    : [];
+  const isCategoryLanding =
+    categories.length > 0 &&
+    !params.search &&
+    !params.brand &&
+    !params.minPrice &&
+    !params.maxPrice &&
+    !params.min_price &&
+    !params.max_price &&
+    !params.color &&
+    !params.sort &&
+    !params.page;
+  const categoryLabel = categories
+    .map((category) =>
+      category
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
+    )
+    .join(", ");
+  const title = isCategoryLanding
+    ? `Shop ${categoryLabel} Products | AweGift`
+    : "Shop All Products | AweGift";
+  const description = isCategoryLanding
+    ? `Browse ${categoryLabel} products at AweGift, your online showroom for personalized products, printing and branding in Rwanda.`
+    : "Shop personalized products, custom printing, branding materials, packaging, promotional products and corporate supplies from AweGift in Rwanda.";
+  const categoryQuery = new URLSearchParams();
+  categories.forEach((category) => categoryQuery.append("category", category));
 
   return generateSEO({
     title,
     description,
-    url: "/products",
+    url: isCategoryLanding
+      ? `/products?${categoryQuery.toString()}`
+      : "/products",
+    noindex:
+      !isCategoryLanding &&
+      Boolean(
+        params.search ||
+          params.category ||
+          params.brand ||
+          params.minPrice ||
+          params.maxPrice ||
+          params.min_price ||
+          params.max_price ||
+          params.color ||
+          params.sort ||
+          params.page
+      ),
   });
 }
 

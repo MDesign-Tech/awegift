@@ -1,5 +1,4 @@
 import Container from "@/components/Container";
-import Title from "@/components/Title";
 import { generateSEO } from "@/lib/seo";
 import type { Metadata } from "next";
 import {
@@ -22,9 +21,9 @@ export default function InquiryPage() {
     <Container className="py-4 md:py-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <Title className="text-3xl lg:text-4xl font-bold mb-4">
+          <h1 className="text-3xl lg:text-4xl font-bold mb-4">
             Business Inquiry
-          </Title>
+          </h1>
           <p className="text-light-text text-lg">
             Explore partnership opportunities and business solutions with
             AweGift

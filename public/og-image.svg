@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">AweGift - Personalized products, printing and branding in Rwanda</title>
+  <desc id="description">AweGift online showroom for personalized products, custom printing, branding, packaging and corporate gifts in Rwanda.</desc>
+  <rect width="1200" height="630" fill="#f7fafc"/>
+  <circle cx="1120" cy="40" r="280" fill="#00cec9" opacity=".14"/>
+  <circle cx="1100" cy="625" r="260" fill="#ed4c07" opacity=".11"/>
+  <rect x="64" y="58" width="1072" height="514" rx="28" fill="#fff"/>
+  <image href="https://aweegift.com/AWEGIFT%20LOGO.svg" x="112" y="116" width="490" height="127" preserveAspectRatio="xMinYMid meet"/>
+  <rect x="112" y="290" width="86" height="8" rx="4" fill="#ed4c07"/>
+  <text x="112" y="368" fill="#17212b" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="700">Personalized products.</text>
+  <text x="112" y="426" fill="#17212b" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="700">Printing. Branding.</text>
+  <text x="112" y="487" fill="#53616d" font-family="Arial, Helvetica, sans-serif" font-size="25">Your online showroom in Rwanda</text>
+  <circle cx="1024" cy="468" r="10" fill="#00cec9"/>
+  <circle cx="1061" cy="468" r="10" fill="#ed4c07"/>
+</svg>

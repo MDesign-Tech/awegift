@@ -4,9 +4,10 @@ import { useState } from "react";
 interface Props {
   images: string[];
   thumbsail?: string;
+  productName: string;
 }
 
-const ProductImages = ({ images, thumbsail }: Props) => {
+const ProductImages = ({ images, thumbsail, productName }: Props) => {
   const thumbnailImages = thumbsail
     ? [thumbsail, ...images.filter((img) => img !== thumbsail)]
     : images;
@@ -29,8 +30,9 @@ const ProductImages = ({ images, thumbsail }: Props) => {
         {currentImage && (
           <img
             src={currentImage}
-            alt="mainImage"
+            alt={productName}
             className={`w-full h-full rounded-md object-contain transition-opacity duration-500 ${opacity === 0 ? "opacity-0" : "opacity-100"}`}
+            fetchPriority="high"
           />
         )}
       </div>
@@ -39,11 +41,12 @@ const ProductImages = ({ images, thumbsail }: Props) => {
         {thumbnailImages?.map((item, index) => (
           <img
             src={item}
-            alt="productImage"
+            alt={`${productName} - image ${index + 1}`}
             key={index}
             className={`w-16 h-16 md:w-24 md:h-24 object-contain cursor-pointer opacity-80 hover:opacity-100 duration-300 border border-gray-200 rounded-md flex-shrink-0 ${
               currentImage === item && "border-gray-500 opacity-100"
             }`}
+            loading="lazy"
             onClick={() => changeImage(index)}
           />
         ))}

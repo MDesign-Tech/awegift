@@ -1,7 +1,7 @@
 import Container from "@/components/Container";
 import { ProductType } from "../../../../../type";
 import AddToCartButton from "@/components/AddToCartButton";
-import { getData } from "@/app/(user)/helpers";
+import { DataFetchError, getData } from "@/app/(user)/helpers";
 import ProductImages from "@/components/ProductImages";
 import PriceFormat from "@/components/PriceFormat";
 import { paymentImage } from "@/assets";
@@ -14,20 +14,22 @@ import ProductActionsClient from "@/components/ProductActionsClient";
 import { notFound } from "next/navigation";
 import { generateSEO } from "@/lib/seo";
 import type { Metadata } from "next";
+import JsonLd from "@/components/JsonLd";
+import { SITE_URL } from "@/lib/seo";
 
 interface Props {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   try {
     const product: ProductType = await getData(`/api/products/${id}`);
-    const title = `${product.title} | ${product.brand}`;
+    const title = `${product.title} | AweGift`;
     const description = product.description || product.title;
-    const image = product.images?.[0] || undefined;
+    const image = product.images?.[0] || product.thumbnail || undefined;
     return generateSEO({
       title,
       description,
@@ -36,9 +38,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
   } catch (error) {
     return generateSEO({
-      title: "Product Not Found",
-      description: "The product you are looking for could not be found.",
+      title: "Product | AweGift",
+      description: "View product information from AweGift.",
       url: `/products/${id}`,
+      noindex: true,
     });
   }
 }
@@ -48,8 +51,8 @@ const SingleProductPage = async ({ params }: Props) => {
   let product: ProductType;
   try {
     product = await getData(`/api/products/${id}`);
-  } catch (error: any) {
-    if (error.status === 404) {
+  } catch (error) {
+    if (error instanceof DataFetchError && error.status === 404) {
       notFound();
     }
     throw error;
@@ -60,19 +63,81 @@ const SingleProductPage = async ({ params }: Props) => {
   const allProducts: ProductType[] = allProductsData.products || [];
 
   const regularPrice = product?.price;
+  const productUrl = `${SITE_URL}/products/${encodeURIComponent(id)}`;
+  const productImages = [
+    product.thumbnail,
+    ...(product.images || []),
+  ].filter((image, index, images): image is string =>
+    Boolean(image) && images.indexOf(image) === index
+  );
+  const offer =
+    typeof product.price === "number" && Number.isFinite(product.price)
+      ? {
+          "@type": "Offer",
+          url: productUrl,
+          price: product.price,
+          ...(product.currency ? { priceCurrency: product.currency } : {}),
+          ...(product.isUnlimitedStock === true ||
+          (typeof product.stock === "number" && product.stock > 0)
+            ? { availability: "https://schema.org/InStock" }
+            : typeof product.stock === "number"
+              ? { availability: "https://schema.org/OutOfStock" }
+              : {}),
+        }
+      : undefined;
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        url: productUrl,
+        name: product.title,
+        ...(product.description ? { description: product.description } : {}),
+        ...(productImages.length ? { image: productImages } : {}),
+        ...(product.sku ? { sku: product.sku } : {}),
+        ...(product.brand
+          ? { brand: { "@type": "Brand", name: product.brand } }
+          : {}),
+        ...(product.categories?.length
+          ? { category: product.categories.join(", ") }
+          : {}),
+        ...(offer ? { offers: offer } : {}),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Products",
+            item: `${SITE_URL}/products`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: product.title,
+            item: productUrl,
+          },
+        ],
+      },
+    ],
+  };
 
   return (
     <div>
+      <JsonLd data={structuredData} />
       <Container className="flex flex-col gap-10 py-10  border-1 rounded-xl mt-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Product Image */}
           <ProductImages 
             images={product?.images}
             thumbsail={product?.thumbnail}
+            productName={product.title}
           />
           {/* Product Details */}
           <div className="flex flex-col gap-4 ">
-            <h2 className="text-3xl font-bold">{product?.title}</h2>
+            <h1 className="text-3xl font-bold">{product?.title}</h1>
             <div className="flex items-center justify-between">
               <ProductPrice regularPrice={regularPrice} product={product} />
               {/* Client actions: favorite, copy link */}

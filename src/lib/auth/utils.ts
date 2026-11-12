@@ -2,6 +2,7 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { adminDb } from "../firebase/admin";
 import { emailService } from "../email/service";
+import { SITE_URL } from "@/lib/seo";
 
 /**
  * Generate a secure random token
@@ -61,7 +62,7 @@ export async function sendDualVerificationEmail(
   token: string,
   otp: string
 ): Promise<void> {
-  const verificationUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"}/auth/verify-email?token=${token}`;
+  const verificationUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || SITE_URL}/auth/verify-email?token=${token}`;
 
   try {
     await emailService.sendEmail({
@@ -184,7 +185,7 @@ export async function sendPasswordResetEmail(
   name: string,
   token: string
 ): Promise<void> {
-  const resetUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"}/auth/reset-password?token=${token}`;
+  const resetUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || SITE_URL}/auth/reset-password?token=${token}`;
 
   try {
     await emailService.sendEmail({

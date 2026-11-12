@@ -1,11 +1,12 @@
 import { EmailType, EmailPayload, OrderEmailData, QuotationEmailData, ProductLounchEmailData } from '@/../type';
 import { formatCurrency as formatCurrencyValue } from '@/lib/currency';
+import { SITE_URL } from '@/lib/seo';
 
 /**
  * Email templates for different email types
  */
 export class EmailTemplates {
-  private static readonly BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+  private static readonly BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || SITE_URL;
   private static readonly COMPANY_NAME = 'Awegift';
   private static readonly SUPPORT_EMAIL = 'support@awegift.com';
 

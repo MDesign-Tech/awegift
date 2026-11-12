@@ -1,12 +1,12 @@
 import Container from "@/components/Container";
-import Title from "@/components/Title";
 import Link from "next/link";
 import { generateSEO } from "@/lib/seo";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = generateSEO({
-  title: "About Us",
-  description: "Learn more about AweGift - Your trusted multipurpose eCommerce platform for quality products and exceptional shopping experiences.",
+  title: "About AweGift | Our Story",
+  description:
+    "Learn about AweGift, a Rwanda-based online showroom for personalized products, custom printing, branding, packaging and corporate supplies.",
   url: "/about",
 });
 
@@ -16,9 +16,9 @@ export default function AboutPage() {
       <div className="">
         {/* Header Section */}
         <div className="text-center mb-12">
-          <Title className="text-3xl lg:text-4xl font-bold mb-4">
+          <h1 className="text-3xl lg:text-4xl font-bold mb-4">
             About AweGift
-          </Title>
+          </h1>
           <p className="text-light-text text-lg">
             Your trusted multipurpose eCommerce platform for quality products
           </p>

@@ -6,7 +6,6 @@ const nextConfig = {
 
   // Cloudflare Pages configuration - remove static export since we have API routes
   trailingSlash: false,
-  skipTrailingSlashRedirect: true,
 
   images: {
     remotePatterns: [

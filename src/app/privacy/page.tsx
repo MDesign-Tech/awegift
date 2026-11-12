@@ -1,4 +1,13 @@
 import Container from "@/components/Container";
+import { generateSEO } from "@/lib/seo";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = generateSEO({
+  title: "Privacy Policy | AweGift",
+  description:
+    "Read AweGift's privacy policy to learn how we collect, use and protect customer information.",
+  url: "/privacy",
+});
 
 const PrivacyPage = () => (
   <main className="py-16">

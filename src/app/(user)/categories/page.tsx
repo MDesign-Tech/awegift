@@ -6,14 +6,16 @@ import { generateSEO } from "@/lib/seo";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CategoryType } from "../../../../type";
+import JsonLd from "@/components/JsonLd";
+import { SITE_URL } from "@/lib/seo";
 
 type CategoryWithCount = CategoryType & { productCount: number };
 type EnrichedCategory = CategoryWithCount & { count: number };
 
 export const metadata: Metadata = generateSEO({
-  title: "Gift Categories | AweGift - Shop by Category",
+  title: "Product Categories | AweGift",
   description:
-    "Explore our wide range of gift categories including personalized gifts, luxury items, custom presents, and more. Find the perfect gift with our organized collections.",
+    "Browse AweGift product categories, including personalized products, printing, branding, packaging and corporate supplies in Rwanda.",
   keywords: [
     "gift categories",
     "personalized gifts",
@@ -40,9 +42,34 @@ export default async function CategoriesPage() {
       description: category.description || "",
       count: category.productCount || 0,
     })) || [];
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        name: "Product Categories | AweGift",
+        url: `${SITE_URL}/categories`,
+        description:
+          "Browse AweGift product categories, including personalized products, printing, branding, packaging and corporate supplies in Rwanda.",
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Categories",
+            item: `${SITE_URL}/categories`,
+          },
+        ],
+      },
+    ],
+  };
 
   return (
     <Container className="py-4 md:py-8">
+      <JsonLd data={structuredData} />
       {/* Page Header */}
       <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
