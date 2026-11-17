@@ -2,6 +2,15 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    // Contact messages are private and managed only through authenticated server APIs.
+    match /contactMessages/{messageId} {
+      allow read, write: if false;
+    }
+
+    match /contactRateLimits/{rateLimitId} {
+      allow read, write: if false;
+    }
+
     // Notifications collection rules
     match /notifications/{notificationId} {
       // Allow read access for authenticated users (security handled by API and page protection)

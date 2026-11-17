@@ -60,6 +60,21 @@ export default function DashboardNavigation() {
         permission: "canViewOrders",
       },
       {
+        id: "payments",
+        label: "Payments",
+        icon: "💳",
+        path: `${basePath}/payments`,
+        permission: "canViewTransactions",
+      },
+      {
+        id: "contact-messages",
+        label: "Contact Messages",
+        icon: "✉️",
+        path: `${basePath}/contact-messages`,
+        permission: "canManageContactMessages",
+      },
+
+      {
         id: "quotes",
         label: "Quotes",
         icon: "💬",
@@ -90,8 +105,8 @@ export default function DashboardNavigation() {
   return (
     <div className="w-full mb-8">
       {/* Desktop Tabs */}
-      <div className="hidden lg:block border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
+      <div className="hidden lg:block overflow-x-auto border-b border-gray-200">
+        <nav className="-mb-px flex min-w-max space-x-8">
           {tabs.map((tab) => (
             <Link
               key={tab.id}

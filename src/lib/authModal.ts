@@ -10,3 +10,14 @@ export const requestAuthModal = (
   });
   window.setTimeout(() => window.dispatchEvent(event), 0);
 };
+
+export const requestEmailVerificationModal = (
+  email: string,
+  codeAlreadySent = false
+) => {
+  if (typeof window === "undefined") return;
+  const event = new CustomEvent("awegift:email-verification-modal", {
+    detail: { email, codeAlreadySent },
+  });
+  window.setTimeout(() => window.dispatchEvent(event), 0);
+};

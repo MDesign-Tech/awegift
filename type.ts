@@ -143,6 +143,9 @@ export interface OrderData {
   userId: string;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
+  deliveryMethod?: string;
+  customerNotes?: string;
   status: OrderStatus;
 
   items: OrderItem[];
@@ -172,6 +175,7 @@ export interface OrderData {
   notes?: string;
 
   // Pricing breakdown
+  subtotal?: number;
   deliveryFee?: number;
   discount?: number;
 }
@@ -294,6 +298,8 @@ export type EmailType =
   | "ADMIN_NEW_USER" // notify admin of new user registrations
   | "ADMIN_NEW_ORDER" // notify admin of new order
   | "ADMIN_NEW_QUOTATION" // notify admin of new quotation request
+  | "CONTACT_MESSAGE" // notify the support team of a website contact message
+  | "CONTACT_REPLY" // send an administrator reply to a contact message
 
 export interface EmailPayload {
   type: EmailType;
@@ -302,6 +308,8 @@ export interface EmailPayload {
   order?: OrderEmailData;
   quotation?: QuotationEmailData;
   productLaunchInfo?: ProductLounchEmailData;
+  contactMessage?: ContactMessageData;
+  contactReply?: ContactReplyData;
   orderStatus?: string;
   verificationUrl?: string;
   resetUrl?: string;
@@ -355,6 +363,24 @@ export interface ProductLounchEmailData {
   currency: string;
   image: string;
   detailsUrl: string;
+}
+
+export interface ContactMessageData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  phone?: string;
+  messageId?: string;
+  submittedAt?: string;
+}
+
+export interface ContactReplyData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  messageId: string;
 }
 
 export interface EmailTemplate {

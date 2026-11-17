@@ -64,6 +64,12 @@ export default function DashboardOrdersClient() {
   // Ref for scrollable container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // payments-order-search: open the associated order from payment details
+  useEffect(() => {
+    const orderId = new URLSearchParams(window.location.search).get("q");
+    if (orderId) setSearchTerm(orderId);
+  }, []);
+
   // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {

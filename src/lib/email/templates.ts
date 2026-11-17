@@ -55,6 +55,10 @@ export class EmailTemplates {
         return this.generateAdminNewOrderEmail(payload);
       case 'ADMIN_NEW_QUOTATION':
         return this.generateAdminNewQuotationEmail(payload);
+      case 'CONTACT_MESSAGE':
+        return this.generateContactMessageEmail(payload);
+      case 'CONTACT_REPLY':
+        return this.generateContactReplyEmail(payload);
       default:
         throw new Error(`Unknown email type: ${payload.type}`);
     }
@@ -124,6 +128,37 @@ The ${this.COMPANY_NAME} Team
     `;
 
     return { subject, html, text };
+  }
+
+  private static escapeContactHtml(value: string) {
+    return value.replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[character] || character));
+  }
+
+  private static generateContactMessageEmail(payload: EmailPayload): { subject: string; html: string; text: string } {
+    const contact = payload.contactMessage!;
+    const safeName = this.escapeContactHtml(contact.name);
+    const safeEmail = this.escapeContactHtml(contact.email);
+    const safePhone = this.escapeContactHtml(contact.phone || "Not provided");
+    const safeSubject = this.escapeContactHtml(contact.subject);
+    const safeMessage = this.escapeContactHtml(contact.message).replace(/\n/g, "<br>");
+    const messageId = this.escapeContactHtml(contact.messageId || "Unavailable");
+    const submittedAt = this.escapeContactHtml(contact.submittedAt || "Unavailable");
+    return {
+      subject: "New Contact Message – AweGift",
+      html: "<h2>New contact message</h2><p><strong>Message ID:</strong> " + messageId + "</p><p><strong>Submitted:</strong> " + submittedAt + "</p><p><strong>Customer:</strong> " + safeName + "</p><p><strong>Email:</strong> " + safeEmail + "</p><p><strong>Phone:</strong> " + safePhone + "</p><p><strong>Subject:</strong> " + safeSubject + "</p><p><strong>Message:</strong><br>" + safeMessage + "</p>",
+      text: "New Contact Message – AweGift\n\nMessage ID: " + messageId + "\nSubmitted: " + submittedAt + "\nCustomer: " + contact.name + "\nEmail: " + contact.email + "\nPhone: " + (contact.phone || "Not provided") + "\nSubject: " + contact.subject + "\n\n" + contact.message,
+    };
+  }
+
+  private static generateContactReplyEmail(payload: EmailPayload): { subject: string; html: string; text: string } {
+    const reply = payload.contactReply!;
+    const safeName = this.escapeContactHtml(reply.name);
+    const safeMessage = this.escapeContactHtml(reply.message).replace(/\n/g, "<br>");
+    return {
+      subject: reply.subject,
+      html: "<p>Hello " + safeName + ",</p><p>" + safeMessage + "</p><p>Regards,<br>AweGift Support</p><p style=\"color:#777;font-size:12px\">Regarding message " + this.escapeContactHtml(reply.messageId) + "</p>",
+      text: "Hello " + reply.name + ",\n\n" + reply.message + "\n\nRegards,\nAweGift Support\n\nRegarding message " + reply.messageId,
+    };
   }
 
   private static generateAdminNewUserEmail(payload: EmailPayload): { subject: string; html: string; text: string } {

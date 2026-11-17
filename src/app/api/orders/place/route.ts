@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -10,6 +11,12 @@ import {
   createOrderPlacedNotification,
   createAdminOrderAlertNotification,
 } from "@/lib/notification/helpers";
+import {
+  isAlreadyExistingOrderError,
+  isSameOrderIntent,
+  isValidOrderId,
+} from "@/lib/orders/order-idempotency";
+import { sendOrderWhatsAppNotification } from "@/lib/whatsapp/order-notification";
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +31,9 @@ export async function POST(request: NextRequest) {
       requestData = await request.json();
     } catch {
       return NextResponse.json({ error: "Invalid order details." }, { status: 400 });
+    }
+    if (requestData.id !== undefined && !isValidOrderId(requestData.id)) {
+      return NextResponse.json({ error: "Invalid order reference." }, { status: 400 });
     }
 
     const rawItems = requestData.items;
@@ -120,15 +130,41 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date().toISOString();
-    const orderId = `ORD-${crypto.randomUUID()}`;
+    const orderId = isValidOrderId(requestData.id)
+      ? requestData.id
+      : `ORD-${crypto.randomUUID()}`;
+    let customerPhone = "";
+    try {
+      const customerSnapshot = await adminDb
+        .collection("users")
+        .doc(session.user.id)
+        .get();
+      const profile = customerSnapshot.data()?.profile;
+      if (profile && typeof profile.phone === "string") {
+        customerPhone = profile.phone;
+      }
+    } catch (error) {
+      console.error("Could not retrieve customer phone for order notification.", {
+        orderId,
+        error,
+      });
+    }
     const orderData = {
       id: orderId,
       userId: session.user.id,
       customerName: session.user.name || session.user.email,
       customerEmail: session.user.email,
+      customerPhone,
       status: ORDER_STATUSES.PENDING,
       items: orderItems,
       totalAmount,
+      subtotal: totalAmount,
+      deliveryFee: 0,
+      discount: 0,
+      deliveryMethod: "Delivery",
+      ...(typeof requestData.customerNotes === "string"
+        ? { customerNotes: requestData.customerNotes }
+        : {}),
       currency: "RWF",
       pricingVerified: true,
       orderAddress: {
@@ -152,41 +188,70 @@ export async function POST(request: NextRequest) {
       updatedAt: now,
     };
 
-    await adminDb.collection("orders").doc(orderId).create(orderData);
+    const orderRef = adminDb.collection("orders").doc(orderId);
+    let persistedOrder: typeof orderData = orderData;
+    let isNewOrder = false;
+    try {
+      await orderRef.create(orderData);
+      isNewOrder = true;
+    } catch (error) {
+      if (!isAlreadyExistingOrderError(error)) throw error;
+      const existingOrder = await orderRef.get();
+      const existingData = existingOrder.data();
+      if (
+        !existingData ||
+        !isSameOrderIntent(existingData, orderData)
+      ) {
+        return NextResponse.json(
+          { error: "This order reference has already been used." },
+          { status: 409 },
+        );
+      }
+      persistedOrder = {
+        ...orderData,
+        createdAt: existingData.createdAt,
+      };
+    }
 
-    // Send order confirmation notification to customer and admin alert asynchronously
-    const customerNotificationPromise = createOrderPlacedNotification(
-      orderData.userId,
-      orderData.customerEmail,
-      orderData.customerName,
-      orderData.id,
-      orderData.totalAmount,
-      'RWF',
-      orderData
-    );
+    if (isNewOrder) {
+      // Send order confirmation notification to customer and admin alert asynchronously
+      const customerNotificationPromise = createOrderPlacedNotification(
+        orderData.userId,
+        orderData.customerEmail,
+        orderData.customerName,
+        orderData.id,
+        orderData.totalAmount,
+        'RWF',
+        orderData
+      );
 
-    const adminNotificationPromise = createAdminOrderAlertNotification(
-      "admin",
-      orderData.id,
-      orderData.customerName,
-      orderData.totalAmount,
-      'RWF',
-      orderData
-    );
+      const adminNotificationPromise = createAdminOrderAlertNotification(
+        "admin",
+        orderData.id,
+        orderData.customerName,
+        orderData.totalAmount,
+        'RWF',
+        orderData
+      );
 
-    Promise.allSettled([customerNotificationPromise, adminNotificationPromise])
-      .then(results => {
-        results.forEach((result, index) => {
-          if (result.status === 'rejected') {
-            console.error(`Order notification ${index === 0 ? "customer" : "admin"} failed.`);
-          } else if (result.value && !result.value.success) {
-            console.error(`Order notification ${index === 0 ? "customer" : "admin"} failed.`);
-          }
+      Promise.allSettled([customerNotificationPromise, adminNotificationPromise])
+        .then(results => {
+          results.forEach((result, index) => {
+            if (result.status === 'rejected') {
+              console.error(`Order notification ${index === 0 ? "customer" : "admin"} failed.`);
+            } else if (result.value && !result.value.success) {
+              console.error(`Order notification ${index === 0 ? "customer" : "admin"} failed.`);
+            }
+          });
+        })
+        .catch(error => {
+          console.error("Error creating order notifications.");
         });
-      })
-      .catch(error => {
-        console.error("Error creating order notifications.");
-      });
+    }
+
+    after(() =>
+      sendOrderWhatsAppNotification(orderId, persistedOrder)
+    );
 
     return NextResponse.json({
       message: "Order placed successfully",

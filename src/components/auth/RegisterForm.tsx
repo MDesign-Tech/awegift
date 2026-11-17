@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
+import { requestEmailVerificationModal } from "@/lib/authModal";
 
 interface RegisterFormProps {
   onSuccess?: (email: string) => void | Promise<void>;
@@ -23,7 +22,6 @@ export default function RegisterForm({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
   const { data: session } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,7 +67,7 @@ export default function RegisterForm({
         if (onSuccess) {
           await onSuccess(registeredEmail);
         } else {
-          router.push(`/auth/verify-email?email=${encodeURIComponent(registeredEmail)}`);
+          requestEmailVerificationModal(registeredEmail, true);
         }
       } else {
         toast.error(data.error || "Registration failed");

@@ -36,6 +36,9 @@ export class EmailService {
         subject: template.subject,
         html: template.html,
         text: template.text,
+        ...(payload.type === 'CONTACT_MESSAGE' && payload.contactMessage
+          ? { replyTo: payload.contactMessage.email }
+          : {}),
       };
       const info = await this.transporter.sendMail(mailOptions);
 
@@ -259,6 +262,16 @@ export class EmailService {
       case 'ADMIN_NEW_QUOTATION':
         if (!payload.quotation) {
           throw new Error('Quotation data is required for quotation-related emails');
+        }
+        break;
+      case 'CONTACT_MESSAGE':
+        if (!payload.contactMessage) {
+          throw new Error('Contact message data is required');
+        }
+        break;
+      case 'CONTACT_REPLY':
+        if (!payload.contactReply) {
+          throw new Error('Contact reply data is required');
         }
         break;
       case 'NEW_PRODUCT_LAUNCH':

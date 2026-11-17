@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
 import { OrderData, OrderItem, OrderStatusHistory } from "../../../../type";
 import { UserRole, hasPermission } from "@/lib/rbac/roles";
 import {
@@ -13,6 +14,12 @@ import { adminDb } from "@/lib/firebase/admin";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { fetchUserFromFirestore } from "@/lib/firebase/adminUser";
+import {
+  isAlreadyExistingOrderError,
+  isSameOrderIntent,
+  isValidOrderId,
+} from "@/lib/orders/order-idempotency";
+import { sendOrderWhatsAppNotification } from "@/lib/whatsapp/order-notification";
 
 // GET - Fetch orders based on user role
 export async function GET(request: NextRequest) {
@@ -102,10 +109,16 @@ export async function POST(request: NextRequest) {
     );
 
     // Create order with OrderData structure
+    const ordersRef = adminDb.collection("orders");
+    const orderId = isValidOrderId(orderData.id)
+      ? orderData.id
+      : ordersRef.doc().id;
     const newOrder: OrderData = {
       ...orderData,
+      id: orderId,
       items: itemsWithSku,
       userId: user.id,
+      customerPhone: user.profile?.phone || "",
       status: ORDER_STATUSES.PENDING,
       paymentStatus: PAYMENT_STATUSES.PENDING,
       createdAt: new Date().toISOString(),
@@ -121,16 +134,28 @@ export async function POST(request: NextRequest) {
       ],
     };
 
-    // Add to orders collection with auto-generated ID
-    const docRef = await adminDb.collection("orders").add(newOrder);
+    const orderRef = ordersRef.doc(orderId);
+    let persistedOrder: OrderData = newOrder;
+    try {
+      await orderRef.create(newOrder);
+    } catch (error) {
+      if (!isAlreadyExistingOrderError(error)) throw error;
+      const existingOrder = await orderRef.get();
+      const existingData = existingOrder.data();
+      if (!existingData || !isSameOrderIntent(existingData, newOrder)) {
+        return NextResponse.json(
+          { error: "This order reference has already been used." },
+          { status: 409 },
+        );
+      }
+      persistedOrder = { ...newOrder, createdAt: existingData.createdAt };
+    }
 
-    await docRef.update({ id: docRef.id });
-
-    
+    after(() => sendOrderWhatsAppNotification(orderId, persistedOrder));
 
     return NextResponse.json({
       success: true,
-      id: docRef.id,
+      id: orderId,
       message: "Order created successfully",
     });
   } catch (error) {

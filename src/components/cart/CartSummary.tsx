@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import Title from "../Title";
 import Button from "../ui/Button";
@@ -25,6 +25,7 @@ const CartSummary = ({ cart }: Props) => {
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [placing, setPlacing] = useState(false);
   const [addressLoading, setAddressLoading] = useState(true);
+  const orderAttempt = useRef<{ fingerprint: string; id: string } | null>(null);
 
   const { data: session } = useSession();
   const router = useRouter();
@@ -64,9 +65,48 @@ const CartSummary = ({ cart }: Props) => {
       setPlacing(true);
 
       const finalTotal = totalAmt;
-
-      // Generate order ID
-      const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      const fingerprint = JSON.stringify({
+        userId: session.user.id,
+        address: selectedAddress.address,
+        items: cart.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+        })),
+      });
+      const storageKey = `awegift:pending-order:${session.user.id}`;
+      let existingAttempt = orderAttempt.current;
+      if (!existingAttempt || existingAttempt.fingerprint !== fingerprint) {
+        try {
+          const storedAttempt = sessionStorage.getItem(storageKey);
+          if (storedAttempt) {
+            const parsedAttempt = JSON.parse(storedAttempt);
+            if (
+              parsedAttempt.fingerprint === fingerprint &&
+              typeof parsedAttempt.id === "string" &&
+              parsedAttempt.id.startsWith("ORD-")
+            ) {
+              existingAttempt = parsedAttempt;
+            } else {
+              existingAttempt = null;
+            }
+          }
+        } catch {
+          existingAttempt = null;
+        }
+      }
+      const orderId =
+        existingAttempt?.fingerprint === fingerprint
+          ? existingAttempt.id
+          : `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      orderAttempt.current = { fingerprint, id: orderId };
+      try {
+        sessionStorage.setItem(
+          storageKey,
+          JSON.stringify({ fingerprint, id: orderId })
+        );
+      } catch {
+        // The in-memory key still protects retries during the current page view.
+      }
 
       // Prepare order data matching OrderData interface
       const orderData: OrderData = {
@@ -111,6 +151,12 @@ const CartSummary = ({ cart }: Props) => {
 
       if (response.ok) {
         const result = await response.json();
+        orderAttempt.current = null;
+        try {
+          sessionStorage.removeItem(storageKey);
+        } catch {
+          // The order was placed; storage cleanup is best-effort.
+        }
 
         // Navigate to checkout page with order ID for payment method selection
         router.push(`/checkout?orderId=${result.id}`);

@@ -6,12 +6,14 @@ import Link from "next/link";
 import { FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { signIn, useSession } from "next-auth/react";
+import { requestEmailVerificationModal } from "@/lib/authModal";
 
 interface SignInFormProps {
   onSuccess?: () => void | Promise<void>;
   callbackUrl?: string;
   onRequestSignUp?: () => void;
   onRequestForgotPassword?: () => void;
+  onRequestEmailVerification?: (email: string) => void | Promise<void>;
 }
 
 export default function SignInForm({
@@ -19,6 +21,7 @@ export default function SignInForm({
   callbackUrl: callbackUrlProp,
   onRequestSignUp,
   onRequestForgotPassword,
+  onRequestEmailVerification,
 }: SignInFormProps = {}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,18 +41,13 @@ export default function SignInForm({
 
     if (!error) return;
 
-    if (error === "Please verify your email before signing in.") {
-      toast.error("Please verify your email.");
-      router.push("/auth/verify-email");
-      return;
-    }
-
     const errorMessages: Record<string, string> = {
       CredentialsSignin: "Invalid email or password",
       OAuthSignin: "OAuth sign-in failed",
       OAuthCallback: "OAuth authentication failed",
       AccessDenied: "Access denied",
       SessionRequired: "Please sign in to continue",
+      "Please verify your email before signing in.": "Please verify your email.",
     };
 
     toast.error(errorMessages[error] || error || "Authentication failed");
@@ -82,9 +80,11 @@ export default function SignInForm({
 
       if (result?.error) {
         if (result.error === "Please verify your email before signing in.") {
-          toast.error("Please verify your email address.");
-          if (onSuccess) await onSuccess();
-          router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+          if (onRequestEmailVerification) {
+            await onRequestEmailVerification(email);
+          } else {
+            requestEmailVerificationModal(email);
+          }
         } else if (result.error.startsWith("2FA_REQUIRED:")) {
           const tempToken = result.error.split(":")[1];
           toast.success("2-Step Verification required");

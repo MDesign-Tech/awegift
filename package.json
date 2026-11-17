@@ -10,7 +10,7 @@
     "deploy:check": "./deploy-check.sh",
     "deploy:cf": "wrangler pages deploy .next --project-name=awegift-commerce --compatibility-date=2024-08-20",
     "type-check": "tsc --noEmit",
-    "test": "node --conditions=react-server --import tsx --test tests/payments/pawapay.test.ts tests/productLimits.test.ts"
+    "test": "node --conditions=react-server --import tsx --test tests/payments/pawapay.test.ts tests/productLimits.test.ts tests/whatsapp-order.test.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",

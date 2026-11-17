@@ -158,6 +158,10 @@ function VerifyEmailContent() {
     }
   };
 
+  if (emailParam && !tokenParam && !successParam && !errorParam) {
+    return null;
+  }
+
   if (success) {
     return (
       <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8">

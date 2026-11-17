@@ -49,6 +49,7 @@ export interface RolePermissions {
 
   // Transactions
   canViewTransactions: boolean;
+  canManageContactMessages: boolean;
 }
 
 export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
@@ -88,6 +89,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
 
     canGenerateReports: true,
     canViewTransactions: true,
+    canManageContactMessages: true,
   },
 
   user: {
@@ -126,6 +128,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
 
     canGenerateReports: false,
     canViewTransactions: false,
+    canManageContactMessages: false,
   },
 };
 
